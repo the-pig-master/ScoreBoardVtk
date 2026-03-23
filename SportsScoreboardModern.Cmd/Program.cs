@@ -1,0 +1,699 @@
+using System.Diagnostics;
+using System.Text;
+using SportsScoreboardModern.Core.Models;
+using SportsScoreboardModern.Core.Services;
+
+namespace SportsScoreboardModern.Cmd;
+
+internal static class Program
+{
+    private const int BuzzerDurationMilliseconds = 300;
+    private const int SignalPacketIntervalMilliseconds = 50;
+    private const int ScanPauseMilliseconds = 1000;
+    private const int WatchRefreshMilliseconds = 1000;
+
+    private static int Main(string[] args)
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+        try
+        {
+            using var transport = new SerialTransport();
+            return Execute(args, transport);
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine($"Error: {exception.Message}");
+            return 1;
+        }
+    }
+
+    private static int Execute(string[] args, SerialTransport transport, bool interactiveShell = false)
+    {
+        if (args.Length == 0)
+        {
+            if (!interactiveShell && CanUseInteractiveConsole())
+            {
+                return RunInteractive(transport);
+            }
+
+            PrintHeader();
+            PrintPortList(transport);
+            PrintUsage();
+            return 0;
+        }
+
+        var command = args[0].Trim().ToLowerInvariant();
+
+        return command switch
+        {
+            "list" => ExecuteList(transport),
+            "buzz" => ExecuteBuzz(args.Skip(1).ToArray(), transport),
+            "scan-all" or "scan" => ExecuteScanAll(transport),
+            "watch" or "monitor" => interactiveShell ? ExecuteWatchInteractive(transport) : ExecuteWatch(transport),
+            "help" or "--help" or "-h" or "/?" => ExecuteHelp(transport),
+            _ => ExecuteUnknownCommand(args[0], transport),
+        };
+    }
+
+    private static int RunInteractive(SerialTransport transport)
+    {
+        var selectedPort = GetPreferredPort(transport, null);
+
+        while (true)
+        {
+            selectedPort = GetPreferredPort(transport, selectedPort);
+
+            var options = new[]
+            {
+                $"Select COM port ({selectedPort ?? "none"})",
+                "List COM ports",
+                $"Send buzzer to selected port ({selectedPort ?? "none"})",
+                "Scan all COM ports",
+                "Watch COM ports",
+                "Enter command",
+                "Help",
+                "Exit",
+            };
+
+            var selection = ShowMenu(
+                "Main Menu",
+                options,
+                [
+                    $"Selected port: {selectedPort ?? "none"}",
+                    "Use Up/Down arrows and Enter.",
+                ]);
+
+            switch (selection)
+            {
+                case 0:
+                    selectedPort = SelectPortInteractive(transport, selectedPort);
+                    break;
+
+                case 1:
+                    RunInteractiveAction(() => ExecuteList(transport));
+                    break;
+
+                case 2:
+                    if (string.IsNullOrWhiteSpace(selectedPort))
+                    {
+                        RunInteractiveMessage("No COM port selected.");
+                        break;
+                    }
+
+                    RunInteractiveAction(() => ExecuteBuzz([selectedPort], transport));
+                    break;
+
+                case 3:
+                    if (Confirm(
+                            "Scan all COM ports?",
+                            [
+                                "This sends a test AT+GD packet to every COM port.",
+                                "Use this only when it is safe to touch the scoreboard state.",
+                            ]))
+                    {
+                        RunInteractiveAction(() => ExecuteScanAll(transport));
+                    }
+
+                    break;
+
+                case 4:
+                    RunInteractiveAction(() => ExecuteWatchInteractive(transport), pauseAfter: false);
+                    Pause("Press any key to return to the menu...");
+                    break;
+
+                case 5:
+                    RunCommandPrompt(transport);
+                    break;
+
+                case 6:
+                    RunInteractiveAction(() => ExecuteHelp(transport));
+                    break;
+
+                case 7:
+                    Console.Clear();
+                    return 0;
+            }
+        }
+    }
+
+    private static int ExecuteList(SerialTransport transport)
+    {
+        PrintPortList(transport);
+        return 0;
+    }
+
+    private static int ExecuteBuzz(string[] args, SerialTransport transport)
+    {
+        var portName = ResolvePortName(args, transport);
+
+        if (string.IsNullOrWhiteSpace(portName))
+        {
+            Console.Error.WriteLine("COM port is not specified.");
+            Console.WriteLine();
+            PrintUsage();
+            return 1;
+        }
+
+        try
+        {
+            Console.WriteLine($"Sending buzzer signal to {portName}...");
+            SendBuzzerSignal(transport, portName);
+            Console.WriteLine("Signal sent.");
+            return 0;
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine($"Failed to send signal to {portName}: {exception.Message}");
+            return 1;
+        }
+    }
+
+    private static int ExecuteScanAll(SerialTransport transport)
+    {
+        var ports = transport.GetAvailablePorts();
+
+        if (ports.Length == 0)
+        {
+            Console.WriteLine("No COM ports found.");
+            return 0;
+        }
+
+        Console.WriteLine($"Ports found: {ports.Length}");
+
+        for (var index = 0; index < ports.Length; index++)
+        {
+            var portName = ports[index];
+            Console.WriteLine();
+            Console.WriteLine($"[{index + 1}/{ports.Length}] {portName}: sending test signal...");
+
+            try
+            {
+                SendBuzzerSignal(transport, portName);
+                Console.WriteLine("Signal sent.");
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"Error: {exception.Message}");
+            }
+
+            if (index < ports.Length - 1)
+            {
+                Thread.Sleep(ScanPauseMilliseconds);
+            }
+        }
+
+        return 0;
+    }
+
+    private static int ExecuteWatch(SerialTransport transport)
+    {
+        return ExecuteWatchCore(transport, stopOnEscape: false);
+    }
+
+    private static int ExecuteWatchInteractive(SerialTransport transport)
+    {
+        return ExecuteWatchCore(transport, stopOnEscape: true);
+    }
+
+    private static int ExecuteWatchCore(SerialTransport transport, bool stopOnEscape)
+    {
+        var knownPorts = new HashSet<string>(transport.GetAvailablePorts(), StringComparer.OrdinalIgnoreCase);
+        var lastPollAt = DateTime.UtcNow;
+
+        Console.WriteLine("COM port watch started.");
+        Console.WriteLine(stopOnEscape
+            ? "Connect or disconnect the scoreboard adapter. Press Esc to stop."
+            : "Connect or disconnect the scoreboard adapter. Press Ctrl+C to stop.");
+        PrintPorts(knownPorts.OrderBy(static port => port, StringComparer.OrdinalIgnoreCase).ToArray());
+
+        using var cancellation = new CancellationTokenSource();
+        ConsoleCancelEventHandler? cancelHandler = null;
+
+        if (!stopOnEscape)
+        {
+            cancelHandler = (_, eventArgs) =>
+            {
+                eventArgs.Cancel = true;
+                cancellation.Cancel();
+            };
+
+            Console.CancelKeyPress += cancelHandler;
+        }
+
+        try
+        {
+            while (!cancellation.IsCancellationRequested)
+            {
+                if (stopOnEscape && Console.KeyAvailable)
+                {
+                    var key = Console.ReadKey(intercept: true).Key;
+
+                    if (key == ConsoleKey.Escape)
+                    {
+                        break;
+                    }
+                }
+
+                if ((DateTime.UtcNow - lastPollAt).TotalMilliseconds < WatchRefreshMilliseconds)
+                {
+                    Thread.Sleep(100);
+                    continue;
+                }
+
+                lastPollAt = DateTime.UtcNow;
+
+                var currentPorts = transport.GetAvailablePorts();
+                var currentSet = new HashSet<string>(currentPorts, StringComparer.OrdinalIgnoreCase);
+
+                var addedPorts = currentSet.Except(knownPorts, StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(static port => port, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                var removedPorts = knownPorts.Except(currentSet, StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(static port => port, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                if (addedPorts.Length == 0 && removedPorts.Length == 0)
+                {
+                    continue;
+                }
+
+                var timeStamp = DateTime.Now.ToString("HH:mm:ss");
+
+                foreach (var port in addedPorts)
+                {
+                    Console.WriteLine($"[{timeStamp}] Connected: {port}");
+                }
+
+                foreach (var port in removedPorts)
+                {
+                    Console.WriteLine($"[{timeStamp}] Disconnected: {port}");
+                }
+
+                knownPorts = currentSet;
+            }
+        }
+        finally
+        {
+            if (cancelHandler is not null)
+            {
+                Console.CancelKeyPress -= cancelHandler;
+            }
+        }
+
+        Console.WriteLine("Watch stopped.");
+        return 0;
+    }
+
+    private static int ExecuteHelp(SerialTransport transport)
+    {
+        PrintHeader();
+        PrintPortList(transport);
+        PrintUsage();
+        return 0;
+    }
+
+    private static int ExecuteUnknownCommand(string command, SerialTransport transport)
+    {
+        Console.Error.WriteLine($"Unknown command: {command}");
+        Console.WriteLine();
+        PrintHeader();
+        PrintPortList(transport);
+        PrintUsage();
+        return 1;
+    }
+
+    private static void RunCommandPrompt(SerialTransport transport)
+    {
+        while (true)
+        {
+            Console.Clear();
+            PrintHeader();
+            Console.WriteLine("Enter a command exactly as you would type it on the command line.");
+            Console.WriteLine("Examples: list, buzz COM3, scan-all, watch");
+            Console.WriteLine("Press Enter on an empty line to return to the menu.");
+            Console.WriteLine();
+            Console.Write("cmd> ");
+
+            var line = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                return;
+            }
+
+            var args = SplitCommandLine(line);
+
+            if (args.Length == 0)
+            {
+                return;
+            }
+
+            if (IsExitCommand(args[0]))
+            {
+                return;
+            }
+
+            Console.WriteLine();
+            Execute(args, transport, interactiveShell: true);
+            Console.WriteLine();
+            Pause("Press any key to continue...");
+        }
+    }
+
+    private static void SendBuzzerSignal(SerialTransport transport, string portName)
+    {
+        portName = portName.Trim().ToUpperInvariant();
+
+        try
+        {
+            transport.Open(portName);
+
+            var controller = CreateProbeController();
+            controller.StartManualSignal();
+
+            var startedAt = Stopwatch.GetTimestamp();
+
+            do
+            {
+                transport.Write(SerialProtocol.CreateGamePacket(controller.Snapshot));
+                Thread.Sleep(SignalPacketIntervalMilliseconds);
+            }
+            while (Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds < BuzzerDurationMilliseconds);
+
+            controller.StopManualSignal();
+            transport.Write(SerialProtocol.CreateGamePacket(controller.Snapshot));
+            Thread.Sleep(SignalPacketIntervalMilliseconds);
+        }
+        finally
+        {
+            transport.Close();
+        }
+    }
+
+    private static ScoreboardController CreateProbeController()
+    {
+        return new ScoreboardController(new AppSettings
+        {
+            GameMode = GameMode.Basketball,
+            TimerDirection = TimerDirection.Down,
+            GameTimePreset = "10:00",
+            MainSignalDurationSeconds = 0,
+            FontMode = FontMode.Font6x8,
+            CountFoulsToFive = true,
+            AutoStartShotClock = false,
+            RunningTextEnabled = false,
+            RunningText = string.Empty,
+        });
+    }
+
+    private static string? ResolvePortName(string[] args, SerialTransport transport)
+    {
+        if (args.Length > 0 && !string.IsNullOrWhiteSpace(args[0]))
+        {
+            return args[0].Trim();
+        }
+
+        var ports = transport.GetAvailablePorts();
+
+        if (ports.Length == 0)
+        {
+            return null;
+        }
+
+        PrintPorts(ports);
+        Console.Write("Enter COM port: ");
+        return Console.ReadLine()?.Trim();
+    }
+
+    private static string? SelectPortInteractive(SerialTransport transport, string? currentPort)
+    {
+        while (true)
+        {
+            var ports = transport.GetAvailablePorts();
+
+            if (ports.Length == 0)
+            {
+                RunInteractiveMessage("No COM ports found.");
+                return null;
+            }
+
+            var options = ports
+                .Concat(["Refresh port list", "Back"])
+                .ToArray();
+
+            var selectedIndex = Array.FindIndex(ports, port => string.Equals(port, currentPort, StringComparison.OrdinalIgnoreCase));
+            if (selectedIndex < 0)
+            {
+                selectedIndex = 0;
+            }
+
+            var choice = ShowMenu(
+                "Select COM Port",
+                options,
+                [
+                    $"Current port: {currentPort ?? "none"}",
+                    "Choose a port and press Enter.",
+                ],
+                selectedIndex);
+
+            if (choice == options.Length - 1)
+            {
+                return currentPort;
+            }
+
+            if (choice == options.Length - 2)
+            {
+                continue;
+            }
+
+            return ports[choice];
+        }
+    }
+
+    private static void RunInteractiveAction(Func<int> action, bool pauseAfter = true)
+    {
+        Console.Clear();
+        PrintHeader();
+        action();
+
+        if (pauseAfter)
+        {
+            Console.WriteLine();
+            Pause("Press any key to return to the menu...");
+        }
+    }
+
+    private static void RunInteractiveMessage(string message)
+    {
+        Console.Clear();
+        PrintHeader();
+        Console.WriteLine(message);
+        Console.WriteLine();
+        Pause("Press any key to return to the menu...");
+    }
+
+    private static bool Confirm(string question, IReadOnlyList<string>? details = null)
+    {
+        var lines = details?.ToArray() ?? [];
+        var selection = ShowMenu(question, ["No", "Yes"], lines);
+        return selection == 1;
+    }
+
+    private static int ShowMenu(
+        string title,
+        IReadOnlyList<string> options,
+        IReadOnlyList<string>? infoLines = null,
+        int initialSelection = 0)
+    {
+        if (options.Count == 0)
+        {
+            throw new InvalidOperationException("Menu options are required.");
+        }
+
+        var selection = Math.Clamp(initialSelection, 0, options.Count - 1);
+        while (true)
+        {
+            Console.Clear();
+            PrintHeader();
+
+            if (infoLines is not null)
+            {
+                foreach (var line in infoLines)
+                {
+                    Console.WriteLine(line);
+                }
+
+                Console.WriteLine();
+            }
+
+            Console.WriteLine(title);
+            Console.WriteLine();
+
+            for (var index = 0; index < options.Count; index++)
+            {
+                var prefix = index == selection ? "> " : "  ";
+                Console.WriteLine($"{prefix}{options[index]}");
+            }
+
+            var key = Console.ReadKey(intercept: true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                case ConsoleKey.W:
+                    selection = selection == 0 ? options.Count - 1 : selection - 1;
+                    break;
+
+                case ConsoleKey.DownArrow:
+                case ConsoleKey.S:
+                    selection = selection == options.Count - 1 ? 0 : selection + 1;
+                    break;
+
+                case ConsoleKey.Home:
+                    selection = 0;
+                    break;
+
+                case ConsoleKey.End:
+                    selection = options.Count - 1;
+                    break;
+
+                case ConsoleKey.Enter:
+                    return selection;
+            }
+        }
+    }
+
+    private static string? GetPreferredPort(SerialTransport transport, string? currentPort)
+    {
+        var ports = transport.GetAvailablePorts();
+
+        if (ports.Length == 0)
+        {
+            return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(currentPort) &&
+            ports.Contains(currentPort, StringComparer.OrdinalIgnoreCase))
+        {
+            return ports.First(port => string.Equals(port, currentPort, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return ports[0];
+    }
+
+    private static string[] SplitCommandLine(string commandLine)
+    {
+        var result = new List<string>();
+        var current = new StringBuilder();
+        var inQuotes = false;
+
+        foreach (var character in commandLine)
+        {
+            if (character == '"')
+            {
+                inQuotes = !inQuotes;
+                continue;
+            }
+
+            if (char.IsWhiteSpace(character) && !inQuotes)
+            {
+                if (current.Length > 0)
+                {
+                    result.Add(current.ToString());
+                    current.Clear();
+                }
+
+                continue;
+            }
+
+            current.Append(character);
+        }
+
+        if (current.Length > 0)
+        {
+            result.Add(current.ToString());
+        }
+
+        return result.ToArray();
+    }
+
+    private static bool IsExitCommand(string value)
+    {
+        return value.Equals("exit", StringComparison.OrdinalIgnoreCase) ||
+               value.Equals("quit", StringComparison.OrdinalIgnoreCase) ||
+               value.Equals("back", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool CanUseInteractiveConsole()
+    {
+        return Environment.UserInteractive &&
+               !Console.IsInputRedirected &&
+               !Console.IsOutputRedirected;
+    }
+
+    private static void Pause(string prompt)
+    {
+        Console.Write(prompt);
+        Console.ReadKey(intercept: true);
+        Console.WriteLine();
+    }
+
+    private static void PrintHeader()
+    {
+        Console.WriteLine("Sports Scoreboard Modern CMD");
+        Console.WriteLine("Utility for finding and testing the scoreboard COM port.");
+        Console.WriteLine();
+    }
+
+    private static void PrintPortList(SerialTransport transport)
+    {
+        var ports = transport.GetAvailablePorts();
+        PrintPorts(ports);
+    }
+
+    private static void PrintPorts(IReadOnlyList<string> ports)
+    {
+        if (ports.Count == 0)
+        {
+            Console.WriteLine("No COM ports found.");
+            return;
+        }
+
+        Console.WriteLine("Available COM ports:");
+
+        for (var index = 0; index < ports.Count; index++)
+        {
+            Console.WriteLine($"  {index + 1}. {ports[index]}");
+        }
+    }
+
+    private static void PrintUsage()
+    {
+        Console.WriteLine("Commands:");
+        Console.WriteLine("  list");
+        Console.WriteLine("      Print the list of COM ports.");
+        Console.WriteLine("  buzz <COMx>");
+        Console.WriteLine("      Send a 0.3 second buzzer signal to the specified port.");
+        Console.WriteLine("  scan-all");
+        Console.WriteLine("      Walk through all COM ports and send a test signal to each.");
+        Console.WriteLine("      A 1 second pause is used between ports.");
+        Console.WriteLine("  watch");
+        Console.WriteLine("      Watch for COM ports being connected or disconnected.");
+        Console.WriteLine();
+        Console.WriteLine("Interactive mode:");
+        Console.WriteLine("  Start the app without arguments to open the keyboard menu.");
+        Console.WriteLine("  The menu supports arrow keys, Enter, and direct command input.");
+        Console.WriteLine();
+        Console.WriteLine("Examples:");
+        Console.WriteLine("  dotnet run --project SportsScoreboardModern.Cmd -- list");
+        Console.WriteLine("  dotnet run --project SportsScoreboardModern.Cmd -- buzz COM3");
+        Console.WriteLine("  dotnet run --project SportsScoreboardModern.Cmd -- scan-all");
+        Console.WriteLine("  dotnet run --project SportsScoreboardModern.Cmd -- watch");
+        Console.WriteLine();
+        Console.WriteLine("Note:");
+        Console.WriteLine("  The buzz and scan-all commands send the same AT+GD packet as the main app,");
+        Console.WriteLine("  with the manual-signal flag enabled. During a live game, it is safer to use");
+        Console.WriteLine("  watch or disconnect the scoreboard from the main application first.");
+    }
+}

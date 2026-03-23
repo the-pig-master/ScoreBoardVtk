@@ -1,0 +1,27 @@
+namespace SportsScoreboardModern.Core.Models;
+
+public sealed record ScoreboardSnapshot(
+    GameMode GameMode,
+    TimerDirection TimerDirection,
+    FontMode FontMode,
+    string ScoreAText,
+    string ScoreBText,
+    string PeriodText,
+    string MainClockText,
+    string PenaltyAText,
+    string PenaltyBText,
+    string PenaltyLabelText,
+    string ShotClockSecondsText,
+    string ShotClockTenthsText,
+    string TimerPresetText,
+    string RunningText,
+    bool RunningTextEnabled,
+    bool CountFoulsToFive,
+    bool AutoStartShotClock,
+    bool IsGameClockRunning,
+    bool IsShotClockRunning,
+    bool IsMainSignalActive,
+    bool IsShotClockSignalActive,
+    string GameClockActionText,
+    string ShotClockActionText,
+    string PayloadText);
