@@ -12,7 +12,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        ViewModel = new MainViewModel(new SettingsStore(), new SerialTransport());
+        var services = ScoreboardCompositionRoot.CreateDesktopServices();
+        ViewModel = new MainViewModel(services.SettingsStore, services.ScoreboardApi, services.Runtime);
         DataContext = ViewModel;
     }
 

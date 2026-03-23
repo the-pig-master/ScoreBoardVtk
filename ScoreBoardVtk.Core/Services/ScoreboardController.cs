@@ -33,16 +33,125 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public event EventHandler<ScoreboardSnapshot>? StateChanged;
+    public event EventHandler<ScoreboardState>? StateChanged;
 
     public AppSettings Settings => _settings;
 
-    public ScoreboardSnapshot Snapshot { get; private set; } = default!;
+    public ScoreboardState State { get; private set; } = default!;
+
+    public void Apply(ScoreboardCommand command)
+    {
+        switch (command)
+        {
+            case SetGameModeCommand typed:
+                SetGameMode(typed.GameMode);
+                break;
+
+            case SetFontModeCommand typed:
+                SetFontMode(typed.FontMode);
+                break;
+
+            case SetTimerDirectionCommand typed:
+                SetTimerDirection(typed.TimerDirection);
+                break;
+
+            case SetCountFoulsToFiveCommand typed:
+                SetCountFoulsToFive(typed.Enabled);
+                break;
+
+            case SetAutoStartShotClockCommand typed:
+                SetAutoStartShotClock(typed.Enabled);
+                break;
+
+            case SetMainSignalDurationSecondsCommand typed:
+                SetMainSignalDurationSeconds(typed.Seconds);
+                break;
+
+            case SetShotClockSignalDurationTenthsCommand typed:
+                SetShotClockSignalDurationTenths(typed.Tenths);
+                break;
+
+            case SetRunningTextEnabledCommand typed:
+                SetRunningTextEnabled(typed.Enabled);
+                break;
+
+            case SetRunningTextCommand typed:
+                SetRunningText(typed.Text);
+                break;
+
+            case SetTimerPresetCommand typed:
+                SetTimerPreset(typed.Minutes, typed.Seconds, typed.Tenths);
+                break;
+
+            case ChangeScoreCommand typed:
+                ApplyScoreChange(typed.Side, typed.Delta);
+                break;
+
+            case ChangeSecondaryCounterCommand typed:
+                ApplySecondaryCounterChange(typed.Side, typed.Delta);
+                break;
+
+            case SetShotClockCommand typed:
+                SetShotClock(typed.Seconds);
+                break;
+
+            case SetManualSignalCommand typed:
+                if (typed.IsActive)
+                {
+                    StartManualSignal();
+                }
+                else
+                {
+                    StopManualSignal();
+                }
+
+                break;
+
+            case ToggleGameClockCommand:
+                ToggleGameClock();
+                break;
+
+            case StopGameClockCommand:
+                StopGameClock();
+                break;
+
+            case AdvancePeriodOrSetCommand:
+                AdvancePeriodOrSet();
+                break;
+
+            case ResetScoreboardCommand:
+                Reset();
+                break;
+
+            case ToggleShotClockCommand:
+                ToggleShotClock();
+                break;
+
+            case TickMainClockCommand:
+                TickMainClock();
+                break;
+
+            case TickMainSignalCommand:
+                TickMainSignal();
+                break;
+
+            case TickShotClockSignalCommand:
+                TickShotClockSignal();
+                break;
+
+            case RefreshDisplayCommand:
+                RefreshDisplay();
+                break;
+
+            default:
+                throw new NotSupportedException($"Unsupported scoreboard command: {command.GetType().Name}");
+        }
+    }
 
     public void RefreshDisplay()
     {
-        Snapshot = BuildSnapshot();
-        StateChanged?.Invoke(this, Snapshot);
+        State = BuildState();
+        StateChanged?.Invoke(this, State);
     }
 
     public void SetGameMode(GameMode gameMode)
@@ -451,6 +560,52 @@ public sealed class ScoreboardController
         _isShotClockRunning = respectAutoStart && _settings.AutoStartShotClock && _shotClockRemainingTenths > 0;
     }
 
+    private void ApplyScoreChange(TeamSide side, int delta)
+    {
+        if (delta == 0)
+        {
+            RefreshDisplay();
+            return;
+        }
+
+        if (side == TeamSide.Home)
+        {
+            ApplyCounterDelta(delta, IncreaseScoreA, DecreaseScoreA);
+        }
+        else
+        {
+            ApplyCounterDelta(delta, IncreaseScoreB, DecreaseScoreB);
+        }
+    }
+
+    private void ApplySecondaryCounterChange(TeamSide side, int delta)
+    {
+        if (delta == 0)
+        {
+            RefreshDisplay();
+            return;
+        }
+
+        if (side == TeamSide.Home)
+        {
+            ApplyCounterDelta(delta, IncreasePenaltyA, DecreasePenaltyA);
+        }
+        else
+        {
+            ApplyCounterDelta(delta, IncreasePenaltyB, DecreasePenaltyB);
+        }
+    }
+
+    private static void ApplyCounterDelta(int delta, Action increment, Action decrement)
+    {
+        var action = delta > 0 ? increment : decrement;
+
+        for (var index = 0; index < Math.Abs(delta); index++)
+        {
+            action();
+        }
+    }
+
     private int ClampShotClockTenths(int requestedTenths)
     {
         if (_settings.GameMode != GameMode.Basketball)
@@ -501,154 +656,32 @@ public sealed class ScoreboardController
         return value > maxPenalty ? 0 : value;
     }
 
-    private ScoreboardSnapshot BuildSnapshot()
+    private ScoreboardState BuildState()
     {
-        var payload = BuildLegacyPayload();
-        var shotClockRemaining = _settings.GameMode == GameMode.Basketball ? _shotClockRemainingTenths : 0;
-        var shotClockSeconds = shotClockRemaining <= 0 ? 0 : (shotClockRemaining + 9) / 10;
-        var shotClockTenths = shotClockRemaining % 10;
-
-        return new ScoreboardSnapshot(
+        return new ScoreboardState(
             _settings.GameMode,
             _settings.TimerDirection,
             _settings.FontMode,
-            _scoreA.ToString("000", CultureInfo.InvariantCulture),
-            _scoreB.ToString("000", CultureInfo.InvariantCulture),
-            _settings.GameMode == GameMode.Basketball && _period == 6 ? "E" : _period.ToString(CultureInfo.InvariantCulture),
-            FormatMainClock(),
-            _penaltyA.ToString(CultureInfo.InvariantCulture),
-            _penaltyB.ToString(CultureInfo.InvariantCulture),
-            _settings.GameMode == GameMode.Basketball ? "FOULS" : "SETS",
-            shotClockSeconds.ToString("00", CultureInfo.InvariantCulture),
-            shotClockTenths.ToString(CultureInfo.InvariantCulture),
-            FormatPreset(_presetTenths),
+            _scoreA,
+            _scoreB,
+            _period,
+            _settings.GameMode == GameMode.Basketball ? SecondaryCounterKind.Fouls : SecondaryCounterKind.Sets,
+            _penaltyA,
+            _penaltyB,
+            _mainClockTenths,
+            _presetTenths,
+            _mainSignalRemainingSeconds,
+            _settings.GameMode == GameMode.Basketball ? _shotClockRemainingTenths : 0,
+            _shotClockSignalRemainingTenths,
             _settings.RunningText,
             _settings.RunningTextEnabled,
             _settings.CountFoulsToFive,
             _settings.AutoStartShotClock,
             _isGameClockRunning,
             _isShotClockRunning,
+            _isManualSignalActive,
             _isManualSignalActive || _mainSignalRemainingSeconds > 0,
-            _shotClockSignalRemainingTenths > 0,
-            _isGameClockRunning ? "Stop" : "Start",
-            _isShotClockRunning ? "Stop" : "Start",
-            payload);
-    }
-
-    private string BuildLegacyPayload()
-    {
-        var scoreAText = _scoreA.ToString(CultureInfo.InvariantCulture).PadLeft(3, ' ');
-        var scoreBText = _scoreB.ToString(CultureInfo.InvariantCulture).PadLeft(3, ' ');
-        var periodText = _settings.GameMode == GameMode.Basketball && _period == 6
-            ? "E"
-            : _period.ToString(CultureInfo.InvariantCulture);
-        var mainClockText = BuildLegacyGameTimeText();
-        var penaltyAText = _penaltyA.ToString(CultureInfo.InvariantCulture);
-        var penaltyBText = _penaltyB.ToString(CultureInfo.InvariantCulture);
-        var signal = _isManualSignalActive || _mainSignalRemainingSeconds > 0 ? "S" : " ";
-        var font = _settings.FontMode == FontMode.Font8x8 ? "1" : "0";
-        var runningTextState = _settings.RunningTextEnabled ? "1" : "0";
-        var shotClockText = BuildLegacyShotClockText();
-        var shotClockSignal = _shotClockSignalRemainingTenths > 0 ? "S" : " ";
-        var runningText = _settings.RunningText;
-
-        return scoreAText +
-            periodText +
-            scoreBText +
-            penaltyAText +
-            mainClockText +
-            penaltyBText +
-            signal +
-            font +
-            runningTextState +
-            shotClockText +
-            shotClockSignal +
-            runningText;
-    }
-
-    private string BuildLegacyShotClockText()
-    {
-        if (_settings.GameMode != GameMode.Basketball)
-        {
-            return "  ";
-        }
-
-        var shotClockSeconds = _shotClockRemainingTenths <= 0 ? 0 : (_shotClockRemainingTenths + 9) / 10;
-
-        if (shotClockSeconds == 0)
-        {
-            return "00";
-        }
-
-        return shotClockSeconds < 10
-            ? $" {shotClockSeconds.ToString(CultureInfo.InvariantCulture)}"
-            : shotClockSeconds.ToString(CultureInfo.InvariantCulture);
-    }
-
-    private string BuildLegacyGameTimeText()
-    {
-        if (_settings.GameMode != GameMode.Basketball)
-        {
-            return DateTime.Now.ToString("HH:mm", CultureInfo.InvariantCulture);
-        }
-
-        if (_settings.TimerDirection == TimerDirection.Down)
-        {
-            if (_mainClockTenths >= 600)
-            {
-                var totalDisplaySeconds = (_mainClockTenths + 9) / 10;
-                var minutes = totalDisplaySeconds / 60;
-                var displaySeconds = totalDisplaySeconds % 60;
-                return $"{minutes.ToString(CultureInfo.InvariantCulture)}:{displaySeconds:00}";
-            }
-
-            var secondsUnderMinute = _mainClockTenths / 10;
-            var tenths = _mainClockTenths % 10;
-            return $"{secondsUnderMinute.ToString(CultureInfo.InvariantCulture)}:{tenths.ToString(CultureInfo.InvariantCulture)} ";
-        }
-
-        if (_mainClockTenths >= 600)
-        {
-            var totalDisplaySeconds = _mainClockTenths / 10;
-            var minutes = totalDisplaySeconds / 60;
-            var displaySeconds = totalDisplaySeconds % 60;
-            return $"{minutes.ToString(CultureInfo.InvariantCulture)}:{displaySeconds:00}";
-        }
-
-        var visibleSeconds = _mainClockTenths / 10;
-        var subSecond = _mainClockTenths % 10;
-        return $"{visibleSeconds.ToString(CultureInfo.InvariantCulture)}:{subSecond.ToString(CultureInfo.InvariantCulture)} ";
-    }
-
-    private string FormatMainClock()
-    {
-        if (_settings.GameMode != GameMode.Basketball)
-        {
-            return DateTime.Now.ToString("HH:mm", CultureInfo.InvariantCulture);
-        }
-
-        if (_settings.TimerDirection == TimerDirection.Down)
-        {
-            if (_mainClockTenths >= 600)
-            {
-                var totalDisplaySeconds = (_mainClockTenths + 9) / 10;
-                return TimeSpan.FromSeconds(totalDisplaySeconds).ToString(@"mm\:ss", CultureInfo.InvariantCulture);
-            }
-
-            var seconds = _mainClockTenths / 10;
-            var tenths = _mainClockTenths % 10;
-            return $"{seconds:00}.{tenths}";
-        }
-
-        if (_mainClockTenths >= 600)
-        {
-            var totalDisplaySeconds = _mainClockTenths / 10;
-            return TimeSpan.FromSeconds(totalDisplaySeconds).ToString(@"mm\:ss", CultureInfo.InvariantCulture);
-        }
-
-        var secondsUnderMinute = _mainClockTenths / 10;
-        var subSecond = _mainClockTenths % 10;
-        return $"{secondsUnderMinute:00}.{subSecond}";
+            _shotClockSignalRemainingTenths > 0);
     }
 
     private static int ParsePresetTenths(string preset)

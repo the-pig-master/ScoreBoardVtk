@@ -18,8 +18,8 @@ internal static class Program
 
         try
         {
-            using var transport = new SerialTransport();
-            return Execute(args, transport);
+            using var scoreboard = ScoreboardCompositionRoot.CreateConsoleApi();
+            return Execute(args, scoreboard);
         }
         catch (Exception exception)
         {
@@ -28,17 +28,17 @@ internal static class Program
         }
     }
 
-    private static int Execute(string[] args, SerialTransport transport, bool interactiveShell = false)
+    private static int Execute(string[] args, IScoreboardApi scoreboard, bool interactiveShell = false)
     {
         if (args.Length == 0)
         {
             if (!interactiveShell && CanUseInteractiveConsole())
             {
-                return RunInteractive(transport);
+                return RunInteractive(scoreboard);
             }
 
             PrintHeader();
-            PrintPortList(transport);
+            PrintPortList(scoreboard);
             PrintUsage();
             return 0;
         }
@@ -47,22 +47,22 @@ internal static class Program
 
         return command switch
         {
-            "list" => ExecuteList(transport),
-            "buzz" => ExecuteBuzz(args.Skip(1).ToArray(), transport),
-            "scan-all" or "scan" => ExecuteScanAll(transport),
-            "watch" or "monitor" => interactiveShell ? ExecuteWatchInteractive(transport) : ExecuteWatch(transport),
-            "help" or "--help" or "-h" or "/?" => ExecuteHelp(transport),
-            _ => ExecuteUnknownCommand(args[0], transport),
+            "list" => ExecuteList(scoreboard),
+            "buzz" => ExecuteBuzz(args.Skip(1).ToArray(), scoreboard),
+            "scan-all" or "scan" => ExecuteScanAll(scoreboard),
+            "watch" or "monitor" => interactiveShell ? ExecuteWatchInteractive(scoreboard) : ExecuteWatch(scoreboard),
+            "help" or "--help" or "-h" or "/?" => ExecuteHelp(scoreboard),
+            _ => ExecuteUnknownCommand(args[0], scoreboard),
         };
     }
 
-    private static int RunInteractive(SerialTransport transport)
+    private static int RunInteractive(IScoreboardApi scoreboard)
     {
-        var selectedPort = GetPreferredPort(transport, null);
+        var selectedPort = GetPreferredPort(scoreboard, null);
 
         while (true)
         {
-            selectedPort = GetPreferredPort(transport, selectedPort);
+            selectedPort = GetPreferredPort(scoreboard, selectedPort);
 
             var options = new[]
             {
@@ -87,11 +87,11 @@ internal static class Program
             switch (selection)
             {
                 case 0:
-                    selectedPort = SelectPortInteractive(transport, selectedPort);
+                    selectedPort = SelectPortInteractive(scoreboard, selectedPort);
                     break;
 
                 case 1:
-                    RunInteractiveAction(() => ExecuteList(transport));
+                    RunInteractiveAction(() => ExecuteList(scoreboard));
                     break;
 
                 case 2:
@@ -101,7 +101,7 @@ internal static class Program
                         break;
                     }
 
-                    RunInteractiveAction(() => ExecuteBuzz([selectedPort], transport));
+                    RunInteractiveAction(() => ExecuteBuzz([selectedPort], scoreboard));
                     break;
 
                 case 3:
@@ -112,22 +112,22 @@ internal static class Program
                                 "Use this only when it is safe to touch the scoreboard state.",
                             ]))
                     {
-                        RunInteractiveAction(() => ExecuteScanAll(transport));
+                        RunInteractiveAction(() => ExecuteScanAll(scoreboard));
                     }
 
                     break;
 
                 case 4:
-                    RunInteractiveAction(() => ExecuteWatchInteractive(transport), pauseAfter: false);
+                    RunInteractiveAction(() => ExecuteWatchInteractive(scoreboard), pauseAfter: false);
                     Pause("Press any key to return to the menu...");
                     break;
 
                 case 5:
-                    RunCommandPrompt(transport);
+                    RunCommandPrompt(scoreboard);
                     break;
 
                 case 6:
-                    RunInteractiveAction(() => ExecuteHelp(transport));
+                    RunInteractiveAction(() => ExecuteHelp(scoreboard));
                     break;
 
                 case 7:
@@ -137,15 +137,15 @@ internal static class Program
         }
     }
 
-    private static int ExecuteList(SerialTransport transport)
+    private static int ExecuteList(IScoreboardApi scoreboard)
     {
-        PrintPortList(transport);
+        PrintPortList(scoreboard);
         return 0;
     }
 
-    private static int ExecuteBuzz(string[] args, SerialTransport transport)
+    private static int ExecuteBuzz(string[] args, IScoreboardApi scoreboard)
     {
-        var portName = ResolvePortName(args, transport);
+        var portName = ResolvePortName(args, scoreboard);
 
         if (string.IsNullOrWhiteSpace(portName))
         {
@@ -158,7 +158,7 @@ internal static class Program
         try
         {
             Console.WriteLine($"Sending buzzer signal to {portName}...");
-            SendBuzzerSignal(transport, portName);
+            SendBuzzerSignal(portName);
             Console.WriteLine("Signal sent.");
             return 0;
         }
@@ -169,9 +169,9 @@ internal static class Program
         }
     }
 
-    private static int ExecuteScanAll(SerialTransport transport)
+    private static int ExecuteScanAll(IScoreboardApi scoreboard)
     {
-        var ports = transport.GetAvailablePorts();
+        var ports = scoreboard.GetAvailablePorts().ToArray();
 
         if (ports.Length == 0)
         {
@@ -189,7 +189,7 @@ internal static class Program
 
             try
             {
-                SendBuzzerSignal(transport, portName);
+                SendBuzzerSignal(portName);
                 Console.WriteLine("Signal sent.");
             }
             catch (Exception exception)
@@ -206,19 +206,19 @@ internal static class Program
         return 0;
     }
 
-    private static int ExecuteWatch(SerialTransport transport)
+    private static int ExecuteWatch(IScoreboardApi scoreboard)
     {
-        return ExecuteWatchCore(transport, stopOnEscape: false);
+        return ExecuteWatchCore(scoreboard, stopOnEscape: false);
     }
 
-    private static int ExecuteWatchInteractive(SerialTransport transport)
+    private static int ExecuteWatchInteractive(IScoreboardApi scoreboard)
     {
-        return ExecuteWatchCore(transport, stopOnEscape: true);
+        return ExecuteWatchCore(scoreboard, stopOnEscape: true);
     }
 
-    private static int ExecuteWatchCore(SerialTransport transport, bool stopOnEscape)
+    private static int ExecuteWatchCore(IScoreboardApi scoreboard, bool stopOnEscape)
     {
-        var knownPorts = new HashSet<string>(transport.GetAvailablePorts(), StringComparer.OrdinalIgnoreCase);
+        var knownPorts = new HashSet<string>(scoreboard.GetAvailablePorts(), StringComparer.OrdinalIgnoreCase);
         var lastPollAt = DateTime.UtcNow;
 
         Console.WriteLine("COM port watch started.");
@@ -263,7 +263,7 @@ internal static class Program
 
                 lastPollAt = DateTime.UtcNow;
 
-                var currentPorts = transport.GetAvailablePorts();
+                var currentPorts = scoreboard.GetAvailablePorts();
                 var currentSet = new HashSet<string>(currentPorts, StringComparer.OrdinalIgnoreCase);
 
                 var addedPorts = currentSet.Except(knownPorts, StringComparer.OrdinalIgnoreCase)
@@ -305,25 +305,25 @@ internal static class Program
         return 0;
     }
 
-    private static int ExecuteHelp(SerialTransport transport)
+    private static int ExecuteHelp(IScoreboardApi scoreboard)
     {
         PrintHeader();
-        PrintPortList(transport);
+        PrintPortList(scoreboard);
         PrintUsage();
         return 0;
     }
 
-    private static int ExecuteUnknownCommand(string command, SerialTransport transport)
+    private static int ExecuteUnknownCommand(string command, IScoreboardApi scoreboard)
     {
         Console.Error.WriteLine($"Unknown command: {command}");
         Console.WriteLine();
         PrintHeader();
-        PrintPortList(transport);
+        PrintPortList(scoreboard);
         PrintUsage();
         return 1;
     }
 
-    private static void RunCommandPrompt(SerialTransport transport)
+    private static void RunCommandPrompt(IScoreboardApi scoreboard)
     {
         while (true)
         {
@@ -355,66 +355,49 @@ internal static class Program
             }
 
             Console.WriteLine();
-            Execute(args, transport, interactiveShell: true);
+            Execute(args, scoreboard, interactiveShell: true);
             Console.WriteLine();
             Pause("Press any key to continue...");
         }
     }
 
-    private static void SendBuzzerSignal(SerialTransport transport, string portName)
+    private static void SendBuzzerSignal(string portName)
     {
         portName = portName.Trim().ToUpperInvariant();
+        using var scoreboard = ScoreboardCompositionRoot.CreateProbeApi();
 
         try
         {
-            transport.Open(portName);
-
-            var controller = CreateProbeController();
-            controller.StartManualSignal();
+            scoreboard.Connect(portName);
+            scoreboard.Execute(new SetManualSignalCommand(true));
 
             var startedAt = Stopwatch.GetTimestamp();
 
             do
             {
-                transport.Write(SerialProtocol.CreateGamePacket(controller.Snapshot));
+                scoreboard.Publish();
                 Thread.Sleep(SignalPacketIntervalMilliseconds);
             }
             while (Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds < BuzzerDurationMilliseconds);
 
-            controller.StopManualSignal();
-            transport.Write(SerialProtocol.CreateGamePacket(controller.Snapshot));
+            scoreboard.Execute(new SetManualSignalCommand(false));
+            scoreboard.Publish();
             Thread.Sleep(SignalPacketIntervalMilliseconds);
         }
         finally
         {
-            transport.Close();
+            scoreboard.Disconnect();
         }
     }
 
-    private static ScoreboardController CreateProbeController()
-    {
-        return new ScoreboardController(new AppSettings
-        {
-            GameMode = GameMode.Basketball,
-            TimerDirection = TimerDirection.Down,
-            GameTimePreset = "10:00",
-            MainSignalDurationSeconds = 0,
-            FontMode = FontMode.Font6x8,
-            CountFoulsToFive = true,
-            AutoStartShotClock = false,
-            RunningTextEnabled = false,
-            RunningText = string.Empty,
-        });
-    }
-
-    private static string? ResolvePortName(string[] args, SerialTransport transport)
+    private static string? ResolvePortName(string[] args, IScoreboardApi scoreboard)
     {
         if (args.Length > 0 && !string.IsNullOrWhiteSpace(args[0]))
         {
             return args[0].Trim();
         }
 
-        var ports = transport.GetAvailablePorts();
+        var ports = scoreboard.GetAvailablePorts().ToArray();
 
         if (ports.Length == 0)
         {
@@ -426,11 +409,11 @@ internal static class Program
         return Console.ReadLine()?.Trim();
     }
 
-    private static string? SelectPortInteractive(SerialTransport transport, string? currentPort)
+    private static string? SelectPortInteractive(IScoreboardApi scoreboard, string? currentPort)
     {
         while (true)
         {
-            var ports = transport.GetAvailablePorts();
+            var ports = scoreboard.GetAvailablePorts().ToArray();
 
             if (ports.Length == 0)
             {
@@ -564,9 +547,9 @@ internal static class Program
         }
     }
 
-    private static string? GetPreferredPort(SerialTransport transport, string? currentPort)
+    private static string? GetPreferredPort(IScoreboardApi scoreboard, string? currentPort)
     {
-        var ports = transport.GetAvailablePorts();
+        var ports = scoreboard.GetAvailablePorts().ToArray();
 
         if (ports.Length == 0)
         {
@@ -641,14 +624,14 @@ internal static class Program
 
     private static void PrintHeader()
     {
-        Console.WriteLine("Sports Scoreboard Modern CMD");
+        Console.WriteLine("ScoreBoardVtk CMD");
         Console.WriteLine("Utility for finding and testing the scoreboard COM port.");
         Console.WriteLine();
     }
 
-    private static void PrintPortList(SerialTransport transport)
+    private static void PrintPortList(IScoreboardApi scoreboard)
     {
-        var ports = transport.GetAvailablePorts();
+        var ports = scoreboard.GetAvailablePorts();
         PrintPorts(ports);
     }
 
@@ -688,6 +671,7 @@ internal static class Program
         Console.WriteLine("Examples:");
         Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- list");
         Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- buzz COM3");
+        Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- buzz MOCK");
         Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- scan-all");
         Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- watch");
         Console.WriteLine();
@@ -695,5 +679,6 @@ internal static class Program
         Console.WriteLine("  The buzz and scan-all commands send the same AT+GD packet as the main app,");
         Console.WriteLine("  with the manual-signal flag enabled. During a live game, it is safer to use");
         Console.WriteLine("  watch or disconnect the scoreboard from the main application first.");
+        Console.WriteLine("  A built-in MOCK port is available for testing without real hardware.");
     }
 }

@@ -1,0 +1,94 @@
+using ScoreBoardVtk.Core.Models;
+using ScoreBoardVtk.Core.Services;
+
+namespace ScoreBoardVtk.Tests;
+
+public sealed class HostSettingsStoreTests
+{
+    [Fact]
+    public void Load_WhenFileIsMissing_ReturnsDefaultSettings()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var store = new HostSettingsStore(path);
+
+        var settings = store.Load();
+
+        Assert.Equal(ApplicationProfile.Development, settings.Profile);
+        Assert.Equal("settings.json", settings.GameSettingsFileName);
+        Assert.Equal(50, settings.Runtime.PublishIntervalMilliseconds);
+    }
+
+    [Fact]
+    public void Load_SupportsJsonComments()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+
+        try
+        {
+            var path = Path.Combine(directory, "hostsettings.json");
+            File.WriteAllText(path, """
+            {
+              // Boot profile.
+              "profile": "Mock",
+              "gameSettingsFileName": "match.json",
+              "runtime": {
+                // Publish interval.
+                "publishIntervalMilliseconds": 77
+              }
+            }
+            """);
+
+            var store = new HostSettingsStore(path);
+            var settings = store.Load();
+
+            Assert.Equal(ApplicationProfile.Mock, settings.Profile);
+            Assert.Equal("match.json", settings.GameSettingsFileName);
+            Assert.Equal(77, settings.Runtime.PublishIntervalMilliseconds);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void SaveAndLoad_RoundTripsHostSettings()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+
+        try
+        {
+            var path = Path.Combine(directory, "hostsettings.json");
+            var store = new HostSettingsStore(path);
+            var expected = new HostSettings
+            {
+                Profile = ApplicationProfile.Mock,
+                GameSettingsFileName = "game-state.json",
+                Runtime = new HostRuntimeSettings
+                {
+                    MainClockIntervalMilliseconds = 101,
+                    MainSignalIntervalMilliseconds = 202,
+                    ShotClockSignalIntervalMilliseconds = 303,
+                    DisplayRefreshIntervalMilliseconds = 404,
+                    PublishIntervalMilliseconds = 505,
+                },
+            };
+
+            store.Save(expected);
+            var actual = store.Load();
+            var json = File.ReadAllText(path);
+
+            Assert.Equal(ApplicationProfile.Mock, actual.Profile);
+            Assert.Equal("game-state.json", actual.GameSettingsFileName);
+            Assert.Equal(101, actual.Runtime.MainClockIntervalMilliseconds);
+            Assert.Equal(505, actual.Runtime.PublishIntervalMilliseconds);
+            Assert.Contains("// Boot profile used to select the transport implementation.", json);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+}

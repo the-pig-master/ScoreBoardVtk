@@ -2,7 +2,7 @@ using System.IO.Ports;
 
 namespace ScoreBoardVtk.Core.Services;
 
-public sealed class SerialTransport : IDisposable
+public sealed class SerialTransport : ISerialTransport
 {
     private SerialPort? _port;
 

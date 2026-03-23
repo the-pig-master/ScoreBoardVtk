@@ -1,0 +1,44 @@
+{
+  // Serial port used by the scoreboard application.
+  // Leave empty to select the port manually in the UI.
+  "selectedPort": "",
+
+  // Main game timer preset.
+  // Supported formats: "mm:ss" or "mm:ss.t"
+  "gameTimePreset": "10:00",
+
+  // Basketball foul display mode.
+  // true  = wrap counter at 5 fouls
+  // false = wrap counter at 9 fouls
+  "countFoulsToFive": true,
+
+  // Main game clock direction.
+  // Allowed values: "Down", "Up"
+  "timerDirection": "Down",
+
+  // Duration of the main buzzer when a period ends.
+  // Unit: whole seconds, allowed range: 0-9
+  "mainSignalDurationSeconds": 3,
+
+  // Font mode used by the legacy display controller.
+  // Allowed values: "Font6x8", "Font8x8"
+  "fontMode": "Font6x8",
+
+  // Active sport mode.
+  // Allowed values: "Basketball", "Volleyball"
+  "gameMode": "Basketball",
+
+  // Duration of the shot-clock buzzer.
+  // Unit: tenths of a second, typical values: 5-30
+  "shotClockSignalDurationTenths": 15,
+
+  // Automatically start the shot clock after setting 24/14.
+  "autoStartShotClock": false,
+
+  // Enable or disable the running text area on the display.
+  "runningTextEnabled": false,
+
+  // Text shown in the running text area.
+  // The legacy display supports a short message.
+  "runningText": ""
+}

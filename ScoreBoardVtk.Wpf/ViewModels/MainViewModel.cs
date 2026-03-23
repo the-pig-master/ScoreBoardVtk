@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
 using ScoreBoardVtk.Core.Models;
 using ScoreBoardVtk.Core.Services;
@@ -11,48 +10,23 @@ namespace ScoreBoardVtk.Wpf.ViewModels;
 
 public sealed class MainViewModel : ObservableObject, IDisposable
 {
-    private static readonly Brush IdleBrush = CreateBrush(209, 215, 224);
-    private static readonly Brush AccentBrush = CreateBrush(0, 152, 116);
-    private static readonly Brush WarningBrush = CreateBrush(225, 92, 70);
-
     private readonly SettingsStore _settingsStore;
-    private readonly SerialTransport _transport;
-    private readonly ScoreboardController _controller;
-
-    private readonly DispatcherTimer _mainClockTimer = new() { Interval = TimeSpan.FromMilliseconds(100) };
-    private readonly DispatcherTimer _mainSignalTimer = new() { Interval = TimeSpan.FromSeconds(1) };
-    private readonly DispatcherTimer _shotClockSignalTimer = new() { Interval = TimeSpan.FromMilliseconds(100) };
-    private readonly DispatcherTimer _displayRefreshTimer = new() { Interval = TimeSpan.FromSeconds(1) };
-    private readonly DispatcherTimer _sendTimer = new() { Interval = TimeSpan.FromMilliseconds(50) };
+    private readonly IScoreboardApi _scoreboard;
+    private readonly IScoreboardRuntime _runtime;
+    private readonly Dispatcher _dispatcher;
 
     private bool _suppressControllerSync;
-
-    private string _scoreAText = "000";
-    private string _scoreBText = "000";
-    private string _periodText = "1";
-    private string _mainClockText = "10:00";
-    private string _penaltyAText = "0";
-    private string _penaltyBText = "0";
-    private string _penaltyLabelText = "FOULS";
-    private string _shotClockSecondsText = "24";
-    private string _shotClockTenthsText = "0";
-    private string _gameClockButtonText = "Start";
-    private string _shotClockButtonText = "Start";
-    private Brush _mainSignalBrush = IdleBrush;
-    private Brush _shotClockBrush = IdleBrush;
+    private ScoreboardState _currentState = null!;
+    private ScoreboardSnapshot _currentSnapshot = null!;
     private string _selectedPort = string.Empty;
-    private string _portButtonText = "Open Port";
-    private string _portStatusText = "Port: closed";
-    private string _presetStatusText = "Preset: 10:00";
-    private string _payloadStatusText = "Payload: ";
-    private string _payloadPreviewText = string.Empty;
-    private string _hostClockText = $"Host clock: {DateTime.Now:HH:mm:ss}";
+    private bool _isConnected;
+    private string _connectedPortName = string.Empty;
+    private DateTime _hostClock = DateTime.Now;
     private string _systemMessageText = "Ready.";
     private string _runningText = string.Empty;
     private bool _runningTextEnabled;
     private bool _countFoulsToFive = true;
     private bool _autoStartShotClock;
-    private bool _isBasketballMode = true;
     private int _mainSignalDurationSeconds = 3;
     private int _shotClockSignalDurationTenths = 15;
     private int _presetMinutes = 10;
@@ -62,11 +36,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private OptionItem<FontMode>? _selectedFontMode;
     private OptionItem<TimerDirection>? _selectedTimerDirection;
 
-    public MainViewModel(SettingsStore settingsStore, SerialTransport transport)
+    public MainViewModel(SettingsStore settingsStore, IScoreboardApi scoreboard, IScoreboardRuntime runtime)
     {
         _settingsStore = settingsStore;
-        _transport = transport;
-        _controller = new ScoreboardController(_settingsStore.Load());
+        _scoreboard = scoreboard;
+        _runtime = runtime;
+        _dispatcher = Dispatcher.CurrentDispatcher;
 
         AvailablePorts = new ObservableCollection<string>();
         GameModes =
@@ -88,44 +63,34 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         PresetSecondOptions = Enumerable.Range(0, 60).ToArray();
         PresetTenthsOptions = Enumerable.Range(0, 10).ToArray();
 
-        IncreaseScoreACommand = new RelayCommand(_controller.IncreaseScoreA);
-        DecreaseScoreACommand = new RelayCommand(_controller.DecreaseScoreA);
-        IncreaseScoreBCommand = new RelayCommand(_controller.IncreaseScoreB);
-        DecreaseScoreBCommand = new RelayCommand(_controller.DecreaseScoreB);
-        IncreasePenaltyACommand = new RelayCommand(_controller.IncreasePenaltyA);
-        DecreasePenaltyACommand = new RelayCommand(_controller.DecreasePenaltyA);
-        IncreasePenaltyBCommand = new RelayCommand(_controller.IncreasePenaltyB);
-        DecreasePenaltyBCommand = new RelayCommand(_controller.DecreasePenaltyB);
-        ToggleGameClockCommand = new RelayCommand(_controller.ToggleGameClock);
-        StopGameClockCommand = new RelayCommand(_controller.StopGameClock);
-        AdvancePeriodOrSetCommand = new RelayCommand(_controller.AdvancePeriodOrSet);
-        ResetCommand = new RelayCommand(_controller.Reset);
-        SetShotClock24Command = new RelayCommand(_controller.SetShotClock24);
-        SetShotClock14Command = new RelayCommand(_controller.SetShotClock14);
-        ToggleShotClockCommand = new RelayCommand(_controller.ToggleShotClock);
+        IncreaseScoreACommand = new RelayCommand(() => _scoreboard.Execute(new ChangeScoreCommand(TeamSide.Home, 1)));
+        DecreaseScoreACommand = new RelayCommand(() => _scoreboard.Execute(new ChangeScoreCommand(TeamSide.Home, -1)));
+        IncreaseScoreBCommand = new RelayCommand(() => _scoreboard.Execute(new ChangeScoreCommand(TeamSide.Guest, 1)));
+        DecreaseScoreBCommand = new RelayCommand(() => _scoreboard.Execute(new ChangeScoreCommand(TeamSide.Guest, -1)));
+        IncreasePenaltyACommand = new RelayCommand(() => _scoreboard.Execute(new ChangeSecondaryCounterCommand(TeamSide.Home, 1)));
+        DecreasePenaltyACommand = new RelayCommand(() => _scoreboard.Execute(new ChangeSecondaryCounterCommand(TeamSide.Home, -1)));
+        IncreasePenaltyBCommand = new RelayCommand(() => _scoreboard.Execute(new ChangeSecondaryCounterCommand(TeamSide.Guest, 1)));
+        DecreasePenaltyBCommand = new RelayCommand(() => _scoreboard.Execute(new ChangeSecondaryCounterCommand(TeamSide.Guest, -1)));
+        ToggleGameClockCommand = new RelayCommand(() => _scoreboard.Execute(new ToggleGameClockCommand()));
+        StopGameClockCommand = new RelayCommand(() => _scoreboard.Execute(new StopGameClockCommand()));
+        AdvancePeriodOrSetCommand = new RelayCommand(() => _scoreboard.Execute(new AdvancePeriodOrSetCommand()));
+        ResetCommand = new RelayCommand(() => _scoreboard.Execute(new ResetScoreboardCommand()));
+        SetShotClock24Command = new RelayCommand(() => _scoreboard.Execute(new SetShotClockCommand(24)));
+        SetShotClock14Command = new RelayCommand(() => _scoreboard.Execute(new SetShotClockCommand(14)));
+        ToggleShotClockCommand = new RelayCommand(() => _scoreboard.Execute(new ToggleShotClockCommand()));
         RefreshPortsCommand = new RelayCommand(() => RefreshPorts(SelectedPort));
         TogglePortCommand = new RelayCommand(TogglePort);
         SyncTimeCommand = new RelayCommand(SyncTime);
         ApplyTimerPresetCommand = new RelayCommand(ApplyTimerPreset);
 
-        _controller.StateChanged += ControllerOnStateChanged;
-
-        _mainClockTimer.Tick += (_, _) => _controller.TickMainClock();
-        _mainSignalTimer.Tick += (_, _) => _controller.TickMainSignal();
-        _shotClockSignalTimer.Tick += (_, _) => _controller.TickShotClockSignal();
-        _displayRefreshTimer.Tick += (_, _) => _controller.RefreshDisplay();
-        _sendTimer.Tick += (_, _) => SendCurrentPacket();
+        _scoreboard.StateChanged += ScoreboardOnStateChanged;
+        _runtime.Faulted += RuntimeOnFaulted;
 
         ApplySettingsFromController();
-        RefreshPorts(_controller.Settings.SelectedPort);
+        RefreshPorts(_scoreboard.Settings.SelectedPort);
         UpdatePortState();
-        _controller.RefreshDisplay();
-
-        _mainClockTimer.Start();
-        _mainSignalTimer.Start();
-        _shotClockSignalTimer.Start();
-        _displayRefreshTimer.Start();
-        _sendTimer.Start();
+        RefreshScoreboardState(_scoreboard.State);
+        _runtime.Start();
     }
 
     public ObservableCollection<string> AvailablePorts { get; }
@@ -184,95 +149,16 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public ICommand ApplyTimerPresetCommand { get; }
 
-    public string AboutText =>
-        "Sports Scoreboard Modern\r\n\r\n" +
-        "WPF / MVVM variant of the legacy scoreboard controller from C:\\WORK\\final.\r\n\r\n" +
-        "Implemented behaviors:\r\n" +
-        "- basketball mode with score, period, fouls, timer, manual buzzer and 24/14 shot clock\r\n" +
-        "- volleyball mode with score and set progression\r\n" +
-        "- AT+GD game-state transmission\r\n" +
-        "- AT+ST device time synchronization\r\n" +
-        "- CRC16 and legacy byte remapping\r\n" +
-        "- persisted settings in settings.json\r\n\r\n" +
-        "Hardware note:\r\n" +
-        "The original Borland application controlled an RS-485 scoreboard controller directly. The protocol and state logic are preserved here, but final validation still needs to be done on the real hardware.";
-
-    public string ScoreAText
+    public ScoreboardState CurrentState
     {
-        get => _scoreAText;
-        private set => SetProperty(ref _scoreAText, value);
+        get => _currentState;
+        private set => SetProperty(ref _currentState, value);
     }
 
-    public string ScoreBText
+    public ScoreboardSnapshot CurrentSnapshot
     {
-        get => _scoreBText;
-        private set => SetProperty(ref _scoreBText, value);
-    }
-
-    public string PeriodText
-    {
-        get => _periodText;
-        private set => SetProperty(ref _periodText, value);
-    }
-
-    public string MainClockText
-    {
-        get => _mainClockText;
-        private set => SetProperty(ref _mainClockText, value);
-    }
-
-    public string PenaltyAText
-    {
-        get => _penaltyAText;
-        private set => SetProperty(ref _penaltyAText, value);
-    }
-
-    public string PenaltyBText
-    {
-        get => _penaltyBText;
-        private set => SetProperty(ref _penaltyBText, value);
-    }
-
-    public string PenaltyLabelText
-    {
-        get => _penaltyLabelText;
-        private set => SetProperty(ref _penaltyLabelText, value);
-    }
-
-    public string ShotClockSecondsText
-    {
-        get => _shotClockSecondsText;
-        private set => SetProperty(ref _shotClockSecondsText, value);
-    }
-
-    public string ShotClockTenthsText
-    {
-        get => _shotClockTenthsText;
-        private set => SetProperty(ref _shotClockTenthsText, value);
-    }
-
-    public string GameClockButtonText
-    {
-        get => _gameClockButtonText;
-        private set => SetProperty(ref _gameClockButtonText, value);
-    }
-
-    public string ShotClockButtonText
-    {
-        get => _shotClockButtonText;
-        private set => SetProperty(ref _shotClockButtonText, value);
-    }
-
-    public Brush MainSignalBrush
-    {
-        get => _mainSignalBrush;
-        private set => SetProperty(ref _mainSignalBrush, value);
-    }
-
-    public Brush ShotClockBrush
-    {
-        get => _shotClockBrush;
-        private set => SetProperty(ref _shotClockBrush, value);
+        get => _currentSnapshot;
+        private set => SetProperty(ref _currentSnapshot, value);
     }
 
     public string SelectedPort
@@ -282,45 +168,27 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             if (SetProperty(ref _selectedPort, value))
             {
-                _controller.Settings.SelectedPort = value ?? string.Empty;
+                _scoreboard.Settings.SelectedPort = value ?? string.Empty;
             }
         }
     }
 
-    public string PortButtonText
+    public bool IsConnected
     {
-        get => _portButtonText;
-        private set => SetProperty(ref _portButtonText, value);
+        get => _isConnected;
+        private set => SetProperty(ref _isConnected, value);
     }
 
-    public string PortStatusText
+    public string ConnectedPortName
     {
-        get => _portStatusText;
-        private set => SetProperty(ref _portStatusText, value);
+        get => _connectedPortName;
+        private set => SetProperty(ref _connectedPortName, value);
     }
 
-    public string PresetStatusText
+    public DateTime HostClock
     {
-        get => _presetStatusText;
-        private set => SetProperty(ref _presetStatusText, value);
-    }
-
-    public string PayloadStatusText
-    {
-        get => _payloadStatusText;
-        private set => SetProperty(ref _payloadStatusText, value);
-    }
-
-    public string PayloadPreviewText
-    {
-        get => _payloadPreviewText;
-        private set => SetProperty(ref _payloadPreviewText, value);
-    }
-
-    public string HostClockText
-    {
-        get => _hostClockText;
-        private set => SetProperty(ref _hostClockText, value);
+        get => _hostClock;
+        private set => SetProperty(ref _hostClock, value);
     }
 
     public string SystemMessageText
@@ -334,7 +202,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         get => _runningText;
         set
         {
-            var trimmed = (value ?? string.Empty);
+            var trimmed = value ?? string.Empty;
             if (trimmed.Length > 24)
             {
                 trimmed = trimmed[..24];
@@ -342,7 +210,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
             if (SetProperty(ref _runningText, trimmed) && !_suppressControllerSync)
             {
-                _controller.SetRunningText(trimmed);
+                _scoreboard.Execute(new SetRunningTextCommand(trimmed));
             }
         }
     }
@@ -354,7 +222,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             if (SetProperty(ref _runningTextEnabled, value) && !_suppressControllerSync)
             {
-                _controller.SetRunningTextEnabled(value);
+                _scoreboard.Execute(new SetRunningTextEnabledCommand(value));
             }
         }
     }
@@ -366,7 +234,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             if (SetProperty(ref _countFoulsToFive, value) && !_suppressControllerSync)
             {
-                _controller.SetCountFoulsToFive(value);
+                _scoreboard.Execute(new SetCountFoulsToFiveCommand(value));
             }
         }
     }
@@ -378,15 +246,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             if (SetProperty(ref _autoStartShotClock, value) && !_suppressControllerSync)
             {
-                _controller.SetAutoStartShotClock(value);
+                _scoreboard.Execute(new SetAutoStartShotClockCommand(value));
             }
         }
-    }
-
-    public bool IsBasketballMode
-    {
-        get => _isBasketballMode;
-        private set => SetProperty(ref _isBasketballMode, value);
     }
 
     public int MainSignalDurationSeconds
@@ -396,7 +258,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             if (SetProperty(ref _mainSignalDurationSeconds, value) && !_suppressControllerSync)
             {
-                _controller.SetMainSignalDurationSeconds(value);
+                _scoreboard.Execute(new SetMainSignalDurationSecondsCommand(value));
             }
         }
     }
@@ -408,7 +270,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             if (SetProperty(ref _shotClockSignalDurationTenths, value) && !_suppressControllerSync)
             {
-                _controller.SetShotClockSignalDurationTenths(value);
+                _scoreboard.Execute(new SetShotClockSignalDurationTenthsCommand(value));
             }
         }
     }
@@ -438,7 +300,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             if (SetProperty(ref _selectedGameMode, value) && !_suppressControllerSync && value is not null)
             {
-                _controller.SetGameMode(value.Value);
+                _scoreboard.Execute(new SetGameModeCommand(value.Value));
             }
         }
     }
@@ -450,7 +312,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             if (SetProperty(ref _selectedFontMode, value) && !_suppressControllerSync && value is not null)
             {
-                _controller.SetFontMode(value.Value);
+                _scoreboard.Execute(new SetFontModeCommand(value.Value));
             }
         }
     }
@@ -462,64 +324,63 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             if (SetProperty(ref _selectedTimerDirection, value) && !_suppressControllerSync && value is not null)
             {
-                _controller.SetTimerDirection(value.Value);
+                _scoreboard.Execute(new SetTimerDirectionCommand(value.Value));
             }
         }
     }
 
     public void StartManualSignal()
     {
-        _controller.StartManualSignal();
+        _scoreboard.Execute(new SetManualSignalCommand(true));
     }
 
     public void StopManualSignal()
     {
-        _controller.StopManualSignal();
+        _scoreboard.Execute(new SetManualSignalCommand(false));
     }
 
     public void Dispose()
     {
-        _mainClockTimer.Stop();
-        _mainSignalTimer.Stop();
-        _shotClockSignalTimer.Stop();
-        _displayRefreshTimer.Stop();
-        _sendTimer.Stop();
-
-        _controller.StateChanged -= ControllerOnStateChanged;
-        _settingsStore.Save(_controller.Settings);
-        _transport.Close();
+        _scoreboard.StateChanged -= ScoreboardOnStateChanged;
+        _runtime.Faulted -= RuntimeOnFaulted;
+        _runtime.Dispose();
+        _settingsStore.Save(_scoreboard.Settings);
+        _scoreboard.Dispose();
     }
 
-    private void ControllerOnStateChanged(object? sender, ScoreboardSnapshot snapshot)
+    private void ScoreboardOnStateChanged(object? sender, ScoreboardState state)
     {
-        ScoreAText = snapshot.ScoreAText;
-        ScoreBText = snapshot.ScoreBText;
-        PeriodText = snapshot.PeriodText;
-        MainClockText = snapshot.MainClockText;
-        PenaltyAText = snapshot.PenaltyAText;
-        PenaltyBText = snapshot.PenaltyBText;
-        PenaltyLabelText = snapshot.PenaltyLabelText;
-        ShotClockSecondsText = snapshot.ShotClockSecondsText;
-        ShotClockTenthsText = snapshot.ShotClockTenthsText;
-        GameClockButtonText = snapshot.GameClockActionText;
-        ShotClockButtonText = snapshot.ShotClockActionText;
-        MainSignalBrush = snapshot.IsMainSignalActive ? WarningBrush : IdleBrush;
-        ShotClockBrush = snapshot.IsShotClockRunning ? AccentBrush : IdleBrush;
-        IsBasketballMode = snapshot.GameMode == GameMode.Basketball;
+        if (!_dispatcher.CheckAccess())
+        {
+            _ = _dispatcher.InvokeAsync(() => ScoreboardOnStateChanged(sender, state));
+            return;
+        }
 
-        PresetStatusText = $"Preset: {snapshot.TimerPresetText}";
-        PayloadStatusText = $"Payload: {snapshot.PayloadText}";
-        PayloadPreviewText = $"AT+GD{snapshot.PayloadText}";
-        HostClockText = $"Host clock: {DateTime.Now:HH:mm:ss}";
+        RefreshScoreboardState(state);
+    }
 
-        ApplyPresetFields(snapshot.TimerPresetText);
+    private void RuntimeOnFaulted(object? sender, ScoreboardRuntimeFaultedEventArgs e)
+    {
+        if (!_dispatcher.CheckAccess())
+        {
+            _ = _dispatcher.InvokeAsync(() => RuntimeOnFaulted(sender, e));
+            return;
+        }
+
+        if (_scoreboard.IsConnected)
+        {
+            _scoreboard.Disconnect();
+            UpdatePortState();
+        }
+
+        SystemMessageText = e.Exception.Message;
     }
 
     private void ApplySettingsFromController()
     {
         _suppressControllerSync = true;
 
-        var settings = _controller.Settings;
+        var settings = _scoreboard.Settings;
 
         RunningText = settings.RunningText;
         RunningTextEnabled = settings.RunningTextEnabled;
@@ -536,6 +397,14 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _suppressControllerSync = false;
     }
 
+    private void RefreshScoreboardState(ScoreboardState state)
+    {
+        CurrentState = state;
+        CurrentSnapshot = _scoreboard.Snapshot;
+        HostClock = DateTime.Now;
+        ApplyPresetFields(CurrentSnapshot.TimerPresetText);
+    }
+
     private void ApplyPresetFields(string preset)
     {
         var parsed = ParsePreset(preset);
@@ -546,13 +415,13 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private void ApplyTimerPreset()
     {
-        _controller.SetTimerPreset(PresetMinutes, PresetSeconds, PresetTenths);
+        _scoreboard.Execute(new SetTimerPresetCommand(PresetMinutes, PresetSeconds, PresetTenths));
         SystemMessageText = $"Timer preset set to {PresetMinutes:00}:{PresetSeconds:00}.{PresetTenths}.";
     }
 
     private void RefreshPorts(string? preferredPort)
     {
-        var ports = _transport.GetAvailablePorts();
+        var ports = _scoreboard.GetAvailablePorts().ToArray();
         var selected = string.IsNullOrWhiteSpace(preferredPort) ? SelectedPort : preferredPort;
 
         AvailablePorts.Clear();
@@ -576,15 +445,15 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         try
         {
-            if (_transport.IsOpen)
+            if (_scoreboard.IsConnected)
             {
-                _transport.Close();
+                _scoreboard.Disconnect();
                 SystemMessageText = "COM port closed.";
             }
             else
             {
-                _transport.Open(SelectedPort);
-                _controller.Settings.SelectedPort = SelectedPort;
+                _scoreboard.Connect(SelectedPort);
+                _scoreboard.Settings.SelectedPort = SelectedPort;
                 SystemMessageText = $"COM port {SelectedPort} opened.";
             }
 
@@ -592,7 +461,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
         catch (Exception exception)
         {
-            _transport.Close();
+            _scoreboard.Disconnect();
             UpdatePortState();
             SystemMessageText = exception.Message;
         }
@@ -600,7 +469,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private void SyncTime()
     {
-        if (!_transport.IsOpen)
+        if (!_scoreboard.IsConnected)
         {
             SystemMessageText = "Open the COM port before syncing time.";
             return;
@@ -608,7 +477,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
         try
         {
-            _transport.Write(SerialProtocol.CreateTimeSyncPacket(DateTime.Now));
+            _scoreboard.SyncClock(DateTime.Now);
             SystemMessageText = "Device time sync packet sent.";
         }
         catch (Exception exception)
@@ -617,37 +486,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void SendCurrentPacket()
-    {
-        if (!_transport.IsOpen)
-        {
-            return;
-        }
-
-        try
-        {
-            _transport.Write(SerialProtocol.CreateGamePacket(_controller.Snapshot));
-        }
-        catch (Exception exception)
-        {
-            _transport.Close();
-            UpdatePortState();
-            SystemMessageText = exception.Message;
-        }
-    }
-
     private void UpdatePortState()
     {
-        if (_transport.IsOpen)
-        {
-            PortStatusText = $"Port: open ({_transport.PortName})";
-            PortButtonText = "Close Port";
-        }
-        else
-        {
-            PortStatusText = "Port: closed";
-            PortButtonText = "Open Port";
-        }
+        IsConnected = _scoreboard.IsConnected;
+        ConnectedPortName = _scoreboard.IsConnected ? _scoreboard.ConnectedPortName : string.Empty;
     }
 
     private static (int Minutes, int Seconds, int Tenths) ParsePreset(string preset)
@@ -677,12 +519,5 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
 
         return (Math.Clamp(minutes, 0, 59), Math.Clamp(seconds, 0, 59), Math.Clamp(tenths, 0, 9));
-    }
-
-    private static Brush CreateBrush(byte red, byte green, byte blue)
-    {
-        var brush = new SolidColorBrush(Color.FromRgb(red, green, blue));
-        brush.Freeze();
-        return brush;
     }
 }

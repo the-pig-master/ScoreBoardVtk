@@ -2,6 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:core="clr-namespace:ScoreBoardVtk.Core.Models;assembly=ScoreBoardVtk.Core"
+        xmlns:conv="clr-namespace:ScoreBoardVtk.Wpf.Converters"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Sports Scoreboard Modern"
@@ -11,6 +13,8 @@
         MinHeight="740"
         Background="#EEF3F7">
     <Window.Resources>
+        <conv:PortStatusTextConverter x:Key="PortStatusTextConverter" />
+
         <Style x:Key="CardBorderStyle" TargetType="Border">
             <Setter Property="Background" Value="#F8FAFC" />
             <Setter Property="BorderBrush" Value="#D8E0E7" />
@@ -130,6 +134,85 @@
             <Setter Property="CornerRadius" Value="14" />
             <Setter Property="Padding" Value="10,6" />
         </Style>
+
+        <Style x:Key="IndicatorEllipseStyle" TargetType="Ellipse">
+            <Setter Property="Fill" Value="#D1D7E0" />
+            <Setter Property="Stroke" Value="#677786" />
+            <Setter Property="StrokeThickness" Value="1" />
+        </Style>
+
+        <Style x:Key="MainSignalIndicatorStyle"
+               TargetType="Ellipse"
+               BasedOn="{StaticResource IndicatorEllipseStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentState.IsMainSignalActive}" Value="True">
+                    <Setter Property="Fill" Value="#E15C46" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ShotClockIndicatorStyle"
+               TargetType="Ellipse"
+               BasedOn="{StaticResource IndicatorEllipseStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentState.IsShotClockRunning}" Value="True">
+                    <Setter Property="Fill" Value="#009874" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="GameClockToggleButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource AccentDeskButtonStyle}">
+            <Setter Property="Content" Value="Start" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentState.IsGameClockRunning}" Value="True">
+                    <Setter Property="Content" Value="Stop" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ShotClockToggleButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource DeskButtonStyle}">
+            <Setter Property="Content" Value="Start" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentState.IsShotClockRunning}" Value="True">
+                    <Setter Property="Content" Value="Stop" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PortToggleButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Content" Value="Open Port" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                    <Setter Property="Content" Value="Close Port" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="BasketballOnlyGameDeskBorderStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource GameDeskBorderStyle}">
+            <Setter Property="IsEnabled" Value="False" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentState.GameMode}" Value="{x:Static core:GameMode.Basketball}">
+                    <Setter Property="IsEnabled" Value="True" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="BasketballOnlyCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="IsEnabled" Value="False" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentState.GameMode}" Value="{x:Static core:GameMode.Basketball}">
+                    <Setter Property="IsEnabled" Value="True" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -170,71 +253,11 @@
                                             <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
 
-                                        <Grid Grid.Row="0"
-                                              Margin="0,0,0,12">
+                                        <Grid Grid.Row="1"  >
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="1.25*" />
-                                                <ColumnDefinition Width="1*" />
-                                                <ColumnDefinition Width="1*" />
-                                                <ColumnDefinition Width="1.35*" />
-                                            </Grid.ColumnDefinitions>
-
-                                            <Border Grid.Column="0"
-                                                    Margin="0,0,8,0"
-                                                    Style="{StaticResource StatusChipStyle}">
-                                                <StackPanel Orientation="Horizontal"
-                                                            VerticalAlignment="Center">
-                                                    <Ellipse Width="14"
-                                                             Height="14"
-                                                             Margin="0,0,8,0"
-                                                             Fill="{Binding MainSignalBrush}"
-                                                             Stroke="#677786"
-                                                             StrokeThickness="1" />
-                                                    <TextBlock Text="MAIN SIGNAL"
-                                                               Foreground="#D5DDE5"
-                                                               FontSize="12"
-                                                               FontWeight="SemiBold" />
-                                                </StackPanel>
-                                            </Border>
-
-                                            <Border Grid.Column="1"
-                                                    Margin="0,0,8,0"
-                                                    Style="{StaticResource StatusChipStyle}">
-                                                <TextBlock Text="{Binding SelectedGameMode.Label, TargetNullValue=Basketball}"
-                                                           Foreground="#D5DDE5"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           HorizontalAlignment="Center" />
-                                            </Border>
-
-                                            <Border Grid.Column="2"
-                                                    Margin="0,0,8,0"
-                                                    Style="{StaticResource StatusChipStyle}">
-                                                <TextBlock Text="{Binding PresetStatusText}"
-                                                           Foreground="#D5DDE5"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           HorizontalAlignment="Center"
-                                                           TextTrimming="CharacterEllipsis" />
-                                            </Border>
-
-                                            <Border Grid.Column="3"
-                                                    Style="{StaticResource StatusChipStyle}">
-                                                <TextBlock Text="{Binding PortStatusText}"
-                                                           Foreground="#D5DDE5"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           HorizontalAlignment="Center"
-                                                           TextTrimming="CharacterEllipsis" />
-                                            </Border>
-                                        </Grid>
-
-                                        <Grid Grid.Row="1"
-                                              Margin="0,0,0,12">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="3.2*" />
-                                                <ColumnDefinition Width="2.35*" />
-                                                <ColumnDefinition Width="3.2*" />
+                                                <ColumnDefinition Width="400" />
+                                                <ColumnDefinition Width="400" />
+                                                <ColumnDefinition Width="400" />
                                             </Grid.ColumnDefinitions>
 
                                             <Border Grid.Column="0"
@@ -256,7 +279,7 @@
                                                     <Viewbox Grid.Row="1"
                                                              Stretch="Uniform"
                                                              Margin="0,8,0,4">
-                                                        <TextBlock Text="{Binding ScoreAText}"
+                                                        <TextBlock Text="{Binding CurrentSnapshot.ScoreAText}"
                                                                    Style="{StaticResource DisplayValueStyle}"
                                                                    FontSize="140"
                                                                    Foreground="#FF614B" />
@@ -268,11 +291,11 @@
                                                         </Grid.ColumnDefinitions>
 
                                                         <TextBlock Grid.Column="0"
-                                                                   Text="{Binding PenaltyLabelText}"
+                                                                   Text="{Binding CurrentSnapshot.PenaltyLabelText}"
                                                                    Style="{StaticResource DisplayLabelStyle}"
                                                                    VerticalAlignment="Center" />
                                                         <TextBlock Grid.Column="1"
-                                                                   Text="{Binding PenaltyAText}"
+                                                                   Text="{Binding CurrentSnapshot.PenaltyAText}"
                                                                    Style="{StaticResource DisplayValueStyle}"
                                                                    FontSize="38"
                                                                    Foreground="#A8FF7A"
@@ -282,7 +305,7 @@
                                             </Border>
 
                                             <Grid Grid.Column="1"
-                                                  Margin="0,0,10,0">
+                                                  Margin="0,0,10,0" Width="400" MaxWidth="400">
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
                                                     <RowDefinition Height="*" />
@@ -305,7 +328,7 @@
                                                         <StackPanel>
                                                             <TextBlock Text="PERIOD / SET"
                                                                        Style="{StaticResource DisplayLabelStyle}" />
-                                                            <TextBlock Text="{Binding PeriodText}"
+                                                            <TextBlock Text="{Binding CurrentSnapshot.PeriodText}"
                                                                        Style="{StaticResource DisplayValueStyle}"
                                                                        FontSize="54"
                                                                        Foreground="#A8FF7A"
@@ -321,9 +344,7 @@
                                                             <Ellipse Width="16"
                                                                      Height="16"
                                                                      Margin="0,6,0,0"
-                                                                     Fill="{Binding ShotClockBrush}"
-                                                                     Stroke="#677786"
-                                                                     StrokeThickness="1" />
+                                                                     Style="{StaticResource ShotClockIndicatorStyle}" />
                                                         </StackPanel>
                                                     </Grid>
                                                 </Border>
@@ -340,7 +361,7 @@
                                                                    HorizontalAlignment="Center" />
                                                         <Viewbox Stretch="Uniform"
                                                                  Margin="0,8,0,0">
-                                                            <TextBlock Text="{Binding MainClockText}"
+                                                            <TextBlock Text="{Binding CurrentSnapshot.MainClockText}"
                                                                        Style="{StaticResource DisplayValueStyle}"
                                                                        FontSize="90"
                                                                        Foreground="#FFD05A" />
@@ -370,11 +391,11 @@
                                                             <StackPanel Orientation="Horizontal"
                                                                         HorizontalAlignment="Center"
                                                                         Margin="0,6,0,0">
-                                                                <TextBlock Text="{Binding ShotClockSecondsText}"
+                                                                <TextBlock Text="{Binding CurrentSnapshot.ShotClockSecondsText}"
                                                                            Style="{StaticResource DisplayValueStyle}"
                                                                            FontSize="56"
                                                                            Foreground="#FFD05A" />
-                                                                <TextBlock Text="{Binding ShotClockTenthsText}"
+                                                                <TextBlock Text="{Binding CurrentSnapshot.ShotClockTenthsText}"
                                                                            Style="{StaticResource DisplayValueStyle}"
                                                                            FontSize="24"
                                                                            Foreground="#FFD05A"
@@ -400,9 +421,7 @@
                                                                 <StackPanel Margin="0,0,12,0">
                                                                     <Ellipse Width="18"
                                                                              Height="18"
-                                                                             Fill="{Binding MainSignalBrush}"
-                                                                             Stroke="#677786"
-                                                                             StrokeThickness="1" />
+                                                                             Style="{StaticResource MainSignalIndicatorStyle}" />
                                                                     <TextBlock Text="MAIN"
                                                                                Style="{StaticResource DisplayLabelStyle}"
                                                                                FontSize="11"
@@ -412,9 +431,7 @@
                                                                 <StackPanel>
                                                                     <Ellipse Width="18"
                                                                              Height="18"
-                                                                             Fill="{Binding ShotClockBrush}"
-                                                                             Stroke="#677786"
-                                                                             StrokeThickness="1" />
+                                                                             Style="{StaticResource ShotClockIndicatorStyle}" />
                                                                     <TextBlock Text="24"
                                                                                Style="{StaticResource DisplayLabelStyle}"
                                                                                FontSize="11"
@@ -446,7 +463,7 @@
                                                     <Viewbox Grid.Row="1"
                                                              Stretch="Uniform"
                                                              Margin="0,8,0,4">
-                                                        <TextBlock Text="{Binding ScoreBText}"
+                                                        <TextBlock Text="{Binding CurrentSnapshot.ScoreBText}"
                                                                    Style="{StaticResource DisplayValueStyle}"
                                                                    FontSize="140"
                                                                    Foreground="#FF614B" />
@@ -458,13 +475,13 @@
                                                         </Grid.ColumnDefinitions>
 
                                                         <TextBlock Grid.Column="0"
-                                                                   Text="{Binding PenaltyBText}"
+                                                                   Text="{Binding CurrentSnapshot.PenaltyBText}"
                                                                    Style="{StaticResource DisplayValueStyle}"
                                                                    FontSize="38"
                                                                    Foreground="#A8FF7A"
                                                                    Margin="0,0,12,0" />
                                                         <TextBlock Grid.Column="1"
-                                                                   Text="{Binding PenaltyLabelText}"
+                                                                   Text="{Binding CurrentSnapshot.PenaltyLabelText}"
                                                                    Style="{StaticResource DisplayLabelStyle}"
                                                                    HorizontalAlignment="Right"
                                                                    VerticalAlignment="Center" />
@@ -498,12 +515,6 @@
                                                            VerticalAlignment="Center"
                                                            TextTrimming="CharacterEllipsis"
                                                            Margin="10,0" />
-                                                <TextBlock Grid.Column="2"
-                                                           Text="{Binding SystemMessageText}"
-                                                           Style="{StaticResource DisplayLabelStyle}"
-                                                           HorizontalAlignment="Right"
-                                                           VerticalAlignment="Center"
-                                                           TextTrimming="CharacterEllipsis" />
                                             </Grid>
                                         </Border>
                                     </Grid>
@@ -582,7 +593,7 @@
                                         </Grid.ColumnDefinitions>
 
                                         <TextBlock Grid.Column="0"
-                                                   Text="{Binding PenaltyLabelText}"
+                                                   Text="{Binding CurrentSnapshot.PenaltyLabelText}"
                                                    Style="{StaticResource DisplayLabelStyle}"
                                                    Foreground="#5B6874"
                                                    VerticalAlignment="Center"
@@ -633,9 +644,8 @@
 
                                     <Button Grid.Row="1"
                                             Grid.Column="0"
-                                            Content="{Binding GameClockButtonText}"
                                             Command="{Binding ToggleGameClockCommand}"
-                                            Style="{StaticResource AccentDeskButtonStyle}"
+                                            Style="{StaticResource GameClockToggleButtonStyle}"
                                             Margin="0,0,10,10" />
                                     <Button Grid.Row="1"
                                             Grid.Column="1"
@@ -679,15 +689,11 @@
                                                        VerticalAlignment="Center" />
                                             <Ellipse Width="16"
                                                      Height="16"
-                                                     Fill="{Binding MainSignalBrush}"
-                                                     Stroke="#677786"
-                                                     StrokeThickness="1"
+                                                     Style="{StaticResource MainSignalIndicatorStyle}"
                                                      Margin="0,0,8,0" />
                                             <Ellipse Width="16"
                                                      Height="16"
-                                                     Fill="{Binding ShotClockBrush}"
-                                                     Stroke="#677786"
-                                                     StrokeThickness="1" />
+                                                     Style="{StaticResource ShotClockIndicatorStyle}" />
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -695,8 +701,7 @@
 
                             <Border Grid.Column="2"
                                     Margin="0,0,10,0"
-                                    Style="{StaticResource GameDeskBorderStyle}"
-                                    IsEnabled="{Binding IsBasketballMode}">
+                                    Style="{StaticResource BasketballOnlyGameDeskBorderStyle}">
                                 <StackPanel>
                                     <TextBlock Text="Shot Clock Desk"
                                                Foreground="#22303A"
@@ -722,42 +727,10 @@
                                                 Margin="0,0,0,10" />
                                     </Grid>
 
-                                    <Button Content="{Binding ShotClockButtonText}"
-                                            Command="{Binding ToggleShotClockCommand}"
-                                            Style="{StaticResource DeskButtonStyle}" />
+                                    <Button Command="{Binding ToggleShotClockCommand}"
+                                            Style="{StaticResource ShotClockToggleButtonStyle}" />
 
-                                    <Border Background="#111821"
-                                            BorderBrush="#2D3944"
-                                            BorderThickness="1"
-                                            CornerRadius="14"
-                                            Padding="12,10"
-                                            Margin="0,4,0,0">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-
-                                            <StackPanel>
-                                                <TextBlock Text="Current value"
-                                                           Style="{StaticResource DisplayLabelStyle}" />
-                                                <TextBlock Text="{Binding ShotClockSecondsText}"
-                                                           Style="{StaticResource DisplayValueStyle}"
-                                                           FontSize="34"
-                                                           Foreground="#FFD05A"
-                                                           HorizontalAlignment="Left" />
-                                            </StackPanel>
-
-                                            <Ellipse Grid.Column="1"
-                                                     Width="18"
-                                                     Height="18"
-                                                     Fill="{Binding ShotClockBrush}"
-                                                     Stroke="#677786"
-                                                     StrokeThickness="1"
-                                                     VerticalAlignment="Center"
-                                                     Margin="14,0,0,0" />
-                                        </Grid>
-                                    </Border>
+                                   
                                 </StackPanel>
                             </Border>
 
@@ -815,7 +788,7 @@
                                         </Grid.ColumnDefinitions>
 
                                         <TextBlock Grid.Column="0"
-                                                   Text="{Binding PenaltyLabelText}"
+                                                   Text="{Binding CurrentSnapshot.PenaltyLabelText}"
                                                    Style="{StaticResource DisplayLabelStyle}"
                                                    Foreground="#5B6874"
                                                    VerticalAlignment="Center"
@@ -878,56 +851,7 @@
                                          BorderBrush="#CDD7E0"
                                          BorderThickness="1"
                                          VerticalContentAlignment="Center" />
-
-                                <Border Grid.Column="2"
-                                        Background="#111821"
-                                        BorderBrush="#2D3944"
-                                        BorderThickness="1"
-                                        CornerRadius="16"
-                                        Padding="14,10">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding PayloadStatusText}"
-                                                       Foreground="#DDE6ED"
-                                                       FontSize="13"
-                                                       FontWeight="SemiBold"
-                                                       TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding SystemMessageText}"
-                                                       Style="{StaticResource DisplayLabelStyle}"
-                                                       Margin="0,6,0,0"
-                                                       TextTrimming="CharacterEllipsis" />
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="1"
-                                                    Margin="12,0,0,0"
-                                                    VerticalAlignment="Center">
-                                            <TextBlock Text="MAIN"
-                                                       Style="{StaticResource DisplayLabelStyle}"
-                                                       HorizontalAlignment="Center" />
-                                            <Ellipse Width="18"
-                                                     Height="18"
-                                                     Margin="0,6,0,10"
-                                                     Fill="{Binding MainSignalBrush}"
-                                                     Stroke="#677786"
-                                                     StrokeThickness="1" />
-                                            <TextBlock Text="24"
-                                                       Style="{StaticResource DisplayLabelStyle}"
-                                                       HorizontalAlignment="Center" />
-                                            <Ellipse Width="18"
-                                                     Height="18"
-                                                     Margin="0,6,0,0"
-                                                     Fill="{Binding ShotClockBrush}"
-                                                     Stroke="#677786"
-                                                     StrokeThickness="1" />
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-                            </Grid>
+                        </Grid>
                         </Border>
                     </Grid>
                
@@ -976,13 +900,12 @@
                                         Margin="10,0,10,10" />
                                 <Button Grid.Row="0"
                                         Grid.Column="3"
-                                        Content="{Binding PortButtonText}"
                                         Command="{Binding TogglePortCommand}"
-                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Style="{StaticResource PortToggleButtonStyle}"
                                         Margin="0,0,10,10" />
                                 <TextBlock Grid.Row="0"
                                            Grid.Column="4"
-                                           Text="{Binding HostClockText}"
+                                           Text="{Binding HostClock, StringFormat=Host clock: {0:HH:mm:ss}}"
                                            HorizontalAlignment="Right"
                                            VerticalAlignment="Center"
                                            FontSize="15"
@@ -1000,14 +923,6 @@
                                         Command="{Binding SyncTimeCommand}"
                                         Style="{StaticResource PrimaryButtonStyle}"
                                         Margin="0,0,0,10" />
-                                <TextBlock Grid.Row="1"
-                                           Grid.Column="2"
-                                           Grid.ColumnSpan="3"
-                                           Text="{Binding SystemMessageText}"
-                                           TextWrapping="Wrap"
-                                           VerticalAlignment="Center"
-                                           Foreground="#586069"
-                                           Margin="12,0,0,8" />
                             </Grid>
                         </Border>
 
@@ -1127,7 +1042,7 @@
                                           VerticalAlignment="Center"
                                           FontSize="14"
                                           FontWeight="SemiBold"
-                                          IsEnabled="{Binding IsBasketballMode}" />
+                                          Style="{StaticResource BasketballOnlyCheckBoxStyle}" />
                                 <CheckBox Grid.Row="2"
                                           Grid.Column="1"
                                           Grid.ColumnSpan="2"
@@ -1136,7 +1051,7 @@
                                           VerticalAlignment="Center"
                                           FontSize="14"
                                           FontWeight="SemiBold"
-                                          IsEnabled="{Binding IsBasketballMode}" />
+                                          Style="{StaticResource BasketballOnlyCheckBoxStyle}" />
                             </Grid>
                         </Border>
 
@@ -1154,7 +1069,7 @@
                                            FontWeight="SemiBold"
                                            Margin="0,0,0,10" />
                                 <TextBox Grid.Row="1"
-                                         Text="{Binding PayloadPreviewText, Mode=OneWay}"
+                                         Text="{Binding CurrentSnapshot.PayloadText, Mode=OneWay, StringFormat=AT+GD{0}}"
                                          IsReadOnly="True"
                                          TextWrapping="Wrap"
                                          AcceptsReturn="True"
@@ -1168,52 +1083,39 @@
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="About">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <Border Margin="20"
-                            Style="{StaticResource CardBorderStyle}">
-                        <TextBlock Text="{Binding AboutText}"
-                                   TextWrapping="Wrap"
-                                   FontSize="15"
-                                   Foreground="#24303A" />
-                    </Border>
-                </ScrollViewer>
-            </TabItem>
         </TabControl>
 
-        <Border Grid.Row="1"
-                Background="#10161D"
-                BorderBrush="#2A333C"
-                BorderThickness="0,1,0,0"
-                Padding="16,10">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="230" />
-                    <ColumnDefinition Width="200" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="320" />
-                </Grid.ColumnDefinitions>
+        <StatusBar Grid.Row="1">
+            <StatusBarItem Width="230">
+                <TextBlock VerticalAlignment="Center">
+                    <TextBlock.Text>
+                        <MultiBinding Converter="{StaticResource PortStatusTextConverter}">
+                            <Binding Path="IsConnected" />
+                            <Binding Path="ConnectedPortName" />
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+            </StatusBarItem>
 
-                <TextBlock Grid.Column="0"
-                           Text="{Binding PortStatusText}"
-                           Foreground="#D7E0E8"
+            <StatusBarItem Width="200">
+                <TextBlock Text="{Binding CurrentSnapshot.TimerPresetText, StringFormat=Preset: {0}}"
                            VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1"
-                           Text="{Binding PresetStatusText}"
-                           Foreground="#D7E0E8"
-                           VerticalAlignment="Center" />
-                <TextBlock Grid.Column="2"
-                           Text="{Binding PayloadStatusText}"
-                           Foreground="#D7E0E8"
+            </StatusBarItem>
+
+            <StatusBarItem HorizontalAlignment="Stretch">
+                <TextBlock Text="{Binding CurrentSnapshot.PayloadText, StringFormat=Payload: {0}}"
                            VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis" />
-                <TextBlock Grid.Column="3"
-                           Text="{Binding SystemMessageText}"
-                           Foreground="#9DA9B4"
+            </StatusBarItem>
+
+            <StatusBarItem Width="320"
+                           HorizontalContentAlignment="Right">
+                <TextBlock Text="{Binding SystemMessageText}"
                            VerticalAlignment="Center"
                            TextAlignment="Right"
                            TextTrimming="CharacterEllipsis" />
-            </Grid>
-        </Border>
+            </StatusBarItem>
+        </StatusBar>
+        
     </Grid>
 </Window>

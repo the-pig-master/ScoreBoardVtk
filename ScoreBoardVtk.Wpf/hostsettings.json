@@ -1,0 +1,28 @@
+{
+  // Boot profile used to select the transport implementation.
+  // "Hardware"    = only real serial ports
+  // "Mock"        = only the built-in MOCK port
+  // "Development" = real serial ports + MOCK port
+  "profile": "Development",
+
+  // File name for persisted game settings.
+  // This file is resolved relative to hostsettings.json.
+  "gameSettingsFileName": "settings.json",
+
+  "runtime": {
+    // Main game clock tick interval in milliseconds.
+    "mainClockIntervalMilliseconds": 100,
+
+    // Main buzzer countdown tick interval in milliseconds.
+    "mainSignalIntervalMilliseconds": 1000,
+
+    // Shot-clock buzzer countdown tick interval in milliseconds.
+    "shotClockSignalIntervalMilliseconds": 100,
+
+    // UI/display refresh interval in milliseconds.
+    "displayRefreshIntervalMilliseconds": 1000,
+
+    // Packet publish interval in milliseconds.
+    "publishIntervalMilliseconds": 50
+  }
+}
