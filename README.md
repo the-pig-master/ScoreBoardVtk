@@ -1,14 +1,14 @@
-# SportsScoreboardModern
+# ScoreBoardVtk
 
 Modern C# migration of the legacy scoreboard controller from `C:\WORK\final`.
 
 ## Projects
 
-- `SportsScoreboardModern.Core`
+- `ScoreBoardVtk.Core`
   - shared models, state machine, serial protocol, settings store, COM transport
-- `SportsScoreboardModern.App`
+- `ScoreBoardVtk.App`
   - WinForms UI
-- `SportsScoreboardModern.Wpf`
+- `ScoreBoardVtk.Wpf`
   - WPF UI using MVVM
 
 ## What is implemented
@@ -34,7 +34,7 @@ Modern C# migration of the legacy scoreboard controller from `C:\WORK\final`.
 
 Open:
 
-- `C:\WORK\Repositories\SportsScoreboardModern\SportsScoreboardModern.sln`
+- `C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.sln`
 
 Target framework:
 
