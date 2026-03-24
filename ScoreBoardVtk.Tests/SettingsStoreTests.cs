@@ -21,7 +21,11 @@ public sealed class SettingsStoreTests
               // Active game mode.
               "gameMode": "Volleyball",
               "gameTimePreset": "08:00",
-              "overtimeTimePreset": "03:00"
+              "overtimeTimePreset": "03:00",
+              "keyboardBindings": {
+                "toggleGameClockKey": "Space",
+                "increaseHomeScoreKey": "F1"
+              }
             }
             """);
 
@@ -32,6 +36,8 @@ public sealed class SettingsStoreTests
             Assert.Equal(GameMode.Volleyball, settings.GameMode);
             Assert.Equal("08:00", settings.GameTimePreset);
             Assert.Equal("03:00", settings.OvertimeTimePreset);
+            Assert.Equal("Space", settings.KeyboardBindings.ToggleGameClockKey);
+            Assert.Equal("F1", settings.KeyboardBindings.IncreaseHomeScoreKey);
         }
         finally
         {
@@ -61,6 +67,7 @@ public sealed class SettingsStoreTests
             Assert.Contains("// Serial port used by the scoreboard application.", json);
             Assert.Contains("\"selectedPort\": \"COM3\"", json);
             Assert.Contains("\"overtimeTimePreset\": \"05:00\"", json);
+            Assert.Contains("\"keyboardBindings\": {", json);
             Assert.Contains("\"runningText\": \"TEST\"", json);
         }
         finally

@@ -192,13 +192,13 @@
                             <TextBlock Text="Home Console" Style="{StaticResource PanelHeaderTextStyle}" />
                             <TextBlock Text="Score" Style="{StaticResource FieldCaptionStyle}" Margin="0,16,0,8" />
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="+1" Command="{Binding IncreaseScoreACommand}" Style="{StaticResource AccentDeskButtonStyle}" />
-                                <Button Content="-1" Command="{Binding DecreaseScoreACommand}" Style="{StaticResource DeskButtonStyle}" Margin="12,0,0,0" />
+                                <Button Content="{Binding IncreaseScoreAButtonText}" Command="{Binding IncreaseScoreACommand}" Style="{StaticResource AccentDeskButtonStyle}" />
+                                <Button Content="{Binding DecreaseScoreAButtonText}" Command="{Binding DecreaseScoreACommand}" Style="{StaticResource DeskButtonStyle}" Margin="12,0,0,0" />
                             </StackPanel>
                             <TextBlock Text="{Binding CurrentSnapshot.PenaltyLabelText}" Style="{StaticResource FieldCaptionStyle}" Margin="0,18,0,8" />
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="+1" Command="{Binding IncreasePenaltyACommand}" Style="{StaticResource DeskButtonStyle}" />
-                                <Button Content="-1" Command="{Binding DecreasePenaltyACommand}" Style="{StaticResource DeskButtonStyle}" Margin="12,0,0,0" />
+                                <Button Content="{Binding IncreasePenaltyAButtonText}" Command="{Binding IncreasePenaltyACommand}" Style="{StaticResource DeskButtonStyle}" />
+                                <Button Content="{Binding DecreasePenaltyAButtonText}" Command="{Binding DecreasePenaltyACommand}" Style="{StaticResource DeskButtonStyle}" Margin="12,0,0,0" />
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -207,7 +207,7 @@
                         <StackPanel>
                             <TextBlock Text="Match Desk" Style="{StaticResource PanelHeaderTextStyle}" />
                             <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Command="{Binding ToggleGameClockCommand}" Style="{StaticResource GameClockToggleButtonStyle}" />
+                                <Button Content="{Binding GameClockToggleButtonText}" Command="{Binding ToggleGameClockCommand}" Style="{StaticResource GameClockToggleButtonStyle}" />
                                 <Button Content="Signal"
                                         Margin="10 0 0 0"
                                         Style="{StaticResource WarningDeskButtonStyle}"
@@ -244,7 +244,7 @@
                                 <Button Content="24" Command="{Binding SetShotClock24Command}" Style="{StaticResource WarningDeskButtonStyle}" />
                                 <Button Content="14" Command="{Binding SetShotClock14Command}" Style="{StaticResource WarningDeskButtonStyle}" Margin="12,0,0,0" />
                             </StackPanel>
-                            <Button Command="{Binding ToggleShotClockCommand}" Style="{StaticResource ShotClockToggleButtonStyle}" Margin="0,12,0,0" />
+                            <Button Content="{Binding ShotClockToggleButtonText}" Command="{Binding ToggleShotClockCommand}" Style="{StaticResource ShotClockToggleButtonStyle}" Margin="0,12,0,0" />
                         </StackPanel>
                     </Border>
 
@@ -253,13 +253,13 @@
                             <TextBlock Text="Guest Console" Style="{StaticResource PanelHeaderTextStyle}" />
                             <TextBlock Text="Score" Style="{StaticResource FieldCaptionStyle}" Margin="0,16,0,8" />
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="+1" Command="{Binding IncreaseScoreBCommand}" Style="{StaticResource AccentDeskButtonStyle}" />
-                                <Button Content="-1" Command="{Binding DecreaseScoreBCommand}" Style="{StaticResource DeskButtonStyle}" Margin="12,0,0,0" />
+                                <Button Content="{Binding IncreaseScoreBButtonText}" Command="{Binding IncreaseScoreBCommand}" Style="{StaticResource AccentDeskButtonStyle}" />
+                                <Button Content="{Binding DecreaseScoreBButtonText}" Command="{Binding DecreaseScoreBCommand}" Style="{StaticResource DeskButtonStyle}" Margin="12,0,0,0" />
                             </StackPanel>
                             <TextBlock Text="{Binding CurrentSnapshot.PenaltyLabelText}" Style="{StaticResource FieldCaptionStyle}" Margin="0,18,0,8" />
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="+1" Command="{Binding IncreasePenaltyBCommand}" Style="{StaticResource DeskButtonStyle}" />
-                                <Button Content="-1" Command="{Binding DecreasePenaltyBCommand}" Style="{StaticResource DeskButtonStyle}" Margin="12,0,0,0" />
+                                <Button Content="{Binding IncreasePenaltyBButtonText}" Command="{Binding IncreasePenaltyBCommand}" Style="{StaticResource DeskButtonStyle}" />
+                                <Button Content="{Binding DecreasePenaltyBButtonText}" Command="{Binding DecreasePenaltyBCommand}" Style="{StaticResource DeskButtonStyle}" Margin="12,0,0,0" />
                             </StackPanel>
                         </StackPanel>
                     </Border>

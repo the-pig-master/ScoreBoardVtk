@@ -11,6 +11,32 @@
   // Supported formats: "mm:ss" or "mm:ss.t"
   "overtimeTimePreset": "05:00",
 
+  // Keyboard shortcuts for the Game screen.
+  // Leave a value empty to disable that shortcut.
+  "keyboardBindings": {
+    // Start or stop the main game clock.
+    "toggleGameClockKey": "",
+
+    // Start or stop the 24-second shot clock.
+    "toggleShotClockKey": "",
+
+    // Add or remove one point from the home team.
+    "increaseHomeScoreKey": "",
+    "decreaseHomeScoreKey": "",
+
+    // Add or remove one point from the guest team.
+    "increaseGuestScoreKey": "",
+    "decreaseGuestScoreKey": "",
+
+    // Add or remove one foul from the home team.
+    "increaseHomeFoulsKey": "",
+    "decreaseHomeFoulsKey": "",
+
+    // Add or remove one foul from the guest team.
+    "increaseGuestFoulsKey": "",
+    "decreaseGuestFoulsKey": ""
+  },
+
   // Basketball foul display mode.
   // true  = wrap counter at 5 fouls
   // false = wrap counter at 9 fouls

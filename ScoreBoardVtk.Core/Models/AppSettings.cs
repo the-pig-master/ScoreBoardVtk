@@ -8,6 +8,8 @@ public sealed class AppSettings
 
     public string OvertimeTimePreset { get; set; } = "05:00";
 
+    public KeyboardBindingsSettings KeyboardBindings { get; set; } = new();
+
     public bool CountFoulsToFive { get; set; } = true;
 
     public TimerDirection TimerDirection { get; set; } = TimerDirection.Down;

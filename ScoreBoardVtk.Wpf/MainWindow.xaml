@@ -9,14 +9,15 @@
         Width="1440"
         Height="900"
         MinWidth="960"
-        MinHeight="600">
+        MinHeight="600"
+        PreviewKeyDown="Window_OnPreviewKeyDown">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TabControl Grid.Row="0" Margin="16,16,16,0" FontSize="16">
+        <TabControl x:Name="MainTabs" Grid.Row="0" Margin="16,16,16,0" FontSize="16">
             <TabItem Header="Game">
                 <views:GameTabView DataContext="{Binding GameTab}" />
             </TabItem>

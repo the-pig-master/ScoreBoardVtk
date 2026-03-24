@@ -32,7 +32,9 @@ public sealed class SettingsStore
         try
         {
             var json = JsonConfigurationText.Normalize(File.ReadAllText(_settingsPath));
-            return JsonSerializer.Deserialize<AppSettings>(json, SerializerOptions) ?? new AppSettings();
+            var settings = JsonSerializer.Deserialize<AppSettings>(json, SerializerOptions) ?? new AppSettings();
+            settings.KeyboardBindings ??= new KeyboardBindingsSettings();
+            return settings;
         }
         catch
         {
@@ -68,6 +70,32 @@ public sealed class SettingsStore
           // Basketball overtime timer preset.
           // Supported formats: "mm:ss" or "mm:ss.t"
           "overtimeTimePreset": {{ToJson(settings.OvertimeTimePreset)}},
+
+          // Keyboard shortcuts for the Game screen.
+          // Leave a value empty to disable that shortcut.
+          "keyboardBindings": {
+            // Start or stop the main game clock.
+            "toggleGameClockKey": {{ToJson(settings.KeyboardBindings.ToggleGameClockKey)}},
+
+            // Start or stop the 24-second shot clock.
+            "toggleShotClockKey": {{ToJson(settings.KeyboardBindings.ToggleShotClockKey)}},
+
+            // Add or remove one point from the home team.
+            "increaseHomeScoreKey": {{ToJson(settings.KeyboardBindings.IncreaseHomeScoreKey)}},
+            "decreaseHomeScoreKey": {{ToJson(settings.KeyboardBindings.DecreaseHomeScoreKey)}},
+
+            // Add or remove one point from the guest team.
+            "increaseGuestScoreKey": {{ToJson(settings.KeyboardBindings.IncreaseGuestScoreKey)}},
+            "decreaseGuestScoreKey": {{ToJson(settings.KeyboardBindings.DecreaseGuestScoreKey)}},
+
+            // Add or remove one foul from the home team.
+            "increaseHomeFoulsKey": {{ToJson(settings.KeyboardBindings.IncreaseHomeFoulsKey)}},
+            "decreaseHomeFoulsKey": {{ToJson(settings.KeyboardBindings.DecreaseHomeFoulsKey)}},
+
+            // Add or remove one foul from the guest team.
+            "increaseGuestFoulsKey": {{ToJson(settings.KeyboardBindings.IncreaseGuestFoulsKey)}},
+            "decreaseGuestFoulsKey": {{ToJson(settings.KeyboardBindings.DecreaseGuestFoulsKey)}}
+          },
 
           // Basketball foul display mode.
           // true  = wrap counter at 5 fouls

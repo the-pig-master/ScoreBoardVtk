@@ -170,21 +170,64 @@
         </Border>
 
         <Border Grid.Row="2" Margin="0,20,0,0" Style="{StaticResource CardBorderStyle}">
-            <StackPanel>
-                <TextBlock Text="Payload Preview"
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Keyboard Shortcuts"
                            Style="{StaticResource PayloadHeaderTextStyle}"
+                           Margin="0,0,0,8" />
+
+                <TextBlock Grid.Row="1"
+                           Text="{Binding KeyboardShortcutCaptureText}"
+                           Style="{StaticResource FieldCaptionStyle}"
                            Margin="0,0,0,12" />
-                <TextBox Height="350"
-                         Text="{Binding CurrentSnapshot.PayloadText, Mode=OneWay, StringFormat=AT+GD{0}}"
-                         IsReadOnly="True"
-                         TextWrapping="Wrap"
-                         AcceptsReturn="True"
-                         VerticalScrollBarVisibility="Auto"
-                         HorizontalScrollBarVisibility="Disabled"
-                         FontFamily="Consolas"
-                         FontSize="14"
-                         Padding="12" />
-            </StackPanel>
+
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding KeyboardShortcutBindings}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="320" />
+                                        <ColumnDefinition Width="180" />
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition Width="120" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding Label}"
+                                               VerticalAlignment="Center"
+                                               FontSize="14"
+                                               FontWeight="SemiBold" />
+
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding AssignedKeyDisplay}"
+                                               VerticalAlignment="Center"
+                                               FontFamily="Consolas"
+                                               FontSize="14" />
+
+                                    <Button Grid.Column="2"
+                                            Content="{Binding AssignButtonText}"
+                                            Command="{Binding BeginAssignCommand}"
+                                            Width="120"
+                                            Style="{StaticResource DeskButtonStyle}" />
+
+                                    <Button Grid.Column="3"
+                                            Content="Clear"
+                                            Command="{Binding ClearCommand}"
+                                            Width="100"
+                                            Style="{StaticResource DeskButtonStyle}"
+                                            Margin="12,0,0,0" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

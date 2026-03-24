@@ -14,6 +14,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     private readonly IScoreboardApi _scoreboard;
     private readonly IScoreboardRuntime _runtime;
     private readonly Dispatcher _dispatcher;
+    private readonly KeyboardBindingsSettings _draftKeyboardBindings = new();
 
     private bool _suppressControllerSync;
     private ScoreboardState _currentState = null!;
@@ -35,6 +36,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     private int _overtimePresetMinutes = 5;
     private int _overtimePresetSeconds;
     private int _overtimePresetTenths;
+    private KeyboardShortcutAction? _pendingKeyboardShortcutAction;
     private OptionItem<GameMode>? _selectedGameMode;
     private OptionItem<FontMode>? _selectedFontMode;
     private OptionItem<TimerDirection>? _selectedTimerDirection;
@@ -65,6 +67,19 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         PresetMinuteOptions = Enumerable.Range(0, 60).ToArray();
         PresetSecondOptions = Enumerable.Range(0, 60).ToArray();
         PresetTenthsOptions = Enumerable.Range(0, 10).ToArray();
+        KeyboardShortcutBindings =
+        [
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.ToggleGameClock, "Game clock start / stop", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.ToggleShotClock, "Shot clock start / stop", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseHomeScore, "Home score +1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseHomeScore, "Home score -1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseGuestScore, "Guest score +1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseGuestScore, "Guest score -1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseHomeFouls, "Home fouls +1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseHomeFouls, "Home fouls -1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseGuestFouls, "Guest fouls +1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseGuestFouls, "Guest fouls -1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+        ];
 
         IncreaseScoreACommand = new RelayCommand(() => _scoreboard.Execute(new ChangeScoreCommand(TeamSide.Home, 1)));
         DecreaseScoreACommand = new RelayCommand(() => _scoreboard.Execute(new ChangeScoreCommand(TeamSide.Home, -1)));
@@ -113,6 +128,8 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     public IReadOnlyList<int> SignalDurationOptions { get; } = Enumerable.Range(0, 10).ToArray();
 
     public IReadOnlyList<int> ShotClockSignalOptions { get; } = [5, 10, 15, 20, 25, 30];
+
+    public ObservableCollection<KeyboardShortcutBindingViewModel> KeyboardShortcutBindings { get; }
 
     public ICommand IncreaseScoreACommand { get; }
 
@@ -203,9 +220,37 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         }
     }
 
+    public string KeyboardShortcutCaptureText => _pendingKeyboardShortcutAction is null
+        ? "Click Assign and press a key. Use Clear to disable that shortcut."
+        : $"Press a key for {GetKeyboardShortcutLabel(_pendingKeyboardShortcutAction.Value)}. Press Esc to clear.";
+
     public bool CanResetTimers => _currentState is not null &&
                                   !_currentState.IsGameClockRunning &&
                                   !_currentState.IsShotClockRunning;
+
+    public string GameClockToggleButtonText => BuildButtonText(
+        _currentState is not null && _currentState.IsGameClockRunning ? "Stop" : "Start",
+        GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.ToggleGameClock));
+
+    public string ShotClockToggleButtonText => BuildButtonText(
+        _currentState is not null && _currentState.IsShotClockRunning ? "Stop" : "Start",
+        GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.ToggleShotClock));
+
+    public string IncreaseScoreAButtonText => BuildButtonText("+1", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.IncreaseHomeScore));
+
+    public string DecreaseScoreAButtonText => BuildButtonText("-1", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.DecreaseHomeScore));
+
+    public string IncreaseScoreBButtonText => BuildButtonText("+1", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.IncreaseGuestScore));
+
+    public string DecreaseScoreBButtonText => BuildButtonText("-1", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.DecreaseGuestScore));
+
+    public string IncreasePenaltyAButtonText => BuildButtonText("+1", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.IncreaseHomeFouls));
+
+    public string DecreasePenaltyAButtonText => BuildButtonText("-1", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.DecreaseHomeFouls));
+
+    public string IncreasePenaltyBButtonText => BuildButtonText("+1", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.IncreaseGuestFouls));
+
+    public string DecreasePenaltyBButtonText => BuildButtonText("-1", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.DecreaseGuestFouls));
 
     public string RunningText
     {
@@ -358,6 +403,54 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         SystemMessageText = "Values applied.";
     }
 
+    public bool TryHandleKeyboardShortcutCapture(Key key)
+    {
+        if (_pendingKeyboardShortcutAction is null)
+        {
+            return false;
+        }
+
+        if (key == Key.Escape)
+        {
+            SetDraftKeyboardShortcut(_pendingKeyboardShortcutAction.Value, string.Empty);
+            SystemMessageText = $"{GetKeyboardShortcutLabel(_pendingKeyboardShortcutAction.Value)} shortcut cleared.";
+        }
+        else if (!IsAssignableKeyboardShortcut(key))
+        {
+            SystemMessageText = "This key cannot be assigned as a shortcut.";
+            return true;
+        }
+        else
+        {
+            RemoveDraftKeyboardShortcut(key, _pendingKeyboardShortcutAction.Value);
+            SetDraftKeyboardShortcut(_pendingKeyboardShortcutAction.Value, key.ToString());
+            SystemMessageText = $"{GetKeyboardShortcutLabel(_pendingKeyboardShortcutAction.Value)} shortcut set to {FormatKeyDisplay(key)}.";
+        }
+
+        _pendingKeyboardShortcutAction = null;
+        RefreshKeyboardShortcutBindings();
+        return true;
+    }
+
+    public bool TryExecuteKeyboardShortcut(Key key)
+    {
+        if (key == Key.None || Keyboard.Modifiers != ModifierKeys.None)
+        {
+            return false;
+        }
+
+        foreach (KeyboardShortcutAction action in Enum.GetValues(typeof(KeyboardShortcutAction)))
+        {
+            if (TryGetAssignedKey(GetAppliedKeyboardShortcutValue(action), out var assignedKey) && assignedKey == key)
+            {
+                ExecuteKeyboardShortcut(action);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public void Dispose()
     {
         _scoreboard.StateChanged -= ScoreboardOnStateChanged;
@@ -413,6 +506,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         SelectedTimerDirection = TimerDirections.First(option => option.Value == settings.TimerDirection);
         ApplyMainPresetFields(settings.GameTimePreset);
         ApplyOvertimePresetFields(settings.OvertimeTimePreset);
+        ApplyKeyboardShortcutDraft(settings.KeyboardBindings);
 
         _suppressControllerSync = false;
     }
@@ -423,6 +517,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(CanResetTimers));
         CurrentSnapshot = _scoreboard.Snapshot;
         HostClock = DateTime.Now;
+        NotifyKeyboardShortcutButtonTextChanged();
     }
 
     private void ApplyMainPresetFields(string preset)
@@ -470,6 +565,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         _scoreboard.Execute(new SetShotClockSignalDurationTenthsCommand(ShotClockSignalDurationTenths));
         _scoreboard.Execute(new SetTimerPresetCommand(PresetMinutes, PresetSeconds, PresetTenths));
         _scoreboard.Execute(new SetOvertimeTimerPresetCommand(OvertimePresetMinutes, OvertimePresetSeconds, OvertimePresetTenths));
+        _scoreboard.Settings.KeyboardBindings = CloneKeyboardBindings(_draftKeyboardBindings);
 
         ApplySettingsFromController();
 
@@ -483,6 +579,26 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         SystemMessageText = CurrentState.IsGameClockRunning && timerSettingsPending
             ? "Settings applied. Stop the game clock to apply timer direction and timer preset."
             : "Settings applied.";
+    }
+
+    private void BeginKeyboardShortcutCapture(KeyboardShortcutAction action)
+    {
+        _pendingKeyboardShortcutAction = action;
+        RefreshKeyboardShortcutBindings();
+        SystemMessageText = $"Press a key for {GetKeyboardShortcutLabel(action)}. Press Esc to clear.";
+    }
+
+    private void ClearKeyboardShortcut(KeyboardShortcutAction action)
+    {
+        SetDraftKeyboardShortcut(action, string.Empty);
+
+        if (_pendingKeyboardShortcutAction == action)
+        {
+            _pendingKeyboardShortcutAction = null;
+        }
+
+        RefreshKeyboardShortcutBindings();
+        SystemMessageText = $"{GetKeyboardShortcutLabel(action)} shortcut cleared.";
     }
 
     private void RefreshPorts(string? preferredPort)
@@ -556,6 +672,294 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     {
         IsConnected = _scoreboard.IsConnected;
         ConnectedPortName = _scoreboard.IsConnected ? _scoreboard.ConnectedPortName : string.Empty;
+    }
+
+    private void ApplyKeyboardShortcutDraft(KeyboardBindingsSettings bindings)
+    {
+        _draftKeyboardBindings.ToggleGameClockKey = bindings.ToggleGameClockKey;
+        _draftKeyboardBindings.ToggleShotClockKey = bindings.ToggleShotClockKey;
+        _draftKeyboardBindings.IncreaseHomeScoreKey = bindings.IncreaseHomeScoreKey;
+        _draftKeyboardBindings.DecreaseHomeScoreKey = bindings.DecreaseHomeScoreKey;
+        _draftKeyboardBindings.IncreaseGuestScoreKey = bindings.IncreaseGuestScoreKey;
+        _draftKeyboardBindings.DecreaseGuestScoreKey = bindings.DecreaseGuestScoreKey;
+        _draftKeyboardBindings.IncreaseHomeFoulsKey = bindings.IncreaseHomeFoulsKey;
+        _draftKeyboardBindings.DecreaseHomeFoulsKey = bindings.DecreaseHomeFoulsKey;
+        _draftKeyboardBindings.IncreaseGuestFoulsKey = bindings.IncreaseGuestFoulsKey;
+        _draftKeyboardBindings.DecreaseGuestFoulsKey = bindings.DecreaseGuestFoulsKey;
+        _pendingKeyboardShortcutAction = null;
+        RefreshKeyboardShortcutBindings();
+        NotifyKeyboardShortcutButtonTextChanged();
+    }
+
+    private void RefreshKeyboardShortcutBindings()
+    {
+        foreach (var binding in KeyboardShortcutBindings)
+        {
+            binding.AssignedKeyDisplay = GetDraftKeyboardShortcutDisplay(binding.Action);
+            binding.IsCapturing = _pendingKeyboardShortcutAction == binding.Action;
+        }
+
+        OnPropertyChanged(nameof(KeyboardShortcutCaptureText));
+    }
+
+    private void RemoveDraftKeyboardShortcut(Key key, KeyboardShortcutAction exceptAction)
+    {
+        var keyName = key.ToString();
+
+        foreach (KeyboardShortcutAction action in Enum.GetValues(typeof(KeyboardShortcutAction)))
+        {
+            if (action != exceptAction &&
+                string.Equals(GetDraftKeyboardShortcutValue(action), keyName, StringComparison.OrdinalIgnoreCase))
+            {
+                SetDraftKeyboardShortcut(action, string.Empty);
+            }
+        }
+    }
+
+    private void SetDraftKeyboardShortcut(KeyboardShortcutAction action, string keyName)
+    {
+        switch (action)
+        {
+            case KeyboardShortcutAction.ToggleGameClock:
+                _draftKeyboardBindings.ToggleGameClockKey = keyName;
+                break;
+            case KeyboardShortcutAction.ToggleShotClock:
+                _draftKeyboardBindings.ToggleShotClockKey = keyName;
+                break;
+            case KeyboardShortcutAction.IncreaseHomeScore:
+                _draftKeyboardBindings.IncreaseHomeScoreKey = keyName;
+                break;
+            case KeyboardShortcutAction.DecreaseHomeScore:
+                _draftKeyboardBindings.DecreaseHomeScoreKey = keyName;
+                break;
+            case KeyboardShortcutAction.IncreaseGuestScore:
+                _draftKeyboardBindings.IncreaseGuestScoreKey = keyName;
+                break;
+            case KeyboardShortcutAction.DecreaseGuestScore:
+                _draftKeyboardBindings.DecreaseGuestScoreKey = keyName;
+                break;
+            case KeyboardShortcutAction.IncreaseHomeFouls:
+                _draftKeyboardBindings.IncreaseHomeFoulsKey = keyName;
+                break;
+            case KeyboardShortcutAction.DecreaseHomeFouls:
+                _draftKeyboardBindings.DecreaseHomeFoulsKey = keyName;
+                break;
+            case KeyboardShortcutAction.IncreaseGuestFouls:
+                _draftKeyboardBindings.IncreaseGuestFoulsKey = keyName;
+                break;
+            case KeyboardShortcutAction.DecreaseGuestFouls:
+                _draftKeyboardBindings.DecreaseGuestFoulsKey = keyName;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(action), action, null);
+        }
+    }
+
+    private string GetDraftKeyboardShortcutValue(KeyboardShortcutAction action)
+    {
+        return action switch
+        {
+            KeyboardShortcutAction.ToggleGameClock => _draftKeyboardBindings.ToggleGameClockKey,
+            KeyboardShortcutAction.ToggleShotClock => _draftKeyboardBindings.ToggleShotClockKey,
+            KeyboardShortcutAction.IncreaseHomeScore => _draftKeyboardBindings.IncreaseHomeScoreKey,
+            KeyboardShortcutAction.DecreaseHomeScore => _draftKeyboardBindings.DecreaseHomeScoreKey,
+            KeyboardShortcutAction.IncreaseGuestScore => _draftKeyboardBindings.IncreaseGuestScoreKey,
+            KeyboardShortcutAction.DecreaseGuestScore => _draftKeyboardBindings.DecreaseGuestScoreKey,
+            KeyboardShortcutAction.IncreaseHomeFouls => _draftKeyboardBindings.IncreaseHomeFoulsKey,
+            KeyboardShortcutAction.DecreaseHomeFouls => _draftKeyboardBindings.DecreaseHomeFoulsKey,
+            KeyboardShortcutAction.IncreaseGuestFouls => _draftKeyboardBindings.IncreaseGuestFoulsKey,
+            KeyboardShortcutAction.DecreaseGuestFouls => _draftKeyboardBindings.DecreaseGuestFoulsKey,
+            _ => string.Empty,
+        };
+    }
+
+    private string GetDraftKeyboardShortcutDisplay(KeyboardShortcutAction action)
+    {
+        return FormatAssignedKeyDisplay(GetDraftKeyboardShortcutValue(action));
+    }
+
+    private string GetAppliedKeyboardShortcutValue(KeyboardShortcutAction action)
+    {
+        var bindings = _scoreboard.Settings.KeyboardBindings;
+
+        return action switch
+        {
+            KeyboardShortcutAction.ToggleGameClock => bindings.ToggleGameClockKey,
+            KeyboardShortcutAction.ToggleShotClock => bindings.ToggleShotClockKey,
+            KeyboardShortcutAction.IncreaseHomeScore => bindings.IncreaseHomeScoreKey,
+            KeyboardShortcutAction.DecreaseHomeScore => bindings.DecreaseHomeScoreKey,
+            KeyboardShortcutAction.IncreaseGuestScore => bindings.IncreaseGuestScoreKey,
+            KeyboardShortcutAction.DecreaseGuestScore => bindings.DecreaseGuestScoreKey,
+            KeyboardShortcutAction.IncreaseHomeFouls => bindings.IncreaseHomeFoulsKey,
+            KeyboardShortcutAction.DecreaseHomeFouls => bindings.DecreaseHomeFoulsKey,
+            KeyboardShortcutAction.IncreaseGuestFouls => bindings.IncreaseGuestFoulsKey,
+            KeyboardShortcutAction.DecreaseGuestFouls => bindings.DecreaseGuestFoulsKey,
+            _ => string.Empty,
+        };
+    }
+
+    private string GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction action)
+    {
+        if (TryGetAssignedKey(GetAppliedKeyboardShortcutValue(action), out var key))
+        {
+            return FormatKeyDisplay(key);
+        }
+
+        return string.Empty;
+    }
+
+    private void ExecuteKeyboardShortcut(KeyboardShortcutAction action)
+    {
+        switch (action)
+        {
+            case KeyboardShortcutAction.ToggleGameClock:
+                _scoreboard.Execute(new ToggleGameClockCommand());
+                break;
+            case KeyboardShortcutAction.ToggleShotClock:
+                _scoreboard.Execute(new ToggleShotClockCommand());
+                break;
+            case KeyboardShortcutAction.IncreaseHomeScore:
+                _scoreboard.Execute(new ChangeScoreCommand(TeamSide.Home, 1));
+                break;
+            case KeyboardShortcutAction.DecreaseHomeScore:
+                _scoreboard.Execute(new ChangeScoreCommand(TeamSide.Home, -1));
+                break;
+            case KeyboardShortcutAction.IncreaseGuestScore:
+                _scoreboard.Execute(new ChangeScoreCommand(TeamSide.Guest, 1));
+                break;
+            case KeyboardShortcutAction.DecreaseGuestScore:
+                _scoreboard.Execute(new ChangeScoreCommand(TeamSide.Guest, -1));
+                break;
+            case KeyboardShortcutAction.IncreaseHomeFouls:
+                _scoreboard.Execute(new ChangeSecondaryCounterCommand(TeamSide.Home, 1));
+                break;
+            case KeyboardShortcutAction.DecreaseHomeFouls:
+                _scoreboard.Execute(new ChangeSecondaryCounterCommand(TeamSide.Home, -1));
+                break;
+            case KeyboardShortcutAction.IncreaseGuestFouls:
+                _scoreboard.Execute(new ChangeSecondaryCounterCommand(TeamSide.Guest, 1));
+                break;
+            case KeyboardShortcutAction.DecreaseGuestFouls:
+                _scoreboard.Execute(new ChangeSecondaryCounterCommand(TeamSide.Guest, -1));
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(action), action, null);
+        }
+    }
+
+    private void NotifyKeyboardShortcutButtonTextChanged()
+    {
+        OnPropertyChanged(nameof(GameClockToggleButtonText));
+        OnPropertyChanged(nameof(ShotClockToggleButtonText));
+        OnPropertyChanged(nameof(IncreaseScoreAButtonText));
+        OnPropertyChanged(nameof(DecreaseScoreAButtonText));
+        OnPropertyChanged(nameof(IncreaseScoreBButtonText));
+        OnPropertyChanged(nameof(DecreaseScoreBButtonText));
+        OnPropertyChanged(nameof(IncreasePenaltyAButtonText));
+        OnPropertyChanged(nameof(DecreasePenaltyAButtonText));
+        OnPropertyChanged(nameof(IncreasePenaltyBButtonText));
+        OnPropertyChanged(nameof(DecreasePenaltyBButtonText));
+    }
+
+    private static KeyboardBindingsSettings CloneKeyboardBindings(KeyboardBindingsSettings source)
+    {
+        return new KeyboardBindingsSettings
+        {
+            ToggleGameClockKey = source.ToggleGameClockKey,
+            ToggleShotClockKey = source.ToggleShotClockKey,
+            IncreaseHomeScoreKey = source.IncreaseHomeScoreKey,
+            DecreaseHomeScoreKey = source.DecreaseHomeScoreKey,
+            IncreaseGuestScoreKey = source.IncreaseGuestScoreKey,
+            DecreaseGuestScoreKey = source.DecreaseGuestScoreKey,
+            IncreaseHomeFoulsKey = source.IncreaseHomeFoulsKey,
+            DecreaseHomeFoulsKey = source.DecreaseHomeFoulsKey,
+            IncreaseGuestFoulsKey = source.IncreaseGuestFoulsKey,
+            DecreaseGuestFoulsKey = source.DecreaseGuestFoulsKey,
+        };
+    }
+
+    private static string GetKeyboardShortcutLabel(KeyboardShortcutAction action)
+    {
+        return action switch
+        {
+            KeyboardShortcutAction.ToggleGameClock => "Game clock start / stop",
+            KeyboardShortcutAction.ToggleShotClock => "Shot clock start / stop",
+            KeyboardShortcutAction.IncreaseHomeScore => "Home score +1",
+            KeyboardShortcutAction.DecreaseHomeScore => "Home score -1",
+            KeyboardShortcutAction.IncreaseGuestScore => "Guest score +1",
+            KeyboardShortcutAction.DecreaseGuestScore => "Guest score -1",
+            KeyboardShortcutAction.IncreaseHomeFouls => "Home fouls +1",
+            KeyboardShortcutAction.DecreaseHomeFouls => "Home fouls -1",
+            KeyboardShortcutAction.IncreaseGuestFouls => "Guest fouls +1",
+            KeyboardShortcutAction.DecreaseGuestFouls => "Guest fouls -1",
+            _ => "Shortcut",
+        };
+    }
+
+    private static bool IsAssignableKeyboardShortcut(Key key)
+    {
+        return key is not (Key.None or
+            Key.LeftCtrl or Key.RightCtrl or
+            Key.LeftAlt or Key.RightAlt or
+            Key.LeftShift or Key.RightShift or
+            Key.LWin or Key.RWin or
+            Key.Apps or
+            Key.Clear or
+            Key.DeadCharProcessed);
+    }
+
+    private static bool TryGetAssignedKey(string? keyName, out Key key)
+    {
+        if (!string.IsNullOrWhiteSpace(keyName) && Enum.TryParse(keyName.Trim(), true, out key) && key != Key.None)
+        {
+            return true;
+        }
+
+        key = Key.None;
+        return false;
+    }
+
+    private static string FormatAssignedKeyDisplay(string? keyName)
+    {
+        return TryGetAssignedKey(keyName, out var key)
+            ? FormatKeyDisplay(key)
+            : "Not assigned";
+    }
+
+    private static string FormatKeyDisplay(Key key)
+    {
+        if (key is >= Key.D0 and <= Key.D9)
+        {
+            return ((char)('0' + (key - Key.D0))).ToString();
+        }
+
+        if (key is >= Key.NumPad0 and <= Key.NumPad9)
+        {
+            return $"Num{key - Key.NumPad0}";
+        }
+
+        return key switch
+        {
+            Key.Return => "Enter",
+            Key.Space => "Space",
+            Key.Prior => "PageUp",
+            Key.Next => "PageDown",
+            Key.OemPlus => "+",
+            Key.OemMinus => "-",
+            Key.Multiply => "*",
+            Key.Add => "Num+",
+            Key.Subtract => "Num-",
+            Key.Divide => "Num/",
+            Key.Decimal => "Num.",
+            _ => key.ToString(),
+        };
+    }
+
+    private static string BuildButtonText(string baseText, string keyDisplay)
+    {
+        return string.IsNullOrWhiteSpace(keyDisplay)
+            ? baseText
+            : $"{baseText} ({keyDisplay})";
     }
 
     private static (int Minutes, int Seconds, int Tenths) ParsePreset(string preset, int defaultMinutes, int defaultSeconds, int defaultTenths)
