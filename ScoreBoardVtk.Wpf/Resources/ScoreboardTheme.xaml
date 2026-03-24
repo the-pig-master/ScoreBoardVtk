@@ -15,6 +15,9 @@
     <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#FFFFFF" />
     <SolidColorBrush x:Key="ButtonBorderBrush" Color="#C9D3DB" />
     <SolidColorBrush x:Key="ButtonForegroundBrush" Color="#25313A" />
+    <SolidColorBrush x:Key="ButtonHoverOverlayBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="ButtonPressedOverlayBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="StartButtonBrush" Color="#2F9E44" />
     <SolidColorBrush x:Key="AccentButtonBrush" Color="#E05A47" />
     <SolidColorBrush x:Key="WarningButtonBrush" Color="#D7B04A" />
     <SolidColorBrush x:Key="FieldCaptionBrush" Color="#57636C" />
@@ -64,7 +67,7 @@
         <Setter Property="Padding" Value="10,6" />
     </Style>
 
-    <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+    <Style x:Key="ButtonBaseStyle" TargetType="Button">
         <Setter Property="Width" Value="136" />
         <Setter Property="Height" Value="42" />
         <Setter Property="FontSize" Value="15" />
@@ -73,19 +76,57 @@
         <Setter Property="BorderBrush" Value="{StaticResource ButtonBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Foreground" Value="{StaticResource ButtonForegroundBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    
+    <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}">
+        
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid SnapsToDevicePixels="True">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" />
+                        <Border x:Name="HoverOverlay"
+                                Background="{StaticResource ButtonHoverOverlayBrush}"
+                                Opacity="0" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="HoverOverlay" Property="Opacity" Value="0.14" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="HoverOverlay" Property="Background" Value="{StaticResource ButtonPressedOverlayBrush}" />
+                            <Setter TargetName="HoverOverlay" Property="Opacity" Value="0.22" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.55" />
+                            <Setter TargetName="HoverOverlay" Property="Opacity" Value="0" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
-    <Style x:Key="DeskButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-        <Setter Property="Width" Value="150" />
+    <Style x:Key="DeskButtonStyle" TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}">
+       
     </Style>
 
-    <Style x:Key="AccentDeskButtonStyle" TargetType="Button" BasedOn="{StaticResource DeskButtonStyle}">
+    <Style x:Key="AccentDeskButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
         <Setter Property="Background" Value="{StaticResource AccentButtonBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ButtonBackgroundBrush}" />
     </Style>
 
-    <Style x:Key="WarningDeskButtonStyle" TargetType="Button" BasedOn="{StaticResource DeskButtonStyle}">
+    <Style x:Key="WarningDeskButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
         <Setter Property="Background" Value="{StaticResource WarningButtonBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource WarningButtonBrush}" />
     </Style>
@@ -132,11 +173,17 @@
         </Style.Triggers>
     </Style>
 
-    <Style x:Key="GameClockToggleButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentDeskButtonStyle}">
+    <Style x:Key="GameClockToggleButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
         <Setter Property="Content" Value="Start" />
+        <Setter Property="Background" Value="{StaticResource StartButtonBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource StartButtonBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource ButtonBackgroundBrush}" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding CurrentState.IsGameClockRunning}" Value="True">
                 <Setter Property="Content" Value="Stop" />
+                <Setter Property="Background" Value="{StaticResource AccentButtonBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBrush}" />
+                <Setter Property="Foreground" Value="{StaticResource ButtonBackgroundBrush}" />
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -150,7 +197,7 @@
         </Style.Triggers>
     </Style>
 
-    <Style x:Key="PortToggleButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+    <Style x:Key="PortToggleButtonStyle" TargetType="Button" BasedOn="{StaticResource DeskButtonStyle}">
         <Setter Property="Content" Value="Open Port" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsConnected}" Value="True">
@@ -172,6 +219,15 @@
         <Setter Property="IsEnabled" Value="False" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding CurrentState.GameMode}" Value="{x:Static core:GameMode.Basketball}">
+                <Setter Property="IsEnabled" Value="True" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="SettingsBasketballOnlyCheckBoxStyle" TargetType="CheckBox">
+        <Setter Property="IsEnabled" Value="False" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding SelectedGameMode.Value}" Value="{x:Static core:GameMode.Basketball}">
                 <Setter Property="IsEnabled" Value="True" />
             </DataTrigger>
         </Style.Triggers>

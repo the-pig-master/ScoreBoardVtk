@@ -81,7 +81,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         RefreshPortsCommand = new RelayCommand(() => RefreshPorts(SelectedPort));
         TogglePortCommand = new RelayCommand(TogglePort);
         SyncTimeCommand = new RelayCommand(SyncTime);
-        ApplyTimerPresetCommand = new RelayCommand(ApplyTimerPreset);
+        ApplySettingsCommand = new RelayCommand(ApplySettings);
 
         _scoreboard.StateChanged += ScoreboardOnStateChanged;
         _runtime.Faulted += RuntimeOnFaulted;
@@ -147,7 +147,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
 
     public ICommand SyncTimeCommand { get; }
 
-    public ICommand ApplyTimerPresetCommand { get; }
+    public ICommand ApplySettingsCommand { get; }
 
     public ScoreboardState CurrentState
     {
@@ -164,13 +164,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     public string SelectedPort
     {
         get => _selectedPort;
-        set
-        {
-            if (SetProperty(ref _selectedPort, value))
-            {
-                _scoreboard.Settings.SelectedPort = value ?? string.Empty;
-            }
-        }
+        set => SetProperty(ref _selectedPort, value);
     }
 
     public bool IsConnected
@@ -230,49 +224,25 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     public bool CountFoulsToFive
     {
         get => _countFoulsToFive;
-        set
-        {
-            if (SetProperty(ref _countFoulsToFive, value) && !_suppressControllerSync)
-            {
-                _scoreboard.Execute(new SetCountFoulsToFiveCommand(value));
-            }
-        }
+        set => SetProperty(ref _countFoulsToFive, value);
     }
 
     public bool AutoStartShotClock
     {
         get => _autoStartShotClock;
-        set
-        {
-            if (SetProperty(ref _autoStartShotClock, value) && !_suppressControllerSync)
-            {
-                _scoreboard.Execute(new SetAutoStartShotClockCommand(value));
-            }
-        }
+        set => SetProperty(ref _autoStartShotClock, value);
     }
 
     public int MainSignalDurationSeconds
     {
         get => _mainSignalDurationSeconds;
-        set
-        {
-            if (SetProperty(ref _mainSignalDurationSeconds, value) && !_suppressControllerSync)
-            {
-                _scoreboard.Execute(new SetMainSignalDurationSecondsCommand(value));
-            }
-        }
+        set => SetProperty(ref _mainSignalDurationSeconds, value);
     }
 
     public int ShotClockSignalDurationTenths
     {
         get => _shotClockSignalDurationTenths;
-        set
-        {
-            if (SetProperty(ref _shotClockSignalDurationTenths, value) && !_suppressControllerSync)
-            {
-                _scoreboard.Execute(new SetShotClockSignalDurationTenthsCommand(value));
-            }
-        }
+        set => SetProperty(ref _shotClockSignalDurationTenths, value);
     }
 
     public int PresetMinutes
@@ -296,37 +266,19 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     public OptionItem<GameMode>? SelectedGameMode
     {
         get => _selectedGameMode;
-        set
-        {
-            if (SetProperty(ref _selectedGameMode, value) && !_suppressControllerSync && value is not null)
-            {
-                _scoreboard.Execute(new SetGameModeCommand(value.Value));
-            }
-        }
+        set => SetProperty(ref _selectedGameMode, value);
     }
 
     public OptionItem<FontMode>? SelectedFontMode
     {
         get => _selectedFontMode;
-        set
-        {
-            if (SetProperty(ref _selectedFontMode, value) && !_suppressControllerSync && value is not null)
-            {
-                _scoreboard.Execute(new SetFontModeCommand(value.Value));
-            }
-        }
+        set => SetProperty(ref _selectedFontMode, value);
     }
 
     public OptionItem<TimerDirection>? SelectedTimerDirection
     {
         get => _selectedTimerDirection;
-        set
-        {
-            if (SetProperty(ref _selectedTimerDirection, value) && !_suppressControllerSync && value is not null)
-            {
-                _scoreboard.Execute(new SetTimerDirectionCommand(value.Value));
-            }
-        }
+        set => SetProperty(ref _selectedTimerDirection, value);
     }
 
     public void StartManualSignal()
@@ -402,7 +354,6 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         CurrentState = state;
         CurrentSnapshot = _scoreboard.Snapshot;
         HostClock = DateTime.Now;
-        ApplyPresetFields(CurrentSnapshot.TimerPresetText);
     }
 
     private void ApplyPresetFields(string preset)
@@ -413,10 +364,41 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         PresetTenths = parsed.Tenths;
     }
 
-    private void ApplyTimerPreset()
+    private void ApplySettings()
     {
+        var requestedTimerDirection = SelectedTimerDirection?.Value ?? CurrentState.TimerDirection;
+        var requestedTimerPreset = FormatPreset(PresetMinutes, PresetSeconds, PresetTenths);
+
+        _scoreboard.Settings.SelectedPort = SelectedPort ?? string.Empty;
+
+        if (SelectedGameMode is not null)
+        {
+            _scoreboard.Execute(new SetGameModeCommand(SelectedGameMode.Value));
+        }
+
+        if (SelectedFontMode is not null)
+        {
+            _scoreboard.Execute(new SetFontModeCommand(SelectedFontMode.Value));
+        }
+
+        if (SelectedTimerDirection is not null)
+        {
+            _scoreboard.Execute(new SetTimerDirectionCommand(SelectedTimerDirection.Value));
+        }
+
+        _scoreboard.Execute(new SetCountFoulsToFiveCommand(CountFoulsToFive));
+        _scoreboard.Execute(new SetAutoStartShotClockCommand(AutoStartShotClock));
+        _scoreboard.Execute(new SetMainSignalDurationSecondsCommand(MainSignalDurationSeconds));
+        _scoreboard.Execute(new SetShotClockSignalDurationTenthsCommand(ShotClockSignalDurationTenths));
         _scoreboard.Execute(new SetTimerPresetCommand(PresetMinutes, PresetSeconds, PresetTenths));
-        SystemMessageText = $"Timer preset set to {PresetMinutes:00}:{PresetSeconds:00}.{PresetTenths}.";
+
+        var timerSettingsPending =
+            CurrentState.TimerDirection != requestedTimerDirection ||
+            CurrentSnapshot.TimerPresetText != requestedTimerPreset;
+
+        SystemMessageText = CurrentState.IsGameClockRunning && timerSettingsPending
+            ? "Settings applied. Stop the game clock to apply timer direction and timer preset."
+            : "Settings applied.";
     }
 
     private void RefreshPorts(string? preferredPort)
@@ -519,5 +501,16 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         }
 
         return (Math.Clamp(minutes, 0, 59), Math.Clamp(seconds, 0, 59), Math.Clamp(tenths, 0, 9));
+    }
+
+    private static string FormatPreset(int minutes, int seconds, int tenths)
+    {
+        minutes = Math.Clamp(minutes, 0, 59);
+        seconds = Math.Clamp(seconds, 0, 59);
+        tenths = Math.Clamp(tenths, 0, 9);
+
+        return tenths == 0
+            ? $"{minutes:00}:{seconds:00}"
+            : $"{minutes:00}:{seconds:00}.{tenths}";
     }
 }
