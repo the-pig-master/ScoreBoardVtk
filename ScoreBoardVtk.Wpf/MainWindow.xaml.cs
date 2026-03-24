@@ -1,5 +1,4 @@
 using System.Windows;
-using System.Windows.Input;
 using ScoreBoardVtk.Core.Services;
 using ScoreBoardVtk.Wpf.ViewModels;
 
@@ -7,13 +6,13 @@ namespace ScoreBoardVtk.Wpf;
 
 public partial class MainWindow : Window
 {
-    public MainViewModel ViewModel { get; }
+    public MainWindowViewModel ViewModel { get; }
 
     public MainWindow()
     {
         InitializeComponent();
         var services = ScoreboardCompositionRoot.CreateDesktopServices();
-        ViewModel = new MainViewModel(services.SettingsStore, services.ScoreboardApi, services.Runtime);
+        ViewModel = new MainWindowViewModel(services.SettingsStore, services.ScoreboardApi, services.Runtime);
         DataContext = ViewModel;
     }
 
@@ -21,20 +20,5 @@ public partial class MainWindow : Window
     {
         ViewModel.Dispose();
         base.OnClosed(e);
-    }
-
-    private void SignalButton_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        ViewModel.StartManualSignal();
-    }
-
-    private void SignalButton_OnPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-    {
-        ViewModel.StopManualSignal();
-    }
-
-    private void SignalButton_OnLostMouseCapture(object sender, MouseEventArgs e)
-    {
-        ViewModel.StopManualSignal();
     }
 }

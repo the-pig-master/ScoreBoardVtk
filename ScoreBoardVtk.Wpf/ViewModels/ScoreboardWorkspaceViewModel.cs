@@ -8,7 +8,7 @@ using ScoreBoardVtk.Wpf.Models;
 
 namespace ScoreBoardVtk.Wpf.ViewModels;
 
-public sealed class MainViewModel : ObservableObject, IDisposable
+public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
 {
     private readonly SettingsStore _settingsStore;
     private readonly IScoreboardApi _scoreboard;
@@ -36,7 +36,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private OptionItem<FontMode>? _selectedFontMode;
     private OptionItem<TimerDirection>? _selectedTimerDirection;
 
-    public MainViewModel(SettingsStore settingsStore, IScoreboardApi scoreboard, IScoreboardRuntime runtime)
+    public ScoreboardWorkspaceViewModel(SettingsStore settingsStore, IScoreboardApi scoreboard, IScoreboardRuntime runtime)
     {
         _settingsStore = settingsStore;
         _scoreboard = scoreboard;

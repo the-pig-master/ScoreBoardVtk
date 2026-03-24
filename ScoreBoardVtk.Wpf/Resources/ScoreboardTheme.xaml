@@ -1,0 +1,236 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:core="clr-namespace:ScoreBoardVtk.Core.Models;assembly=ScoreBoardVtk.Core"
+                    xmlns:conv="clr-namespace:ScoreBoardVtk.Wpf.Converters">
+    <conv:PortStatusTextConverter x:Key="PortStatusTextConverter" />
+
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#F8FAFC" />
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#CFD7DE" />
+    <SolidColorBrush x:Key="ScoreboardShellBackgroundBrush" Color="#202B33" />
+    <SolidColorBrush x:Key="ScoreboardShellBorderBrush" Color="#3B4751" />
+    <SolidColorBrush x:Key="ScoreboardPanelBackgroundBrush" Color="#0E1419" />
+    <SolidColorBrush x:Key="ScoreboardPanelBorderBrush" Color="#28333B" />
+    <SolidColorBrush x:Key="StatusChipBackgroundBrush" Color="#11181E" />
+    <SolidColorBrush x:Key="StatusChipBorderBrush" Color="#28343E" />
+    <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="ButtonBorderBrush" Color="#C9D3DB" />
+    <SolidColorBrush x:Key="ButtonForegroundBrush" Color="#25313A" />
+    <SolidColorBrush x:Key="AccentButtonBrush" Color="#E05A47" />
+    <SolidColorBrush x:Key="WarningButtonBrush" Color="#D7B04A" />
+    <SolidColorBrush x:Key="FieldCaptionBrush" Color="#57636C" />
+    <SolidColorBrush x:Key="DisplayCaptionBrush" Color="#98A8B6" />
+    <SolidColorBrush x:Key="IndicatorIdleBrush" Color="#D1D7E0" />
+    <SolidColorBrush x:Key="IndicatorStrokeBrush" Color="#6A7884" />
+    <SolidColorBrush x:Key="MainSignalActiveBrush" Color="#E15C46" />
+    <SolidColorBrush x:Key="ShotClockActiveBrush" Color="#009874" />
+    <SolidColorBrush x:Key="ScoreValueBrush" Color="#FF614B" />
+    <SolidColorBrush x:Key="SecondaryValueBrush" Color="#A8FF7A" />
+    <SolidColorBrush x:Key="ClockValueBrush" Color="#FFD05A" />
+    <SolidColorBrush x:Key="RunningStripBackgroundBrush" Color="#151E25" />
+    <SolidColorBrush x:Key="RunningTextBrush" Color="#EDF3F7" />
+    <SolidColorBrush x:Key="HeadingTextBrush" Color="#22303A" />
+    <SolidColorBrush x:Key="MutedTextBrush" Color="#52606A" />
+    <SolidColorBrush x:Key="HostClockBrush" Color="#2C3E50" />
+
+    <Style x:Key="CardBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <Style x:Key="ScoreboardShellStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ScoreboardShellBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ScoreboardShellBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="Padding" Value="18" />
+    </Style>
+
+    <Style x:Key="ScoreboardPanelStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ScoreboardPanelBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ScoreboardPanelBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Padding" Value="14" />
+    </Style>
+
+    <Style x:Key="StatusChipStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource StatusChipBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource StatusChipBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="10,6" />
+    </Style>
+
+    <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="136" />
+        <Setter Property="Height" Value="42" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Background" Value="{StaticResource ButtonBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{StaticResource ButtonForegroundBrush}" />
+    </Style>
+
+    <Style x:Key="DeskButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+        <Setter Property="Width" Value="150" />
+    </Style>
+
+    <Style x:Key="AccentDeskButtonStyle" TargetType="Button" BasedOn="{StaticResource DeskButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource AccentButtonBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource ButtonBackgroundBrush}" />
+    </Style>
+
+    <Style x:Key="WarningDeskButtonStyle" TargetType="Button" BasedOn="{StaticResource DeskButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource WarningButtonBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource WarningButtonBrush}" />
+    </Style>
+
+    <Style x:Key="FieldCaptionStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource FieldCaptionBrush}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Margin" Value="0,0,0,6" />
+    </Style>
+
+    <Style x:Key="DisplayCaptionStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource DisplayCaptionBrush}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="DisplayValueStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Bahnschrift SemiCondensed" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="TextAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="IndicatorEllipseStyle" TargetType="Ellipse">
+        <Setter Property="Width" Value="16" />
+        <Setter Property="Height" Value="16" />
+        <Setter Property="Fill" Value="{StaticResource IndicatorIdleBrush}" />
+        <Setter Property="Stroke" Value="{StaticResource IndicatorStrokeBrush}" />
+        <Setter Property="StrokeThickness" Value="1" />
+    </Style>
+
+    <Style x:Key="MainSignalIndicatorStyle" TargetType="Ellipse" BasedOn="{StaticResource IndicatorEllipseStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding CurrentState.IsMainSignalActive}" Value="True">
+                <Setter Property="Fill" Value="{StaticResource MainSignalActiveBrush}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ShotClockIndicatorStyle" TargetType="Ellipse" BasedOn="{StaticResource IndicatorEllipseStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding CurrentState.IsShotClockRunning}" Value="True">
+                <Setter Property="Fill" Value="{StaticResource ShotClockActiveBrush}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="GameClockToggleButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentDeskButtonStyle}">
+        <Setter Property="Content" Value="Start" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding CurrentState.IsGameClockRunning}" Value="True">
+                <Setter Property="Content" Value="Stop" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ShotClockToggleButtonStyle" TargetType="Button" BasedOn="{StaticResource DeskButtonStyle}">
+        <Setter Property="Content" Value="Start" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding CurrentState.IsShotClockRunning}" Value="True">
+                <Setter Property="Content" Value="Stop" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="PortToggleButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+        <Setter Property="Content" Value="Open Port" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                <Setter Property="Content" Value="Close Port" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="BasketballOnlyBorderStyle" TargetType="Border" BasedOn="{StaticResource CardBorderStyle}">
+        <Setter Property="IsEnabled" Value="False" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding CurrentState.GameMode}" Value="{x:Static core:GameMode.Basketball}">
+                <Setter Property="IsEnabled" Value="True" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="BasketballOnlyCheckBoxStyle" TargetType="CheckBox">
+        <Setter Property="IsEnabled" Value="False" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding CurrentState.GameMode}" Value="{x:Static core:GameMode.Basketball}">
+                <Setter Property="IsEnabled" Value="True" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ScoreValueTextStyle" TargetType="TextBlock" BasedOn="{StaticResource DisplayValueStyle}">
+        <Setter Property="Foreground" Value="{StaticResource ScoreValueBrush}" />
+    </Style>
+
+    <Style x:Key="SecondaryValueTextStyle" TargetType="TextBlock" BasedOn="{StaticResource DisplayValueStyle}">
+        <Setter Property="Foreground" Value="{StaticResource SecondaryValueBrush}" />
+    </Style>
+
+    <Style x:Key="ClockValueTextStyle" TargetType="TextBlock" BasedOn="{StaticResource DisplayValueStyle}">
+        <Setter Property="Foreground" Value="{StaticResource ClockValueBrush}" />
+    </Style>
+
+    <Style x:Key="PanelHeaderTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource HeadingTextBrush}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="SectionHeaderTextStyle" TargetType="TextBlock" BasedOn="{StaticResource PanelHeaderTextStyle}">
+        <Setter Property="FontSize" Value="18" />
+    </Style>
+
+    <Style x:Key="RunningTextBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource RunningStripBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ScoreboardPanelBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+
+    <Style x:Key="RunningValueTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource RunningTextBrush}" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="MutedCheckBoxStyle" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="InputTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource ButtonBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ButtonBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style x:Key="HostClockTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource HostClockBrush}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="PayloadHeaderTextStyle" TargetType="TextBlock" BasedOn="{StaticResource PanelHeaderTextStyle}">
+        <Setter Property="FontSize" Value="20" />
+    </Style>
+</ResourceDictionary>
