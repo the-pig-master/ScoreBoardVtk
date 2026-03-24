@@ -157,6 +157,12 @@ public sealed class ScoreboardController
     public void SetGameMode(GameMode gameMode)
     {
         _settings.GameMode = gameMode;
+
+        if (gameMode == GameMode.Basketball)
+        {
+            _settings.TimerDirection = TimerDirection.Down;
+        }
+
         ResetForCurrentMode();
         RefreshDisplay();
     }
@@ -172,6 +178,11 @@ public sealed class ScoreboardController
         if (_isGameClockRunning)
         {
             return;
+        }
+
+        if (_settings.GameMode == GameMode.Basketball)
+        {
+            timerDirection = TimerDirection.Down;
         }
 
         _settings.TimerDirection = timerDirection;
@@ -355,12 +366,19 @@ public sealed class ScoreboardController
     {
         if (_settings.GameMode == GameMode.Basketball)
         {
+            if (_isGameClockRunning)
+            {
+                return;
+            }
+
             _period = _period switch
             {
                 < 4 => _period + 1,
-                4 => 6,
+                4 => 5,
                 _ => 1,
             };
+
+            ResetMainClockOnly();
         }
         else if (_period < 5)
         {
@@ -499,7 +517,13 @@ public sealed class ScoreboardController
         _settings.MainSignalDurationSeconds = Math.Clamp(_settings.MainSignalDurationSeconds, 0, 9);
         _settings.ShotClockSignalDurationTenths = Math.Clamp(_settings.ShotClockSignalDurationTenths, 5, 30);
         _settings.GameTimePreset = string.IsNullOrWhiteSpace(_settings.GameTimePreset) ? "10:00" : _settings.GameTimePreset;
-        _presetTenths = ParsePresetTenths(_settings.GameTimePreset);
+
+        if (_settings.GameMode == GameMode.Basketball)
+        {
+            _settings.TimerDirection = TimerDirection.Down;
+        }
+
+        _presetTenths = GetCurrentPeriodPresetTenths();
     }
 
     private void ResetForCurrentMode()
@@ -520,7 +544,7 @@ public sealed class ScoreboardController
 
     private void ResetMainClockOnly()
     {
-        _presetTenths = ParsePresetTenths(_settings.GameTimePreset);
+        _presetTenths = GetCurrentPeriodPresetTenths();
         _mainClockTenths = _settings.TimerDirection == TimerDirection.Down ? _presetTenths : 0;
         InitializeShotClock(24, respectAutoStart: false);
     }
@@ -538,7 +562,10 @@ public sealed class ScoreboardController
         _isShotClockRunning = false;
         _mainSignalRemainingSeconds = _settings.MainSignalDurationSeconds;
 
-        _mainClockTenths = _settings.TimerDirection == TimerDirection.Down ? _presetTenths : 0;
+        if (_settings.TimerDirection == TimerDirection.Down)
+        {
+            _mainClockTenths = 0;
+        }
     }
 
     private void SetShotClock(int seconds)
@@ -638,10 +665,20 @@ public sealed class ScoreboardController
 
         if (_shotClockRemainingTenths <= 0)
         {
+            _shotClockRemainingTenths = 0;
             _isShotClockRunning = false;
             _shotClockSignalRemainingTenths = _settings.ShotClockSignalDurationTenths;
-            InitializeShotClock(24, respectAutoStart: true);
         }
+    }
+
+    private int GetCurrentPeriodPresetTenths()
+    {
+        if (_settings.GameMode == GameMode.Basketball && _period > 4)
+        {
+            return 5 * 60 * 10;
+        }
+
+        return ParsePresetTenths(_settings.GameTimePreset);
     }
 
     private int NormalizeBasketballPenalty(int value)

@@ -25,5 +25,5 @@ public sealed record ScoreboardState(
     bool IsMainSignalActive,
     bool IsShotClockSignalActive)
 {
-    public bool IsExtraPeriod => GameMode == GameMode.Basketball && PeriodNumber == 6;
+    public bool IsExtraPeriod => GameMode == GameMode.Basketball && PeriodNumber > 4;
 }

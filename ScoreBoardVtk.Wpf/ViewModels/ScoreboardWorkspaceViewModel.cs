@@ -266,7 +266,16 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     public OptionItem<GameMode>? SelectedGameMode
     {
         get => _selectedGameMode;
-        set => SetProperty(ref _selectedGameMode, value);
+        set
+        {
+            if (SetProperty(ref _selectedGameMode, value) &&
+                !_suppressControllerSync &&
+                value?.Value == GameMode.Basketball &&
+                SelectedTimerDirection?.Value != TimerDirection.Down)
+            {
+                SelectedTimerDirection = TimerDirections.First(option => option.Value == TimerDirection.Down);
+            }
+        }
     }
 
     public OptionItem<FontMode>? SelectedFontMode
@@ -278,7 +287,15 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     public OptionItem<TimerDirection>? SelectedTimerDirection
     {
         get => _selectedTimerDirection;
-        set => SetProperty(ref _selectedTimerDirection, value);
+        set
+        {
+            if (_selectedGameMode?.Value == GameMode.Basketball && value?.Value != TimerDirection.Down)
+            {
+                value = TimerDirections.First(option => option.Value == TimerDirection.Down);
+            }
+
+            SetProperty(ref _selectedTimerDirection, value);
+        }
     }
 
     public void StartManualSignal()
@@ -391,6 +408,8 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         _scoreboard.Execute(new SetMainSignalDurationSecondsCommand(MainSignalDurationSeconds));
         _scoreboard.Execute(new SetShotClockSignalDurationTenthsCommand(ShotClockSignalDurationTenths));
         _scoreboard.Execute(new SetTimerPresetCommand(PresetMinutes, PresetSeconds, PresetTenths));
+
+        ApplySettingsFromController();
 
         var timerSettingsPending =
             CurrentState.TimerDirection != requestedTimerDirection ||
