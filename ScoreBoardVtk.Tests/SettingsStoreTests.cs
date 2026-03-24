@@ -20,7 +20,8 @@ public sealed class SettingsStoreTests
               "selectedPort": "COM7",
               // Active game mode.
               "gameMode": "Volleyball",
-              "gameTimePreset": "08:00"
+              "gameTimePreset": "08:00",
+              "overtimeTimePreset": "03:00"
             }
             """);
 
@@ -30,6 +31,7 @@ public sealed class SettingsStoreTests
             Assert.Equal("COM7", settings.SelectedPort);
             Assert.Equal(GameMode.Volleyball, settings.GameMode);
             Assert.Equal("08:00", settings.GameTimePreset);
+            Assert.Equal("03:00", settings.OvertimeTimePreset);
         }
         finally
         {
@@ -58,6 +60,7 @@ public sealed class SettingsStoreTests
 
             Assert.Contains("// Serial port used by the scoreboard application.", json);
             Assert.Contains("\"selectedPort\": \"COM3\"", json);
+            Assert.Contains("\"overtimeTimePreset\": \"05:00\"", json);
             Assert.Contains("\"runningText\": \"TEST\"", json);
         }
         finally

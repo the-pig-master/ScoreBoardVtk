@@ -83,6 +83,21 @@ public sealed class ScoreboardController
                 SetTimerPreset(typed.Minutes, typed.Seconds, typed.Tenths);
                 break;
 
+            case SetOvertimeTimerPresetCommand typed:
+                SetOvertimeTimerPreset(typed.Minutes, typed.Seconds, typed.Tenths);
+                break;
+
+            case SetScoreboardValuesCommand typed:
+                SetScoreboardValues(
+                    typed.HomeScore,
+                    typed.GuestScore,
+                    typed.HomeSecondaryCounter,
+                    typed.GuestSecondaryCounter,
+                    typed.PeriodNumber,
+                    typed.MainClockTenths,
+                    typed.ShotClockTenths);
+                break;
+
             case ChangeScoreCommand typed:
                 ApplyScoreChange(typed.Side, typed.Delta);
                 break;
@@ -251,6 +266,23 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
+    public void SetOvertimeTimerPreset(int minutes, int seconds, int tenths)
+    {
+        minutes = Math.Clamp(minutes, 0, 59);
+        seconds = Math.Clamp(seconds, 0, 59);
+        tenths = Math.Clamp(tenths, 0, 9);
+
+        var overtimePresetTenths = (minutes * 60 * 10) + (seconds * 10) + tenths;
+        _settings.OvertimeTimePreset = FormatPreset(overtimePresetTenths);
+
+        if (_settings.GameMode == GameMode.Basketball && _period > 4 && !_isGameClockRunning)
+        {
+            ResetMainClockOnly();
+        }
+
+        RefreshDisplay();
+    }
+
     public void IncreaseScoreA()
     {
         _scoreA = (_scoreA + 1) % (MaxScore + 1);
@@ -353,8 +385,15 @@ public sealed class ScoreboardController
 
     public void Reset()
     {
-        if (_settings.GameMode == GameMode.Basketball && _isGameClockRunning)
+        if (_settings.GameMode == GameMode.Basketball)
         {
+            if (_isGameClockRunning || _isShotClockRunning)
+            {
+                return;
+            }
+
+            ResetBasketballTimersOnly();
+            RefreshDisplay();
             return;
         }
 
@@ -448,6 +487,44 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
+    public void SetScoreboardValues(
+        int homeScore,
+        int guestScore,
+        int homeSecondaryCounter,
+        int guestSecondaryCounter,
+        int periodNumber,
+        int mainClockTenths,
+        int shotClockTenths)
+    {
+        _scoreA = Math.Clamp(homeScore, 0, MaxScore);
+        _scoreB = Math.Clamp(guestScore, 0, MaxScore);
+
+        if (_settings.GameMode == GameMode.Basketball)
+        {
+            _period = Math.Clamp(periodNumber, 1, 5);
+            _penaltyA = NormalizeBasketballPenalty(homeSecondaryCounter);
+            _penaltyB = NormalizeBasketballPenalty(guestSecondaryCounter);
+            _mainClockTenths = Math.Clamp(mainClockTenths, 0, 59 * 60 * 10 + 59 * 10 + 9);
+            _shotClockRemainingTenths = ClampShotClockTenths(Math.Clamp(shotClockTenths, 0, 24 * 10));
+        }
+        else
+        {
+            _period = Math.Clamp(periodNumber, 1, 5);
+            _penaltyA = Math.Clamp(homeSecondaryCounter, 0, MaxPenaltyVolleyball);
+            _penaltyB = Math.Clamp(guestSecondaryCounter, 0, MaxPenaltyVolleyball);
+            _mainClockTenths = Math.Clamp(mainClockTenths, 0, 59 * 60 * 10 + 59 * 10 + 9);
+            _shotClockRemainingTenths = 0;
+        }
+
+        _mainSignalRemainingSeconds = 0;
+        _shotClockSignalRemainingTenths = 0;
+        _isManualSignalActive = false;
+        _isGameClockRunning = false;
+        _isShotClockRunning = false;
+
+        RefreshDisplay();
+    }
+
     public void TickMainClock()
     {
         if (_settings.GameMode != GameMode.Basketball || !_isGameClockRunning)
@@ -517,6 +594,7 @@ public sealed class ScoreboardController
         _settings.MainSignalDurationSeconds = Math.Clamp(_settings.MainSignalDurationSeconds, 0, 9);
         _settings.ShotClockSignalDurationTenths = Math.Clamp(_settings.ShotClockSignalDurationTenths, 5, 30);
         _settings.GameTimePreset = string.IsNullOrWhiteSpace(_settings.GameTimePreset) ? "10:00" : _settings.GameTimePreset;
+        _settings.OvertimeTimePreset = string.IsNullOrWhiteSpace(_settings.OvertimeTimePreset) ? "05:00" : _settings.OvertimeTimePreset;
 
         if (_settings.GameMode == GameMode.Basketball)
         {
@@ -547,6 +625,16 @@ public sealed class ScoreboardController
         _presetTenths = GetCurrentPeriodPresetTenths();
         _mainClockTenths = _settings.TimerDirection == TimerDirection.Down ? _presetTenths : 0;
         InitializeShotClock(24, respectAutoStart: false);
+    }
+
+    private void ResetBasketballTimersOnly()
+    {
+        _mainSignalRemainingSeconds = 0;
+        _shotClockSignalRemainingTenths = 0;
+        _isManualSignalActive = false;
+        _isGameClockRunning = false;
+        _isShotClockRunning = false;
+        ResetMainClockOnly();
     }
 
     private void StopGameClockInternal()
@@ -675,10 +763,10 @@ public sealed class ScoreboardController
     {
         if (_settings.GameMode == GameMode.Basketball && _period > 4)
         {
-            return 5 * 60 * 10;
+            return ParsePresetTenths(_settings.OvertimeTimePreset, 5 * 60 * 10);
         }
 
-        return ParsePresetTenths(_settings.GameTimePreset);
+        return ParsePresetTenths(_settings.GameTimePreset, 10 * 60 * 10);
     }
 
     private int NormalizeBasketballPenalty(int value)
@@ -721,11 +809,11 @@ public sealed class ScoreboardController
             _shotClockSignalRemainingTenths > 0);
     }
 
-    private static int ParsePresetTenths(string preset)
+    private static int ParsePresetTenths(string preset, int defaultTenths)
     {
         if (string.IsNullOrWhiteSpace(preset))
         {
-            return 10 * 60 * 10;
+            return defaultTenths;
         }
 
         var tenths = 0;
@@ -740,7 +828,7 @@ public sealed class ScoreboardController
 
         if (!TimeSpan.TryParseExact(trimmed, ["m\\:ss", "mm\\:ss"], CultureInfo.InvariantCulture, out var timeSpan))
         {
-            return 10 * 60 * 10;
+            return defaultTenths;
         }
 
         var totalTenths = ((int)timeSpan.TotalMinutes * 60 * 10) + (timeSpan.Seconds * 10) + tenths;

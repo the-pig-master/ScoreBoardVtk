@@ -65,6 +65,10 @@ public sealed class SettingsStore
           // Supported formats: "mm:ss" or "mm:ss.t"
           "gameTimePreset": {{ToJson(settings.GameTimePreset)}},
 
+          // Basketball overtime timer preset.
+          // Supported formats: "mm:ss" or "mm:ss.t"
+          "overtimeTimePreset": {{ToJson(settings.OvertimeTimePreset)}},
+
           // Basketball foul display mode.
           // true  = wrap counter at 5 fouls
           // false = wrap counter at 9 fouls

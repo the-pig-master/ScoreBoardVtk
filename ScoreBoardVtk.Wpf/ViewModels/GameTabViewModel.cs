@@ -1,5 +1,7 @@
 namespace ScoreBoardVtk.Wpf.ViewModels;
 
+using ScoreBoardVtk.Wpf.Models;
+
 public sealed class GameTabViewModel
 {
     public GameTabViewModel(ScoreboardWorkspaceViewModel workspace)
@@ -17,5 +19,10 @@ public sealed class GameTabViewModel
     public void StopManualSignal()
     {
         Workspace.StopManualSignal();
+    }
+
+    public void ApplyManualValues(ManualScoreboardValues values)
+    {
+        Workspace.ApplyManualValues(values);
     }
 }

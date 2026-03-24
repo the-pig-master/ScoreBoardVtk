@@ -22,6 +22,17 @@ public sealed record SetRunningTextCommand(string Text) : ScoreboardCommand;
 
 public sealed record SetTimerPresetCommand(int Minutes, int Seconds, int Tenths) : ScoreboardCommand;
 
+public sealed record SetOvertimeTimerPresetCommand(int Minutes, int Seconds, int Tenths) : ScoreboardCommand;
+
+public sealed record SetScoreboardValuesCommand(
+    int HomeScore,
+    int GuestScore,
+    int HomeSecondaryCounter,
+    int GuestSecondaryCounter,
+    int PeriodNumber,
+    int MainClockTenths,
+    int ShotClockTenths) : ScoreboardCommand;
+
 public sealed record ChangeScoreCommand(TeamSide Side, int Delta) : ScoreboardCommand;
 
 public sealed record ChangeSecondaryCounterCommand(TeamSide Side, int Delta) : ScoreboardCommand;

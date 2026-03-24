@@ -31,6 +31,7 @@ Modern C# migration of the legacy scoreboard controller from `C:\WORK\final`.
   - CRC16
   - legacy byte remapping copied from the original project
 - Persisted match settings in `settings.json`
+  - including separate presets for regular time and overtime
 - Persisted host/runtime profile in `hostsettings.json`
 
 ## Profiles

@@ -43,6 +43,22 @@ public sealed class ScoreboardControllerTests
     }
 
     [Fact]
+    public void AdvancePeriodOrSet_InBasketball_UsesConfiguredOvertimePreset()
+    {
+        var controller = new ScoreboardController(CreateBasketballSettings());
+
+        controller.Apply(new SetOvertimeTimerPresetCommand(3, 30, 0));
+        controller.AdvancePeriodOrSet();
+        controller.AdvancePeriodOrSet();
+        controller.AdvancePeriodOrSet();
+        controller.AdvancePeriodOrSet();
+
+        Assert.Equal(5, controller.State.PeriodNumber);
+        Assert.Equal(2100, controller.State.TimerPresetTenths);
+        Assert.Equal(2100, controller.State.MainClockTenths);
+    }
+
+    [Fact]
     public void AdvancePeriodOrSet_InBasketball_AfterOvertimeWrapsBackToFirstQuarter()
     {
         var controller = new ScoreboardController(CreateBasketballSettings());
@@ -87,6 +103,75 @@ public sealed class ScoreboardControllerTests
 
         Assert.Equal(1, controller.State.PeriodNumber);
         Assert.True(controller.State.IsGameClockRunning);
+    }
+
+    [Fact]
+    public void Reset_InBasketball_WhenStopped_ResetsOnlyTimers()
+    {
+        var controller = new ScoreboardController(CreateBasketballSettings());
+
+        controller.Apply(new ChangeScoreCommand(TeamSide.Home, 12));
+        controller.Apply(new ChangeScoreCommand(TeamSide.Guest, 7));
+        controller.Apply(new ChangeSecondaryCounterCommand(TeamSide.Home, 3));
+        controller.Apply(new ChangeSecondaryCounterCommand(TeamSide.Guest, 2));
+        controller.AdvancePeriodOrSet();
+        controller.SetShotClock14();
+        controller.Reset();
+
+        Assert.Equal(12, controller.State.HomeScore);
+        Assert.Equal(7, controller.State.GuestScore);
+        Assert.Equal(3, controller.State.HomeSecondaryCounter);
+        Assert.Equal(2, controller.State.GuestSecondaryCounter);
+        Assert.Equal(2, controller.State.PeriodNumber);
+        Assert.Equal(6000, controller.State.MainClockTenths);
+        Assert.Equal(240, controller.State.ShotClockTenths);
+        Assert.False(controller.State.IsGameClockRunning);
+        Assert.False(controller.State.IsShotClockRunning);
+        Assert.False(controller.State.IsMainSignalActive);
+        Assert.False(controller.State.IsShotClockSignalActive);
+    }
+
+    [Fact]
+    public void Reset_InBasketball_WhenGameClockRunning_IsIgnored()
+    {
+        var controller = new ScoreboardController(CreateBasketballSettings());
+
+        controller.ToggleGameClock();
+        controller.Reset();
+
+        Assert.True(controller.State.IsGameClockRunning);
+        Assert.Equal(6000, controller.State.MainClockTenths);
+    }
+
+    [Fact]
+    public void SetScoreboardValues_InBasketball_SetsRequestedValuesAndStopsTimers()
+    {
+        var controller = new ScoreboardController(CreateBasketballSettings(autoStartShotClock: true));
+
+        controller.ToggleGameClock();
+        controller.Apply(new SetScoreboardValuesCommand(87, 79, 4, 3, 5, 125, 143));
+
+        Assert.Equal(87, controller.State.HomeScore);
+        Assert.Equal(79, controller.State.GuestScore);
+        Assert.Equal(4, controller.State.HomeSecondaryCounter);
+        Assert.Equal(3, controller.State.GuestSecondaryCounter);
+        Assert.Equal(5, controller.State.PeriodNumber);
+        Assert.Equal(125, controller.State.MainClockTenths);
+        Assert.Equal(125, controller.State.ShotClockTenths);
+        Assert.False(controller.State.IsGameClockRunning);
+        Assert.False(controller.State.IsShotClockRunning);
+        Assert.False(controller.State.IsMainSignalActive);
+        Assert.False(controller.State.IsShotClockSignalActive);
+    }
+
+    [Fact]
+    public void SetScoreboardValues_InBasketball_ClampsShotClockToTwentyFourSeconds()
+    {
+        var controller = new ScoreboardController(CreateBasketballSettings());
+
+        controller.Apply(new SetScoreboardValuesCommand(10, 8, 1, 2, 1, 6000, 300));
+
+        Assert.Equal(240, controller.State.ShotClockTenths);
     }
 
     [Fact]
@@ -151,6 +236,7 @@ public sealed class ScoreboardControllerTests
             GameMode = GameMode.Basketball,
             TimerDirection = TimerDirection.Down,
             GameTimePreset = "10:00",
+            OvertimeTimePreset = "05:00",
             MainSignalDurationSeconds = 3,
             FontMode = FontMode.Font6x8,
             CountFoulsToFive = true,

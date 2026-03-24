@@ -6,6 +6,8 @@ public sealed class AppSettings
 
     public string GameTimePreset { get; set; } = "10:00";
 
+    public string OvertimeTimePreset { get; set; } = "05:00";
+
     public bool CountFoulsToFive { get; set; } = true;
 
     public TimerDirection TimerDirection { get; set; } = TimerDirection.Down;

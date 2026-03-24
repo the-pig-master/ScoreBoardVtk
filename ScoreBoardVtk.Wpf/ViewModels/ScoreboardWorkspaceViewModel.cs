@@ -32,6 +32,9 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     private int _presetMinutes = 10;
     private int _presetSeconds;
     private int _presetTenths;
+    private int _overtimePresetMinutes = 5;
+    private int _overtimePresetSeconds;
+    private int _overtimePresetTenths;
     private OptionItem<GameMode>? _selectedGameMode;
     private OptionItem<FontMode>? _selectedFontMode;
     private OptionItem<TimerDirection>? _selectedTimerDirection;
@@ -191,6 +194,19 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         private set => SetProperty(ref _systemMessageText, value);
     }
 
+    public int ConfiguredTimerPresetTenths
+    {
+        get
+        {
+            var parsed = ParsePreset(_scoreboard.Settings.GameTimePreset, 10, 0, 0);
+            return (parsed.Minutes * 60 * 10) + (parsed.Seconds * 10) + parsed.Tenths;
+        }
+    }
+
+    public bool CanResetTimers => _currentState is not null &&
+                                  !_currentState.IsGameClockRunning &&
+                                  !_currentState.IsShotClockRunning;
+
     public string RunningText
     {
         get => _runningText;
@@ -263,6 +279,24 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         set => SetProperty(ref _presetTenths, value);
     }
 
+    public int OvertimePresetMinutes
+    {
+        get => _overtimePresetMinutes;
+        set => SetProperty(ref _overtimePresetMinutes, value);
+    }
+
+    public int OvertimePresetSeconds
+    {
+        get => _overtimePresetSeconds;
+        set => SetProperty(ref _overtimePresetSeconds, value);
+    }
+
+    public int OvertimePresetTenths
+    {
+        get => _overtimePresetTenths;
+        set => SetProperty(ref _overtimePresetTenths, value);
+    }
+
     public OptionItem<GameMode>? SelectedGameMode
     {
         get => _selectedGameMode;
@@ -306,6 +340,22 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     public void StopManualSignal()
     {
         _scoreboard.Execute(new SetManualSignalCommand(false));
+    }
+
+    public void ApplyManualValues(ManualScoreboardValues values)
+    {
+        ArgumentNullException.ThrowIfNull(values);
+
+        _scoreboard.Execute(new SetScoreboardValuesCommand(
+            values.HomeScore,
+            values.GuestScore,
+            values.HomeSecondaryCounter,
+            values.GuestSecondaryCounter,
+            values.PeriodNumber,
+            values.MainClockTenths,
+            values.ShotClockTenths));
+
+        SystemMessageText = "Values applied.";
     }
 
     public void Dispose()
@@ -361,7 +411,8 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         SelectedGameMode = GameModes.First(option => option.Value == settings.GameMode);
         SelectedFontMode = FontModes.First(option => option.Value == settings.FontMode);
         SelectedTimerDirection = TimerDirections.First(option => option.Value == settings.TimerDirection);
-        ApplyPresetFields(settings.GameTimePreset);
+        ApplyMainPresetFields(settings.GameTimePreset);
+        ApplyOvertimePresetFields(settings.OvertimeTimePreset);
 
         _suppressControllerSync = false;
     }
@@ -369,22 +420,32 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     private void RefreshScoreboardState(ScoreboardState state)
     {
         CurrentState = state;
+        OnPropertyChanged(nameof(CanResetTimers));
         CurrentSnapshot = _scoreboard.Snapshot;
         HostClock = DateTime.Now;
     }
 
-    private void ApplyPresetFields(string preset)
+    private void ApplyMainPresetFields(string preset)
     {
-        var parsed = ParsePreset(preset);
+        var parsed = ParsePreset(preset, 10, 0, 0);
         PresetMinutes = parsed.Minutes;
         PresetSeconds = parsed.Seconds;
         PresetTenths = parsed.Tenths;
+    }
+
+    private void ApplyOvertimePresetFields(string preset)
+    {
+        var parsed = ParsePreset(preset, 5, 0, 0);
+        OvertimePresetMinutes = parsed.Minutes;
+        OvertimePresetSeconds = parsed.Seconds;
+        OvertimePresetTenths = parsed.Tenths;
     }
 
     private void ApplySettings()
     {
         var requestedTimerDirection = SelectedTimerDirection?.Value ?? CurrentState.TimerDirection;
         var requestedTimerPreset = FormatPreset(PresetMinutes, PresetSeconds, PresetTenths);
+        var requestedOvertimePreset = FormatPreset(OvertimePresetMinutes, OvertimePresetSeconds, OvertimePresetTenths);
 
         _scoreboard.Settings.SelectedPort = SelectedPort ?? string.Empty;
 
@@ -408,12 +469,16 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         _scoreboard.Execute(new SetMainSignalDurationSecondsCommand(MainSignalDurationSeconds));
         _scoreboard.Execute(new SetShotClockSignalDurationTenthsCommand(ShotClockSignalDurationTenths));
         _scoreboard.Execute(new SetTimerPresetCommand(PresetMinutes, PresetSeconds, PresetTenths));
+        _scoreboard.Execute(new SetOvertimeTimerPresetCommand(OvertimePresetMinutes, OvertimePresetSeconds, OvertimePresetTenths));
 
         ApplySettingsFromController();
 
+        var requestedCurrentPreset = CurrentState.IsExtraPeriod
+            ? requestedOvertimePreset
+            : requestedTimerPreset;
         var timerSettingsPending =
             CurrentState.TimerDirection != requestedTimerDirection ||
-            CurrentSnapshot.TimerPresetText != requestedTimerPreset;
+            CurrentSnapshot.TimerPresetText != requestedCurrentPreset;
 
         SystemMessageText = CurrentState.IsGameClockRunning && timerSettingsPending
             ? "Settings applied. Stop the game clock to apply timer direction and timer preset."
@@ -493,11 +558,11 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         ConnectedPortName = _scoreboard.IsConnected ? _scoreboard.ConnectedPortName : string.Empty;
     }
 
-    private static (int Minutes, int Seconds, int Tenths) ParsePreset(string preset)
+    private static (int Minutes, int Seconds, int Tenths) ParsePreset(string preset, int defaultMinutes, int defaultSeconds, int defaultTenths)
     {
         if (string.IsNullOrWhiteSpace(preset))
         {
-            return (10, 0, 0);
+            return (defaultMinutes, defaultSeconds, defaultTenths);
         }
 
         var tenths = 0;
@@ -516,7 +581,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
             !int.TryParse(segments[0], out var minutes) ||
             !int.TryParse(segments[1], out var seconds))
         {
-            return (10, 0, 0);
+            return (defaultMinutes, defaultSeconds, defaultTenths);
         }
 
         return (Math.Clamp(minutes, 0, 59), Math.Clamp(seconds, 0, 59), Math.Clamp(tenths, 0, 9));
