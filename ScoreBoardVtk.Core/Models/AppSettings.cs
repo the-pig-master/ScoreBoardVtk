@@ -22,8 +22,6 @@ public sealed class AppSettings
 
     public int ShotClockSignalDurationTenths { get; set; } = 15;
 
-    public bool AutoStartShotClock { get; set; }
-
     public bool RunningTextEnabled { get; set; }
 
     public string RunningText { get; set; } = string.Empty;

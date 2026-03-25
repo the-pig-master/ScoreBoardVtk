@@ -17,7 +17,6 @@ public sealed record ScoreboardSnapshot(
     string RunningText,
     bool RunningTextEnabled,
     bool CountFoulsToFive,
-    bool AutoStartShotClock,
     bool IsGameClockRunning,
     bool IsShotClockRunning,
     bool IsMainSignalActive,

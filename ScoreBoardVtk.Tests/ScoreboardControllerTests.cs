@@ -146,7 +146,7 @@ public sealed class ScoreboardControllerTests
     [Fact]
     public void SetScoreboardValues_InBasketball_SetsRequestedValuesAndStopsTimers()
     {
-        var controller = new ScoreboardController(CreateBasketballSettings(autoStartShotClock: true));
+        var controller = new ScoreboardController(CreateBasketballSettings());
 
         controller.ToggleGameClock();
         controller.Apply(new SetScoreboardValuesCommand(87, 79, 4, 3, 5, 125, 143));
@@ -175,6 +175,17 @@ public sealed class ScoreboardControllerTests
     }
 
     [Fact]
+    public void RunShotClockCommand_SetsRequestedValueAndStartsShotClock()
+    {
+        var controller = new ScoreboardController(CreateBasketballSettings());
+
+        controller.Apply(new RunShotClockCommand(14));
+
+        Assert.Equal(140, controller.State.ShotClockTenths);
+        Assert.True(controller.State.IsShotClockRunning);
+    }
+
+    [Fact]
     public void TickMainClock_WhenPeriodEnds_StopsAtZeroAndActivatesMainSignal()
     {
         var controller = new ScoreboardController(CreateBasketballSettings());
@@ -191,9 +202,9 @@ public sealed class ScoreboardControllerTests
     [Fact]
     public void TickMainClock_WhenShotClockExpires_StopsShotClockAtZeroAndActivatesSignal()
     {
-        var controller = new ScoreboardController(CreateBasketballSettings(autoStartShotClock: true));
+        var controller = new ScoreboardController(CreateBasketballSettings());
 
-        controller.SetShotClock14();
+        controller.Apply(new RunShotClockCommand(14));
         controller.ToggleGameClock();
 
         for (var index = 0; index < 140; index++)
@@ -229,7 +240,7 @@ public sealed class ScoreboardControllerTests
         Assert.Equal(0, controller.State.GuestScore);
     }
 
-    private static AppSettings CreateBasketballSettings(bool autoStartShotClock = false)
+    private static AppSettings CreateBasketballSettings()
     {
         return new AppSettings
         {
@@ -240,7 +251,6 @@ public sealed class ScoreboardControllerTests
             MainSignalDurationSeconds = 3,
             FontMode = FontMode.Font6x8,
             CountFoulsToFive = true,
-            AutoStartShotClock = autoStartShotClock,
             RunningTextEnabled = false,
             RunningText = string.Empty,
         };

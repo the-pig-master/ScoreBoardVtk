@@ -18,7 +18,6 @@ public sealed record ScoreboardState(
     string RunningText,
     bool RunningTextEnabled,
     bool CountFoulsToFive,
-    bool AutoStartShotClock,
     bool IsGameClockRunning,
     bool IsShotClockRunning,
     bool IsManualSignalActive,

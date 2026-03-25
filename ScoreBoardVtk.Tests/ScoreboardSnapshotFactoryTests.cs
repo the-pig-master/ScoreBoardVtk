@@ -30,7 +30,6 @@ public sealed class ScoreboardSnapshotFactoryTests
             false,
             false,
             false,
-            false,
             false);
 
         var snapshot = ScoreboardSnapshotFactory.Create(state, DateTime.Today, "payload");
@@ -60,7 +59,6 @@ public sealed class ScoreboardSnapshotFactoryTests
             string.Empty,
             false,
             true,
-            false,
             false,
             false,
             false,

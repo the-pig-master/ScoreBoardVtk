@@ -28,7 +28,6 @@ public sealed class LegacyVtkProtocolTests
             "HELLO",
             true,
             true,
-            false,
             true,
             true,
             false,

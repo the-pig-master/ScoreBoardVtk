@@ -59,10 +59,6 @@ public sealed class ScoreboardController
                 SetCountFoulsToFive(typed.Enabled);
                 break;
 
-            case SetAutoStartShotClockCommand typed:
-                SetAutoStartShotClock(typed.Enabled);
-                break;
-
             case SetMainSignalDurationSecondsCommand typed:
                 SetMainSignalDurationSeconds(typed.Seconds);
                 break;
@@ -108,6 +104,10 @@ public sealed class ScoreboardController
 
             case SetShotClockCommand typed:
                 SetShotClock(typed.Seconds);
+                break;
+
+            case RunShotClockCommand typed:
+                RunShotClock(typed.Seconds);
                 break;
 
             case SetManualSignalCommand typed:
@@ -215,12 +215,6 @@ public sealed class ScoreboardController
             _penaltyB = NormalizeBasketballPenalty(_penaltyB);
         }
 
-        RefreshDisplay();
-    }
-
-    public void SetAutoStartShotClock(bool enabled)
-    {
-        _settings.AutoStartShotClock = enabled;
         RefreshDisplay();
     }
 
@@ -465,7 +459,7 @@ public sealed class ScoreboardController
         {
             if (_shotClockRemainingTenths <= 0)
             {
-                InitializeShotClock(24, respectAutoStart: false);
+                InitializeShotClock(24, startRunning: false);
             }
 
             _shotClockRemainingTenths = ClampShotClockTenths(_shotClockRemainingTenths);
@@ -624,7 +618,7 @@ public sealed class ScoreboardController
     {
         _presetTenths = GetCurrentPeriodPresetTenths();
         _mainClockTenths = _settings.TimerDirection == TimerDirection.Down ? _presetTenths : 0;
-        InitializeShotClock(24, respectAutoStart: false);
+        InitializeShotClock(24, startRunning: false);
     }
 
     private void ResetBasketballTimersOnly()
@@ -663,16 +657,28 @@ public sealed class ScoreboardController
             return;
         }
 
-        InitializeShotClock(seconds, respectAutoStart: true);
+        InitializeShotClock(seconds, startRunning: false);
         _shotClockSignalRemainingTenths = 0;
         RefreshDisplay();
     }
 
-    private void InitializeShotClock(int seconds, bool respectAutoStart)
+    private void RunShotClock(int seconds)
+    {
+        if (_settings.GameMode != GameMode.Basketball)
+        {
+            return;
+        }
+
+        InitializeShotClock(seconds, startRunning: true);
+        _shotClockSignalRemainingTenths = 0;
+        RefreshDisplay();
+    }
+
+    private void InitializeShotClock(int seconds, bool startRunning)
     {
         var tenths = Math.Max(0, seconds * 10);
         _shotClockRemainingTenths = ClampShotClockTenths(tenths);
-        _isShotClockRunning = respectAutoStart && _settings.AutoStartShotClock && _shotClockRemainingTenths > 0;
+        _isShotClockRunning = startRunning && _shotClockRemainingTenths > 0;
     }
 
     private void ApplyScoreChange(TeamSide side, int delta)
@@ -801,7 +807,6 @@ public sealed class ScoreboardController
             _settings.RunningText,
             _settings.RunningTextEnabled,
             _settings.CountFoulsToFive,
-            _settings.AutoStartShotClock,
             _isGameClockRunning,
             _isShotClockRunning,
             _isManualSignalActive,

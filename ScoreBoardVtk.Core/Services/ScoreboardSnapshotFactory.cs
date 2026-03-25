@@ -27,7 +27,6 @@ public static class ScoreboardSnapshotFactory
             state.RunningText,
             state.RunningTextEnabled,
             state.CountFoulsToFive,
-            state.AutoStartShotClock,
             state.IsGameClockRunning,
             state.IsShotClockRunning,
             state.IsMainSignalActive,

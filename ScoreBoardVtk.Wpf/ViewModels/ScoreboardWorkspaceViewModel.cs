@@ -27,7 +27,6 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     private string _runningText = string.Empty;
     private bool _runningTextEnabled;
     private bool _countFoulsToFive = true;
-    private bool _autoStartShotClock;
     private int _mainSignalDurationSeconds = 3;
     private int _shotClockSignalDurationTenths = 15;
     private int _presetMinutes = 10;
@@ -95,6 +94,8 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         ResetCommand = new RelayCommand(() => _scoreboard.Execute(new ResetScoreboardCommand()));
         SetShotClock24Command = new RelayCommand(() => _scoreboard.Execute(new SetShotClockCommand(24)));
         SetShotClock14Command = new RelayCommand(() => _scoreboard.Execute(new SetShotClockCommand(14)));
+        RunShotClock24Command = new RelayCommand(() => _scoreboard.Execute(new RunShotClockCommand(24)));
+        RunShotClock14Command = new RelayCommand(() => _scoreboard.Execute(new RunShotClockCommand(14)));
         ToggleShotClockCommand = new RelayCommand(() => _scoreboard.Execute(new ToggleShotClockCommand()));
         RefreshPortsCommand = new RelayCommand(() => RefreshPorts(SelectedPort));
         TogglePortCommand = new RelayCommand(TogglePort);
@@ -158,6 +159,10 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     public ICommand SetShotClock24Command { get; }
 
     public ICommand SetShotClock14Command { get; }
+
+    public ICommand RunShotClock24Command { get; }
+
+    public ICommand RunShotClock14Command { get; }
 
     public ICommand ToggleShotClockCommand { get; }
 
@@ -286,12 +291,6 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     {
         get => _countFoulsToFive;
         set => SetProperty(ref _countFoulsToFive, value);
-    }
-
-    public bool AutoStartShotClock
-    {
-        get => _autoStartShotClock;
-        set => SetProperty(ref _autoStartShotClock, value);
     }
 
     public int MainSignalDurationSeconds
@@ -497,7 +496,6 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         RunningText = settings.RunningText;
         RunningTextEnabled = settings.RunningTextEnabled;
         CountFoulsToFive = settings.CountFoulsToFive;
-        AutoStartShotClock = settings.AutoStartShotClock;
         MainSignalDurationSeconds = settings.MainSignalDurationSeconds;
         ShotClockSignalDurationTenths = settings.ShotClockSignalDurationTenths;
         SelectedPort = settings.SelectedPort;
@@ -560,7 +558,6 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         }
 
         _scoreboard.Execute(new SetCountFoulsToFiveCommand(CountFoulsToFive));
-        _scoreboard.Execute(new SetAutoStartShotClockCommand(AutoStartShotClock));
         _scoreboard.Execute(new SetMainSignalDurationSecondsCommand(MainSignalDurationSeconds));
         _scoreboard.Execute(new SetShotClockSignalDurationTenthsCommand(ShotClockSignalDurationTenths));
         _scoreboard.Execute(new SetTimerPresetCommand(PresetMinutes, PresetSeconds, PresetTenths));

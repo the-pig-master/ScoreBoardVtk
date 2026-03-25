@@ -156,16 +156,6 @@
                           FontWeight="SemiBold"
                           VerticalAlignment="Center"
                           Style="{StaticResource SettingsBasketballOnlyCheckBoxStyle}" />
-
-                <CheckBox Grid.Row="2"
-                          Grid.Column="1"
-                          Grid.ColumnSpan="2"
-                          Content="Auto-start shot clock after 24 / 14 reset"
-                          IsChecked="{Binding AutoStartShotClock}"
-                          FontSize="14"
-                          FontWeight="SemiBold"
-                          VerticalAlignment="Center"
-                          Style="{StaticResource SettingsBasketballOnlyCheckBoxStyle}" />
             </Grid>
         </Border>
 

@@ -10,8 +10,6 @@ public sealed record SetTimerDirectionCommand(TimerDirection TimerDirection) : S
 
 public sealed record SetCountFoulsToFiveCommand(bool Enabled) : ScoreboardCommand;
 
-public sealed record SetAutoStartShotClockCommand(bool Enabled) : ScoreboardCommand;
-
 public sealed record SetMainSignalDurationSecondsCommand(int Seconds) : ScoreboardCommand;
 
 public sealed record SetShotClockSignalDurationTenthsCommand(int Tenths) : ScoreboardCommand;
@@ -38,6 +36,8 @@ public sealed record ChangeScoreCommand(TeamSide Side, int Delta) : ScoreboardCo
 public sealed record ChangeSecondaryCounterCommand(TeamSide Side, int Delta) : ScoreboardCommand;
 
 public sealed record SetShotClockCommand(int Seconds) : ScoreboardCommand;
+
+public sealed record RunShotClockCommand(int Seconds) : ScoreboardCommand;
 
 public sealed record SetManualSignalCommand(bool IsActive) : ScoreboardCommand;
 

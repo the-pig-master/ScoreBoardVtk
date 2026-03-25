@@ -63,7 +63,6 @@ public static class ScoreboardCompositionRoot
             MainSignalDurationSeconds = 0,
             FontMode = FontMode.Font6x8,
             CountFoulsToFive = true,
-            AutoStartShotClock = false,
             RunningTextEnabled = false,
             RunningText = string.Empty,
         }, CreateTransport(profile));

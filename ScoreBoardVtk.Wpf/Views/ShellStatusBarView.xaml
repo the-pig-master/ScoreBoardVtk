@@ -6,7 +6,7 @@
              mc:Ignorable="d"
              d:DesignHeight="24"
              d:DesignWidth="1440">
-    <StatusBar>
+    <StatusBar FontFamily="Consolas">
         <StatusBarItem Width="260">
             <TextBlock VerticalAlignment="Center">
                 <TextBlock.Text>
@@ -25,7 +25,7 @@
 
         <StatusBarItem Width="760">
             <TextBlock Text="{Binding CurrentSnapshot.PayloadText, StringFormat=Payload: {0}}"
-                       VerticalAlignment="Center"
+                       VerticalAlignment="Center" FontFamily="Consolas"
                        TextTrimming="CharacterEllipsis" />
         </StatusBarItem>
 

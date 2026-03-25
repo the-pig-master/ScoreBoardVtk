@@ -62,7 +62,6 @@ public sealed class ScoreboardRuntimeTests
             false,
             false,
             false,
-            false,
             false);
 
         public ScoreboardSnapshot Snapshot { get; private set; } = ScoreboardSnapshotFactory.Create(
@@ -84,7 +83,6 @@ public sealed class ScoreboardRuntimeTests
                 string.Empty,
                 false,
                 true,
-                false,
                 false,
                 false,
                 false,

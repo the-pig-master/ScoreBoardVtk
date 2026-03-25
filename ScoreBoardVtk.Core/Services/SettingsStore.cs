@@ -122,9 +122,6 @@ public sealed class SettingsStore
           // Unit: tenths of a second, typical values: 5-30
           "shotClockSignalDurationTenths": {{ToJson(settings.ShotClockSignalDurationTenths)}},
 
-          // Automatically start the shot clock after setting 24/14.
-          "autoStartShotClock": {{ToJson(settings.AutoStartShotClock)}},
-
           // Enable or disable the running text area on the display.
           "runningTextEnabled": {{ToJson(settings.RunningTextEnabled)}},
 

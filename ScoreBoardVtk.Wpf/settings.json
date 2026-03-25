@@ -62,9 +62,6 @@
   // Unit: tenths of a second, typical values: 5-30
   "shotClockSignalDurationTenths": 15,
 
-  // Automatically start the shot clock after setting 24/14.
-  "autoStartShotClock": false,
-
   // Enable or disable the running text area on the display.
   "runningTextEnabled": false,
 
