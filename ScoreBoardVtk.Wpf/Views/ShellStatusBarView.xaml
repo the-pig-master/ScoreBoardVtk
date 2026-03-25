@@ -7,7 +7,7 @@
              d:DesignHeight="24"
              d:DesignWidth="1440">
     <StatusBar FontFamily="Consolas">
-        <StatusBarItem Width="260">
+        <StatusBarItem Margin="16 0 0 0">
             <TextBlock VerticalAlignment="Center">
                 <TextBlock.Text>
                     <MultiBinding Converter="{StaticResource PortStatusTextConverter}">
@@ -18,23 +18,22 @@
             </TextBlock>
         </StatusBarItem>
 
-        <StatusBarItem Width="170">
+        <StatusBarItem Margin="16 0 0 0">
             <TextBlock Text="{Binding HostClock, StringFormat=Host: {0:HH:mm:ss}}"
                        VerticalAlignment="Center" />
         </StatusBarItem>
-
-        <StatusBarItem Width="220">
+        <StatusBarItem Margin="16 0 0 0">
             <TextBlock Text="{Binding CurrentSnapshot.TimerPresetText, StringFormat=Preset: {0}}"
                        VerticalAlignment="Center" />
         </StatusBarItem>
 
-        <StatusBarItem Width="590">
+        <StatusBarItem Margin="16 0 0 0">
             <TextBlock Text="{Binding CurrentSnapshot.PayloadText, StringFormat=Payload: {0}}"
                        VerticalAlignment="Center" FontFamily="Consolas"
                        TextTrimming="CharacterEllipsis" />
         </StatusBarItem>
 
-        <StatusBarItem Width="320" HorizontalContentAlignment="Right">
+        <StatusBarItem  HorizontalContentAlignment="Right" Margin="16 0 0 0">
             <TextBlock Text="{Binding SystemMessageText}"
                        VerticalAlignment="Center"
                        TextAlignment="Right"

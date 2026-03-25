@@ -1,6 +1,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows;
+using ScoreBoardVtk.Core.Models;
 using ScoreBoardVtk.Wpf.ViewModels;
 
 namespace ScoreBoardVtk.Wpf.Views;
@@ -46,6 +47,32 @@ public partial class GameTabView : UserControl
         {
             ViewModel.Workspace.ResetCommand.Execute(null);
         }
+    }
+
+    private void AdvancePeriodButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel?.Workspace is null || !ViewModel.Workspace.CanResetTimers)
+        {
+            return;
+        }
+
+        var state = ViewModel.Workspace.CurrentState;
+
+        if (state.GameMode == GameMode.Basketball && state.MainClockTenths > 0)
+        {
+            var result = MessageBox.Show(
+                "The main game clock has not expired. Switch period anyway?",
+                "Confirm Period Change",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+            {
+                return;
+            }
+        }
+
+        ViewModel.Workspace.AdvancePeriodOrSetCommand.Execute(null);
     }
 
     private void SetButton_OnClick(object sender, RoutedEventArgs e)

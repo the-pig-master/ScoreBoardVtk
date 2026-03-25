@@ -9,7 +9,6 @@
     <Grid DataContext="{Binding Workspace}" Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -20,28 +19,33 @@
                     <ColumnDefinition Width="220" />
                     <ColumnDefinition Width="150" />
                     <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="56" />
-                </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="COM port" Style="{StaticResource FieldCaptionStyle}" VerticalAlignment="Center" />
-                <ComboBox Grid.Row="0"
-                          Grid.Column="1"
+                <TextBlock Grid.Column="0"
+                           Text="COM port"
+                           Style="{StaticResource FieldCaptionStyle}"
+                           VerticalAlignment="Center" />
+
+                <ComboBox Grid.Column="1"
                           Width="200"
                           Height="36"
                           ItemsSource="{Binding AvailablePorts}"
-                          SelectedItem="{Binding SelectedPort}" />
-                <Button Grid.Row="0"
-                        Grid.Column="2"
+                          SelectedItem="{Binding SelectedPort}"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Center" />
+
+                <Button Grid.Column="2"
                         Content="Refresh Ports"
                         Width="130"
                         Command="{Binding RefreshPortsCommand}"
+                        VerticalAlignment="Center"
                         Style="{StaticResource DeskButtonStyle}" />
-                <Button Grid.Row="0"
-                        Grid.Column="3"
+
+                <Button Grid.Column="3"
                         Width="130"
                         Command="{Binding TogglePortCommand}"
+                        VerticalAlignment="Center"
                         Style="{StaticResource PortToggleButtonStyle}" />
             </Grid>
         </Border>
@@ -49,101 +53,227 @@
         <Border Grid.Row="1" Margin="0,20,0,0" Style="{StaticResource CardBorderStyle}">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="86" />
-                    <RowDefinition Height="86" />
-                    <RowDefinition Height="40" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="340" />
-                    <ColumnDefinition Width="340" />
-                    <ColumnDefinition Width="340" />
-                    <ColumnDefinition Width="340" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Row="0" Grid.Column="0">
-                    <TextBlock Text="Game mode" Style="{StaticResource FieldCaptionStyle}" />
-                    <ComboBox Width="300"
-                              Height="36"  HorizontalAlignment="Left"
+                <Grid Grid.Row="0" Grid.Column="0" Margin="0,0,16,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Game mode" Style="{StaticResource FieldCaptionStyle}" />
+                    <ComboBox Grid.Row="1"
+                              Width="260"
+                              Height="36"
+                              HorizontalAlignment="Left"
                               ItemsSource="{Binding GameModes}"
                               DisplayMemberPath="Label"
                               SelectedItem="{Binding SelectedGameMode}" />
-                </StackPanel>
+                </Grid>
 
-                <StackPanel Grid.Row="0" Grid.Column="1">
-                    <TextBlock Text="Font mode" Style="{StaticResource FieldCaptionStyle}" />
-                    <ComboBox Width="300"
+                <Grid Grid.Row="0" Grid.Column="1" Margin="0,0,16,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Font mode" Style="{StaticResource FieldCaptionStyle}" />
+                    <ComboBox Grid.Row="1"
+                              Width="260"
                               Height="36"
                               HorizontalAlignment="Left"
                               ItemsSource="{Binding FontModes}"
                               DisplayMemberPath="Label"
                               SelectedItem="{Binding SelectedFontMode}" />
-                </StackPanel>
+                </Grid>
 
-                <StackPanel Grid.Row="0" Grid.Column="2">
-                    <TextBlock Text="Timer direction" Style="{StaticResource FieldCaptionStyle}" />
-                    <ComboBox Width="300"
+                <Grid Grid.Row="0" Grid.Column="2" Margin="0,0,16,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Timer direction" Style="{StaticResource FieldCaptionStyle}" />
+                    <ComboBox Grid.Row="1"
+                              Width="260"
                               Height="36"
                               HorizontalAlignment="Left"
                               ItemsSource="{Binding TimerDirections}"
                               DisplayMemberPath="Label"
                               SelectedItem="{Binding SelectedTimerDirection}" />
-                </StackPanel>
+                </Grid>
 
-              
-                
-                    <Button Content="Apply"  Grid.Row="0" Grid.Column="3"
-                           
-                            Command="{Binding ApplySettingsCommand}"
-                            Style="{StaticResource DeskButtonStyle}" />
+                <Grid Grid.Row="1" Grid.Column="0" Margin="0,16,16,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Main timer preset" Style="{StaticResource FieldCaptionStyle}" />
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="84" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="84" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="84" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox Grid.Column="0"
+                                  Height="36"
+                                  ItemsSource="{Binding PresetMinuteOptions}"
+                                  SelectedItem="{Binding PresetMinutes}" />
+                        <ComboBox Grid.Column="2"
+                                  Height="36"
+                                  ItemsSource="{Binding PresetSecondOptions}"
+                                  SelectedItem="{Binding PresetSeconds}" />
+                        <ComboBox Grid.Column="4"
+                                  Height="36"
+                                  ItemsSource="{Binding PresetTenthsOptions}"
+                                  SelectedItem="{Binding PresetTenths}" />
+                    </Grid>
+                </Grid>
 
-                <StackPanel Grid.Row="1" Grid.Column="0">
-                    <TextBlock Text="Main timer preset" Style="{StaticResource FieldCaptionStyle}" />
-                    <StackPanel Orientation="Horizontal">
-                        <ComboBox Width="90" Height="36" ItemsSource="{Binding PresetMinuteOptions}" SelectedItem="{Binding PresetMinutes}" />
-                        <ComboBox Width="90" Height="36" Margin="12,0,0,0" ItemsSource="{Binding PresetSecondOptions}" SelectedItem="{Binding PresetSeconds}" />
-                        <ComboBox Width="90" Height="36" Margin="12,0,0,0" ItemsSource="{Binding PresetTenthsOptions}" SelectedItem="{Binding PresetTenths}" />
-                    </StackPanel>
-                </StackPanel>
+                <Grid Grid.Row="1" Grid.Column="1" Margin="0,16,16,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Overtime preset" Style="{StaticResource FieldCaptionStyle}" />
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="84" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="84" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="84" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox Grid.Column="0"
+                                  Height="36"
+                                  ItemsSource="{Binding PresetMinuteOptions}"
+                                  SelectedItem="{Binding OvertimePresetMinutes}" />
+                        <ComboBox Grid.Column="2"
+                                  Height="36"
+                                  ItemsSource="{Binding PresetSecondOptions}"
+                                  SelectedItem="{Binding OvertimePresetSeconds}" />
+                        <ComboBox Grid.Column="4"
+                                  Height="36"
+                                  ItemsSource="{Binding PresetTenthsOptions}"
+                                  SelectedItem="{Binding OvertimePresetTenths}" />
+                    </Grid>
+                </Grid>
 
-                <StackPanel Grid.Row="1" Grid.Column="1">
-                    <TextBlock Text="Overtime preset" Style="{StaticResource FieldCaptionStyle}" />
-                    <StackPanel Orientation="Horizontal">
-                        <ComboBox Width="90" Height="36" ItemsSource="{Binding PresetMinuteOptions}" SelectedItem="{Binding OvertimePresetMinutes}" />
-                        <ComboBox Width="90" Height="36" Margin="12,0,0,0" ItemsSource="{Binding PresetSecondOptions}" SelectedItem="{Binding OvertimePresetSeconds}" />
-                        <ComboBox Width="90" Height="36" Margin="12,0,0,0" ItemsSource="{Binding PresetTenthsOptions}" SelectedItem="{Binding OvertimePresetTenths}" />
-                    </StackPanel>
-                </StackPanel>
-
-                <StackPanel Grid.Row="1" Grid.Column="2">
-                    <TextBlock Text="Main buzzer, sec" Style="{StaticResource FieldCaptionStyle}" />
-                    <ComboBox Width="180"
+                <Grid Grid.Row="1" Grid.Column="2" Margin="0,16,16,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="0" Text="Main buzzer, sec" Style="{StaticResource FieldCaptionStyle}" />
+                    <ComboBox Grid.Row="1"
                               Height="36"
-                              HorizontalAlignment="Left"
+                              HorizontalAlignment="Stretch"
                               ItemsSource="{Binding SignalDurationOptions}"
                               SelectedItem="{Binding MainSignalDurationSeconds}" />
-                </StackPanel>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="24 sec buzzer, tenths" Style="{StaticResource FieldCaptionStyle}" />
+                    <ComboBox Grid.Row="1" Grid.Column="2"
+            Height="36"
+            HorizontalAlignment="Stretch"
+            ItemsSource="{Binding ShotClockSignalOptions}"
+            SelectedItem="{Binding ShotClockSignalDurationTenths}" />
+                </Grid>
 
-                <StackPanel Grid.Row="1" Grid.Column="3">
-                    <TextBlock Text="24 sec buzzer, tenths" Style="{StaticResource FieldCaptionStyle}" />
-                    <ComboBox Width="220"
-                              Height="36"
-                              HorizontalAlignment="Left"
-                              ItemsSource="{Binding ShotClockSignalOptions}"
-                              SelectedItem="{Binding ShotClockSignalDurationTenths}" />
-                </StackPanel>
-
+                
                 <CheckBox Grid.Row="2"
                           Grid.Column="0"
+                          Grid.ColumnSpan="3"
                           Content="Basketball fouls cap at 5"
                           IsChecked="{Binding CountFoulsToFive}"
                           FontSize="14"
                           FontWeight="SemiBold"
+                          Margin="0,18,0,0"
                           VerticalAlignment="Center"
                           Style="{StaticResource SettingsBasketballOnlyCheckBoxStyle}" />
+
+                <Button Grid.Row="0"
+                        Grid.Column="3"
+                        Content="Apply"
+                        Width="130"
+                        Margin="0,16,0,0"
+                        HorizontalAlignment="Right"
+                        Command="{Binding ApplySettingsCommand}"
+                        Style="{StaticResource DeskButtonStyle}" />
+                <Grid Grid.Row="3" Grid.ColumnSpan="5" Margin="0 16 0 0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Keyboard Shortcuts"
+                Style="{StaticResource PayloadHeaderTextStyle}"
+                Margin="0,0,0,8" />
+
+                    <TextBlock Grid.Row="1"
+                Text="{Binding KeyboardShortcutCaptureText}"
+                Style="{StaticResource FieldCaptionStyle}"
+                Margin="0,0,0,12" />
+
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding KeyboardShortcutBindings}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="360" />
+                                            <ColumnDefinition Width="160" />
+                                            <ColumnDefinition Width="140" />
+                                            <ColumnDefinition Width="120" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                                    Text="{Binding Label}"
+                                    VerticalAlignment="Center"
+                                    FontSize="14"
+                                    FontWeight="SemiBold" />
+
+                                        <TextBlock Grid.Column="1"
+                                    Text="{Binding AssignedKeyDisplay}"
+                                    VerticalAlignment="Center"
+                                    FontFamily="Consolas"
+                                    FontSize="14" />
+
+                                        <Button Grid.Column="2"
+                                 Content="{Binding AssignButtonText}"
+                                 Command="{Binding BeginAssignCommand}"
+                                 Width="120"
+                                 Style="{StaticResource DeskButtonStyle}" />
+
+                                        <Button Grid.Column="3"
+                                 Content="Clear"
+                                 Command="{Binding ClearCommand}"
+                                 Width="100"
+                                 Style="{StaticResource DeskButtonStyle}"
+                                 Margin="12,0,0,0" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
             </Grid>
         </Border>
 
-        <Border Grid.Row="2" Margin="0,20,0,0" Style="{StaticResource CardBorderStyle}">
+        <!--<Border Grid.Row="2" Margin="0,20,0,0" Style="{StaticResource CardBorderStyle}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -166,8 +296,8 @@
                             <DataTemplate>
                                 <Grid Margin="0,0,0,10">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="320" />
-                                        <ColumnDefinition Width="180" />
+                                        <ColumnDefinition Width="360" />
+                                        <ColumnDefinition Width="160" />
                                         <ColumnDefinition Width="140" />
                                         <ColumnDefinition Width="120" />
                                     </Grid.ColumnDefinitions>
@@ -202,6 +332,6 @@
                     </ItemsControl>
                 </ScrollViewer>
             </Grid>
-        </Border>
+        </Border>-->
     </Grid>
 </UserControl>

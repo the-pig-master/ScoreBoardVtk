@@ -30,19 +30,29 @@
                             </Grid.ColumnDefinitions>
 
                             <Border Grid.Column="0" Margin="0,0,18,0" Style="{StaticResource ScoreboardPanelStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="HOME" Style="{StaticResource DisplayCaptionStyle}" HorizontalAlignment="Left" />
-                                    <Viewbox Width="470" Height="150" Stretch="Uniform">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0"
+                                               Text="HOME"
+                                               Style="{StaticResource DisplayCaptionStyle}"
+                                               HorizontalAlignment="Left" />
+                                    <Viewbox Grid.Row="1" Width="470" Height="150" Stretch="Uniform">
                                         <TextBlock Text="{Binding CurrentSnapshot.ScoreAText}"
                                                    Style="{StaticResource ScoreValueTextStyle}"
                                                    FontSize="160" />
                                     </Viewbox>
-                                    <Grid>
+                                    <Grid Grid.Row="2" Margin="0,8,0,0">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
-                                        <TextBlock Text="{Binding CurrentSnapshot.PenaltyLabelText}"
+                                        <TextBlock Grid.Row="0"
+                                                   Text="{Binding CurrentSnapshot.PenaltyLabelText}"
                                                    Style="{StaticResource DisplayCaptionStyle}"
                                                    VerticalAlignment="Center" />
                                         <TextBlock Grid.Row="1"
@@ -51,7 +61,7 @@
                                                    FontSize="82"
                                                    HorizontalAlignment="Center" />
                                     </Grid>
-                                </StackPanel>
+                                </Grid>
                             </Border>
 
                             <Grid Grid.Column="1">
@@ -93,12 +103,20 @@
                                 </Border>
 
                                 <Border Grid.Row="1" Margin="0,0,0,12" Style="{StaticResource ScoreboardPanelStyle}">
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="GAME CLOCK" Style="{StaticResource DisplayCaptionStyle}" HorizontalAlignment="Center" />
-                                        <TextBlock Text="{Binding CurrentSnapshot.MainClockText}"
+                                    <Grid VerticalAlignment="Center">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Grid.Row="0"
+                                                   Text="GAME CLOCK"
+                                                   Style="{StaticResource DisplayCaptionStyle}"
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Row="1"
+                                                   Text="{Binding CurrentSnapshot.MainClockText}"
                                                    Style="{StaticResource ClockValueTextStyle}"
                                                    FontSize="42" />
-                                    </StackPanel>
+                                    </Grid>
                                 </Border>
 
                                 <Grid Grid.Row="2">
@@ -108,47 +126,95 @@
                                     </Grid.ColumnDefinitions>
 
                                     <Border Grid.Column="0" Margin="0,0,12,0" Style="{StaticResource ScoreboardPanelStyle}">
-                                        <StackPanel VerticalAlignment="Top">
-                                            <TextBlock Text="SHOT CLOCK" Style="{StaticResource DisplayCaptionStyle}" HorizontalAlignment="Center" />
-                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
-                                                <TextBlock Text="{Binding CurrentSnapshot.ShotClockSecondsText}"
+                                        <Grid VerticalAlignment="Top">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Grid.Row="0"
+                                                       Text="SHOT CLOCK"
+                                                       Style="{StaticResource DisplayCaptionStyle}"
+                                                       HorizontalAlignment="Center" />
+                                            <Grid Grid.Row="1" Margin="0,6,0,0" HorizontalAlignment="Center">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding CurrentSnapshot.ShotClockSecondsText}"
                                                            Style="{StaticResource ClockValueTextStyle}"
                                                            FontSize="42" />
-                                                <TextBlock Text="{Binding CurrentSnapshot.ShotClockTenthsText}"
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding CurrentSnapshot.ShotClockTenthsText}"
                                                            Style="{StaticResource ClockValueTextStyle}"
                                                            FontSize="24"
                                                            Margin="4,14,0,0" />
-                                            </StackPanel>
-                                        </StackPanel>
+                                            </Grid>
+                                        </Grid>
                                     </Border>
 
                                     <Border Grid.Column="1" Style="{StaticResource ScoreboardPanelStyle}">
-                                        <StackPanel VerticalAlignment="Center">
-                                            <TextBlock Text="SIGNALS" Style="{StaticResource DisplayCaptionStyle}" HorizontalAlignment="Center" />
-                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
-                                                <StackPanel Margin="0,0,16,0">
-                                                    <Ellipse Style="{StaticResource MainSignalIndicatorStyle}" />
-                                                    <TextBlock Text="MAIN" Style="{StaticResource DisplayCaptionStyle}" HorizontalAlignment="Center" Margin="0,6,0,0" />
-                                                </StackPanel>
-                                                <StackPanel>
-                                                    <Ellipse Style="{StaticResource ShotClockIndicatorStyle}" />
-                                                    <TextBlock Text="24" Style="{StaticResource DisplayCaptionStyle}" HorizontalAlignment="Center" Margin="0,6,0,0" />
-                                                </StackPanel>
-                                            </StackPanel>
-                                        </StackPanel>
+                                        <Grid VerticalAlignment="Center">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Grid.Row="0"
+                                                       Text="SIGNALS"
+                                                       Style="{StaticResource DisplayCaptionStyle}"
+                                                       HorizontalAlignment="Center" />
+                                            <Grid Grid.Row="1" Margin="0,8,0,0" HorizontalAlignment="Center">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid Grid.Column="0" Margin="0,0,16,0">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <Ellipse Grid.Row="0" Style="{StaticResource MainSignalIndicatorStyle}" />
+                                                    <TextBlock Grid.Row="1"
+                                                               Text="MAIN"
+                                                               Style="{StaticResource DisplayCaptionStyle}"
+                                                               HorizontalAlignment="Center"
+                                                               Margin="0,6,0,0" />
+                                                </Grid>
+                                                <Grid Grid.Column="1">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <Ellipse Grid.Row="0" Style="{StaticResource ShotClockIndicatorStyle}" />
+                                                    <TextBlock Grid.Row="1"
+                                                               Text="24"
+                                                               Style="{StaticResource DisplayCaptionStyle}"
+                                                               HorizontalAlignment="Center"
+                                                               Margin="0,6,0,0" />
+                                                </Grid>
+                                            </Grid>
+                                        </Grid>
                                     </Border>
                                 </Grid>
                             </Grid>
 
                             <Border Grid.Column="2" Margin="18,0,0,0" Style="{StaticResource ScoreboardPanelStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="GUEST" Style="{StaticResource DisplayCaptionStyle}" HorizontalAlignment="Right" />
-                                    <Viewbox Width="470" Height="150" Stretch="Uniform">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0"
+                                               Text="GUEST"
+                                               Style="{StaticResource DisplayCaptionStyle}"
+                                               HorizontalAlignment="Right" />
+                                    <Viewbox Grid.Row="1" Width="470" Height="150" Stretch="Uniform">
                                         <TextBlock Text="{Binding CurrentSnapshot.ScoreBText}"
                                                    Style="{StaticResource ScoreValueTextStyle}"
                                                    FontSize="160" />
                                     </Viewbox>
-                                    <Grid>
+                                    <Grid Grid.Row="2" Margin="0,8,0,0">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
@@ -164,7 +230,7 @@
                                                    FontSize="82"
                                                    HorizontalAlignment="Center" />
                                     </Grid>
-                                </StackPanel>
+                                </Grid>
                             </Border>
                         </Grid>
 
@@ -188,96 +254,236 @@
                     </Grid.ColumnDefinitions>
 
                     <Border Grid.Column="0" Margin="0,0,18,0" Style="{StaticResource CardBorderStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Home Console" Style="{StaticResource PanelHeaderTextStyle}" />
-                            <TextBlock Text="Score" Style="{StaticResource FieldCaptionStyle}" Margin="0,16,0,8" />
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="{Binding IncreaseScoreAButtonText}" Command="{Binding IncreaseScoreACommand}" Style="{StaticResource AccentDeskButtonStyle}" />
-                                <Button Content="{Binding DecreaseScoreAButtonText}" Command="{Binding DecreaseScoreACommand}" Style="{StaticResource DeskButtonStyle}" Margin="12,0,0,0" />
-                            </StackPanel>
-                            <TextBlock Text="{Binding CurrentSnapshot.PenaltyLabelText}" Style="{StaticResource FieldCaptionStyle}" Margin="0,18,0,8" />
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="{Binding IncreasePenaltyAButtonText}" Command="{Binding IncreasePenaltyACommand}" Style="{StaticResource DeskButtonStyle}" />
-                                <Button Content="{Binding DecreasePenaltyAButtonText}" Command="{Binding DecreasePenaltyACommand}" Style="{StaticResource DeskButtonStyle}" Margin="12,0,0,0" />
-                            </StackPanel>
-                        </StackPanel>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Home Console" Style="{StaticResource PanelHeaderTextStyle}" />
+                            <TextBlock Grid.Row="1" Text="Score" Style="{StaticResource FieldCaptionStyle}" Margin="0,16,0,8" />
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0"
+                                        Content="{Binding IncreaseScoreAButtonText}"
+                                        Command="{Binding IncreaseScoreACommand}"
+                                        Style="{StaticResource AccentDeskButtonStyle}" />
+                                <Button Grid.Column="1"
+                                        Content="{Binding DecreaseScoreAButtonText}"
+                                        Command="{Binding DecreaseScoreACommand}"
+                                        Style="{StaticResource DeskButtonStyle}"
+                                        Margin="12,0,0,0" />
+                            </Grid>
+                            <TextBlock Grid.Row="3"
+                                       Text="{Binding CurrentSnapshot.PenaltyLabelText}"
+                                       Style="{StaticResource FieldCaptionStyle}"
+                                       Margin="0,18,0,8" />
+                            <Grid Grid.Row="4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0"
+                                        Content="{Binding IncreasePenaltyAButtonText}"
+                                        Command="{Binding IncreasePenaltyACommand}"
+                                        Style="{StaticResource DeskButtonStyle}" />
+                                <Button Grid.Column="1"
+                                        Content="{Binding DecreasePenaltyAButtonText}"
+                                        Command="{Binding DecreasePenaltyACommand}"
+                                        Style="{StaticResource DeskButtonStyle}"
+                                        Margin="12,0,0,0" />
+                            </Grid>
+                        </Grid>
                     </Border>
 
                     <Border Grid.Column="1" Margin="0,0,18,0" Style="{StaticResource CardBorderStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Match Desk" Style="{StaticResource PanelHeaderTextStyle}" />
-                                <Button Content="{Binding GameClockToggleButtonText}"
-                                        Margin="10 16 0 0"
-                                        HorizontalAlignment="Stretch" Width="NaN"
-                                        Command="{Binding ToggleGameClockCommand}" Style="{StaticResource GameClockToggleButtonStyle}" />
-
-                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Content="Signal"
-                                        Margin="10 0 0 0"
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Match Desk" Style="{StaticResource PanelHeaderTextStyle}" />
+                            <Button Grid.Row="1"
+                                    Content="{Binding GameClockToggleButtonText}"
+                                    Margin="10,16,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    Width="NaN"
+                                    Command="{Binding ToggleGameClockCommand}"
+                                    Style="{StaticResource GameClockToggleButtonStyle}" />
+                            <Grid Grid.Row="2" Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0"
+                                        Content="Signal"
+                                        Margin="10,0,0,0"
                                         Style="{StaticResource WarningDeskButtonStyle}"
                                         PreviewMouseLeftButtonDown="SignalButton_OnPreviewMouseLeftButtonDown"
                                         PreviewMouseLeftButtonUp="SignalButton_OnPreviewMouseLeftButtonUp"
                                         LostMouseCapture="SignalButton_OnLostMouseCapture" />
-                                <StackPanel Orientation="Horizontal" Margin="45,10,0,0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <Ellipse Style="{StaticResource MainSignalIndicatorStyle}" />
-                                    <Ellipse Style="{StaticResource ShotClockIndicatorStyle}" Margin="10,0,0,0" />
-                                </StackPanel>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="10,12,0,0">
-                                <Button Content="Period / Set"
-                                        Command="{Binding AdvancePeriodOrSetCommand}"
+                                <Grid Grid.Column="1" Margin="0,8,0,0" HorizontalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Grid.Column="0" Margin="0,0,16,0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Ellipse Grid.Row="0" Style="{StaticResource MainSignalIndicatorStyle}" />
+                                        <TextBlock Grid.Row="1"
+                    Text="MAIN"
+                    Style="{StaticResource DisplayCaptionStyle}"
+                    HorizontalAlignment="Center"
+                    Margin="0,6,0,0" />
+                                    </Grid>
+                                    <Grid Grid.Column="1">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Ellipse Grid.Row="0" Style="{StaticResource ShotClockIndicatorStyle}" />
+                                        <TextBlock Grid.Row="1"
+                    Text="24"
+                    Style="{StaticResource DisplayCaptionStyle}"
+                    HorizontalAlignment="Center"
+                    Margin="0,6,0,0" />
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                            <Grid Grid.Row="3" Margin="10,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0"
+                                        Content="Period / Set"
                                         IsEnabled="{Binding CanResetTimers}"
+                                        Click="AdvancePeriodButton_OnClick"
                                         Style="{StaticResource DeskButtonStyle}" />
-                                <Button Content="Reset" Width="80" Margin="10 0 0 0"
+                                <Button Grid.Column="1"
+                                        Content="Reset"
+                                        Width="80"
+                                        Margin="10,0,0,0"
                                         IsEnabled="{Binding CanResetTimers}"
                                         Click="ResetButton_OnClick"
                                         Style="{StaticResource DeskButtonStyle}" />
-                                <Button Content="Set"
+                                <Button Grid.Column="2"
+                                        Content="Set"
                                         Width="80"
                                         IsEnabled="{Binding CanResetTimers}"
                                         Click="SetButton_OnClick"
                                         Style="{StaticResource DeskButtonStyle}"
                                         Margin="12,0,0,0" />
-
-                            </StackPanel>
-
-
-                        </StackPanel>
+                            </Grid>
+                        </Grid>
                     </Border>
 
                     <Border Grid.Column="2" Margin="0,0,18,0" Style="{StaticResource BasketballOnlyBorderStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Shot Clock Desk" Style="{StaticResource PanelHeaderTextStyle}" />
-                            <Button Content="{Binding ShotClockToggleButtonText}"
-                                    HorizontalAlignment="Stretch" Width="NaN"
-                                    Command="{Binding ToggleShotClockCommand}" Style="{StaticResource ShotClockToggleButtonStyle}" Margin="0,12,0,0" />
-                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                <Button Content="{Binding RunShotClock24ButtonText}" Command="{Binding RunShotClock24Command}" Style="{StaticResource GameClockToggleButtonStyle}" />
-                                <Button Content="{Binding RunShotClock14ButtonText}" Command="{Binding RunShotClock14Command}" Style="{StaticResource GameClockToggleButtonStyle}" Margin="12,0,0,0" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Content="{Binding SetShotClock24ButtonText}" Command="{Binding SetShotClock24Command}" Style="{StaticResource WarningDeskButtonStyle}" />
-                                <Button Content="{Binding SetShotClock14ButtonText}" Command="{Binding SetShotClock14Command}" Style="{StaticResource WarningDeskButtonStyle}" Margin="12,0,0,0" />
-                            </StackPanel>
-
-
-                        </StackPanel>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Shot Clock Desk" Style="{StaticResource PanelHeaderTextStyle}" />
+                            <Button Grid.Row="1"
+                                    Content="{Binding ShotClockToggleButtonText}"
+                                    HorizontalAlignment="Stretch"
+                                    Width="NaN"
+                                    Command="{Binding ToggleShotClockCommand}"
+                                    Style="{StaticResource ShotClockToggleButtonStyle}"
+                                    Margin="0,12,0,0" />
+                            <Grid Grid.Row="2" Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0"
+                                        Content="{Binding RunShotClock24ButtonText}"
+                                        Command="{Binding RunShotClock24Command}"
+                                        Style="{StaticResource ShotClockToggleButtonStyle}" />
+                                <Button Grid.Column="1"
+                                        Content="{Binding RunShotClock14ButtonText}"
+                                        Command="{Binding RunShotClock14Command}"
+                                        Style="{StaticResource ShotClockToggleButtonStyle}"
+                                        Margin="12,0,0,0" />
+                            </Grid>
+                            <Grid Grid.Row="3" Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0"
+                                        Content="{Binding SetShotClock24ButtonText}"
+                                        Command="{Binding SetShotClock24Command}"
+                                        Style="{StaticResource WarningDeskButtonStyle}" />
+                                <Button Grid.Column="1"
+                                        Content="{Binding SetShotClock14ButtonText}"
+                                        Command="{Binding SetShotClock14Command}"
+                                        Style="{StaticResource WarningDeskButtonStyle}"
+                                        Margin="12,0,0,0" />
+                            </Grid>
+                        </Grid>
                     </Border>
 
                     <Border Grid.Column="3" Style="{StaticResource CardBorderStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Guest Console" Style="{StaticResource PanelHeaderTextStyle}" />
-                            <TextBlock Text="Score" Style="{StaticResource FieldCaptionStyle}" Margin="0,16,0,8" />
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="{Binding IncreaseScoreBButtonText}" Command="{Binding IncreaseScoreBCommand}" Style="{StaticResource AccentDeskButtonStyle}" />
-                                <Button Content="{Binding DecreaseScoreBButtonText}" Command="{Binding DecreaseScoreBCommand}" Style="{StaticResource DeskButtonStyle}" Margin="12,0,0,0" />
-                            </StackPanel>
-                            <TextBlock Text="{Binding CurrentSnapshot.PenaltyLabelText}" Style="{StaticResource FieldCaptionStyle}" Margin="0,18,0,8" />
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="{Binding IncreasePenaltyBButtonText}" Command="{Binding IncreasePenaltyBCommand}" Style="{StaticResource DeskButtonStyle}" />
-                                <Button Content="{Binding DecreasePenaltyBButtonText}" Command="{Binding DecreasePenaltyBCommand}" Style="{StaticResource DeskButtonStyle}" Margin="12,0,0,0" />
-                            </StackPanel>
-                        </StackPanel>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Guest Console" Style="{StaticResource PanelHeaderTextStyle}" />
+                            <TextBlock Grid.Row="1" Text="Score" Style="{StaticResource FieldCaptionStyle}" Margin="0,16,0,8" />
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0"
+                                        Content="{Binding IncreaseScoreBButtonText}"
+                                        Command="{Binding IncreaseScoreBCommand}"
+                                        Style="{StaticResource AccentDeskButtonStyle}" />
+                                <Button Grid.Column="1"
+                                        Content="{Binding DecreaseScoreBButtonText}"
+                                        Command="{Binding DecreaseScoreBCommand}"
+                                        Style="{StaticResource DeskButtonStyle}"
+                                        Margin="12,0,0,0" />
+                            </Grid>
+                            <TextBlock Grid.Row="3"
+                                       Text="{Binding CurrentSnapshot.PenaltyLabelText}"
+                                       Style="{StaticResource FieldCaptionStyle}"
+                                       Margin="0,18,0,8" />
+                            <Grid Grid.Row="4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0"
+                                        Content="{Binding IncreasePenaltyBButtonText}"
+                                        Command="{Binding IncreasePenaltyBCommand}"
+                                        Style="{StaticResource DeskButtonStyle}" />
+                                <Button Grid.Column="1"
+                                        Content="{Binding DecreasePenaltyBButtonText}"
+                                        Command="{Binding DecreasePenaltyBCommand}"
+                                        Style="{StaticResource DeskButtonStyle}"
+                                        Margin="12,0,0,0" />
+                            </Grid>
+                        </Grid>
                     </Border>
                 </Grid>
 
@@ -289,13 +495,18 @@
                             <ColumnDefinition Width="960" />
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="Operator Message" Style="{StaticResource SectionHeaderTextStyle}" />
-                            <CheckBox Content="Enable running text"
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Operator Message" Style="{StaticResource SectionHeaderTextStyle}" />
+                            <CheckBox Grid.Row="1"
+                                      Content="Enable running text"
                                       IsChecked="{Binding RunningTextEnabled}"
                                       Margin="0,8,0,0"
                                       Style="{StaticResource MutedCheckBoxStyle}" />
-                        </StackPanel>
+                        </Grid>
 
                         <TextBlock Grid.Column="1"
                                    Text="Text"
