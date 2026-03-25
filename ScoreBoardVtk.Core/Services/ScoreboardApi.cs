@@ -8,6 +8,7 @@ public sealed class ScoreboardApi : IScoreboardApi
     private readonly IScoreboardProtocol _protocol;
     private readonly ISerialTransport _transport;
     private readonly TimeProvider _timeProvider;
+    private readonly object _sync = new();
 
     public ScoreboardApi(
         AppSettings settings,
@@ -39,39 +40,57 @@ public sealed class ScoreboardApi : IScoreboardApi
 
     public IReadOnlyList<string> GetAvailablePorts()
     {
-        return _transport.GetAvailablePorts();
+        lock (_sync)
+        {
+            return _transport.GetAvailablePorts();
+        }
     }
 
     public void Execute(ScoreboardCommand command)
     {
-        _controller.Apply(command);
+        lock (_sync)
+        {
+            _controller.Apply(command);
+        }
     }
 
     public void Connect(string portName)
     {
-        _transport.Open(portName);
-        Settings.SelectedPort = portName?.Trim() ?? string.Empty;
+        lock (_sync)
+        {
+            _transport.Open(portName);
+            Settings.SelectedPort = portName?.Trim() ?? string.Empty;
+        }
     }
 
     public void Disconnect()
     {
-        _transport.Close();
+        lock (_sync)
+        {
+            _transport.Close();
+        }
     }
 
     public void Publish()
     {
-        if (!_transport.IsOpen)
+        lock (_sync)
         {
-            return;
-        }
+            if (!_transport.IsOpen)
+            {
+                return;
+            }
 
-        _transport.Write(_protocol.CreateGamePacket(State, GetCurrentTime()));
+            _transport.Write(_protocol.CreateGamePacket(State, GetCurrentTime()));
+        }
     }
 
     public void Dispose()
     {
-        _controller.StateChanged -= ControllerOnStateChanged;
-        _transport.Dispose();
+        lock (_sync)
+        {
+            _controller.StateChanged -= ControllerOnStateChanged;
+            _transport.Dispose();
+        }
     }
 
     private void ControllerOnStateChanged(object? sender, ScoreboardState state)

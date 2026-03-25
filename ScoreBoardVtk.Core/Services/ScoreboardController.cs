@@ -539,20 +539,23 @@ public sealed class ScoreboardController
 
     public void TickMainClock()
     {
+        if (!HasActiveTimedState())
+        {
+            return;
+        }
+
         SynchronizeElapsedTime();
         RefreshDisplay();
     }
 
     public void TickMainSignal()
     {
-        SynchronizeElapsedTime();
-        RefreshDisplay();
+        TickMainClock();
     }
 
     public void TickShotClockSignal()
     {
-        SynchronizeElapsedTime();
-        RefreshDisplay();
+        TickMainClock();
     }
 
     private void ApplySettingsDefaults()

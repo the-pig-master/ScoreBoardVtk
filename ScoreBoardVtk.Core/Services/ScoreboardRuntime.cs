@@ -7,9 +7,7 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
     private readonly IScoreboardApi _scoreboard;
     private readonly ScoreboardRuntimeOptions _options;
 
-    private ScheduledLoop? _mainClockLoop;
-    private ScheduledLoop? _mainSignalLoop;
-    private ScheduledLoop? _shotClockSignalLoop;
+    private ScheduledLoop? _timingLoop;
     private ScheduledLoop? _displayRefreshLoop;
     private ScheduledLoop? _publishLoop;
     private bool _disposed;
@@ -33,9 +31,7 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
             return;
         }
 
-        _mainClockLoop = new ScheduledLoop(_options.MainClockInterval, "TickMainClock", () => _scoreboard.Execute(new TickMainClockCommand()), OnFaulted);
-        _mainSignalLoop = new ScheduledLoop(_options.MainSignalInterval, "TickMainSignal", () => _scoreboard.Execute(new TickMainSignalCommand()), OnFaulted);
-        _shotClockSignalLoop = new ScheduledLoop(_options.ShotClockSignalInterval, "TickShotClockSignal", () => _scoreboard.Execute(new TickShotClockSignalCommand()), OnFaulted);
+        _timingLoop = new ScheduledLoop(GetTimingInterval(), "TickMainClock", () => _scoreboard.Execute(new TickMainClockCommand()), OnFaulted);
         _displayRefreshLoop = new ScheduledLoop(_options.DisplayRefreshInterval, "RefreshDisplay", () => _scoreboard.Execute(new RefreshDisplayCommand()), OnFaulted);
         _publishLoop = new ScheduledLoop(_options.PublishInterval, "Publish", () => _scoreboard.Publish(), OnFaulted);
 
@@ -50,15 +46,11 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
             return;
         }
 
-        _mainClockLoop?.Dispose();
-        _mainSignalLoop?.Dispose();
-        _shotClockSignalLoop?.Dispose();
+        _timingLoop?.Dispose();
         _displayRefreshLoop?.Dispose();
         _publishLoop?.Dispose();
 
-        _mainClockLoop = null;
-        _mainSignalLoop = null;
-        _shotClockSignalLoop = null;
+        _timingLoop = null;
         _displayRefreshLoop = null;
         _publishLoop = null;
         IsRunning = false;
@@ -95,6 +87,22 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
     private void ThrowIfDisposed()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+    }
+
+    private TimeSpan GetTimingInterval()
+    {
+        return MinPositiveInterval(
+            _options.MainClockInterval,
+            _options.MainSignalInterval,
+            _options.ShotClockSignalInterval);
+    }
+
+    private static TimeSpan MinPositiveInterval(params TimeSpan[] intervals)
+    {
+        return intervals
+            .Where(interval => interval > TimeSpan.Zero)
+            .DefaultIfEmpty(TimeSpan.FromMilliseconds(100))
+            .Min();
     }
 
     private sealed class ScheduledLoop : IDisposable

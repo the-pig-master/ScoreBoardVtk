@@ -24,8 +24,6 @@ public sealed class ScoreboardRuntimeTests
         runtime.Stop();
 
         Assert.Contains(api.ExecutedCommands, command => command is TickMainClockCommand);
-        Assert.Contains(api.ExecutedCommands, command => command is TickMainSignalCommand);
-        Assert.Contains(api.ExecutedCommands, command => command is TickShotClockSignalCommand);
         Assert.Contains(api.ExecutedCommands, command => command is RefreshDisplayCommand);
         Assert.True(api.PublishCount > 0);
     }
