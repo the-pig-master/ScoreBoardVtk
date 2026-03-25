@@ -24,6 +24,8 @@ public sealed class SettingsStoreTests
               "overtimeTimePreset": "03:00",
               "keyboardBindings": {
                 "toggleGameClockKey": "Space",
+                "setShotClock24Key": "D1",
+                "runShotClock14Key": "D2",
                 "increaseHomeScoreKey": "F1"
               }
             }
@@ -37,6 +39,8 @@ public sealed class SettingsStoreTests
             Assert.Equal("08:00", settings.GameTimePreset);
             Assert.Equal("03:00", settings.OvertimeTimePreset);
             Assert.Equal("Space", settings.KeyboardBindings.ToggleGameClockKey);
+            Assert.Equal("D1", settings.KeyboardBindings.SetShotClock24Key);
+            Assert.Equal("D2", settings.KeyboardBindings.RunShotClock14Key);
             Assert.Equal("F1", settings.KeyboardBindings.IncreaseHomeScoreKey);
         }
         finally
@@ -68,6 +72,7 @@ public sealed class SettingsStoreTests
             Assert.Contains("\"selectedPort\": \"COM3\"", json);
             Assert.Contains("\"overtimeTimePreset\": \"05:00\"", json);
             Assert.Contains("\"keyboardBindings\": {", json);
+            Assert.Contains("\"runShotClock24Key\": \"\"", json);
             Assert.Contains("\"runningText\": \"TEST\"", json);
         }
         finally

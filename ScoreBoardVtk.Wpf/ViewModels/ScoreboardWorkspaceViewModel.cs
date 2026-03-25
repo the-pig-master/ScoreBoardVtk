@@ -70,6 +70,10 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         [
             new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.ToggleGameClock, "Game clock start / stop", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
             new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.ToggleShotClock, "Shot clock start / stop", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.SetShotClock24, "Set shot clock to 24", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.SetShotClock14, "Set shot clock to 14", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.RunShotClock24, "Run shot clock from 24", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.RunShotClock14, "Run shot clock from 14", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
             new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseHomeScore, "Home score +1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
             new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseHomeScore, "Home score -1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
             new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseGuestScore, "Guest score +1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
@@ -240,6 +244,14 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     public string ShotClockToggleButtonText => BuildButtonText(
         _currentState is not null && _currentState.IsShotClockRunning ? "Stop" : "Start",
         GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.ToggleShotClock));
+
+    public string SetShotClock24ButtonText => BuildButtonText("Set 24", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.SetShotClock24));
+
+    public string SetShotClock14ButtonText => BuildButtonText("Set 14", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.SetShotClock14));
+
+    public string RunShotClock24ButtonText => BuildButtonText("Run 24", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.RunShotClock24));
+
+    public string RunShotClock14ButtonText => BuildButtonText("Run 14", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.RunShotClock14));
 
     public string IncreaseScoreAButtonText => BuildButtonText("+1", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.IncreaseHomeScore));
 
@@ -675,6 +687,10 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     {
         _draftKeyboardBindings.ToggleGameClockKey = bindings.ToggleGameClockKey;
         _draftKeyboardBindings.ToggleShotClockKey = bindings.ToggleShotClockKey;
+        _draftKeyboardBindings.SetShotClock24Key = bindings.SetShotClock24Key;
+        _draftKeyboardBindings.SetShotClock14Key = bindings.SetShotClock14Key;
+        _draftKeyboardBindings.RunShotClock24Key = bindings.RunShotClock24Key;
+        _draftKeyboardBindings.RunShotClock14Key = bindings.RunShotClock14Key;
         _draftKeyboardBindings.IncreaseHomeScoreKey = bindings.IncreaseHomeScoreKey;
         _draftKeyboardBindings.DecreaseHomeScoreKey = bindings.DecreaseHomeScoreKey;
         _draftKeyboardBindings.IncreaseGuestScoreKey = bindings.IncreaseGuestScoreKey;
@@ -723,6 +739,18 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
             case KeyboardShortcutAction.ToggleShotClock:
                 _draftKeyboardBindings.ToggleShotClockKey = keyName;
                 break;
+            case KeyboardShortcutAction.SetShotClock24:
+                _draftKeyboardBindings.SetShotClock24Key = keyName;
+                break;
+            case KeyboardShortcutAction.SetShotClock14:
+                _draftKeyboardBindings.SetShotClock14Key = keyName;
+                break;
+            case KeyboardShortcutAction.RunShotClock24:
+                _draftKeyboardBindings.RunShotClock24Key = keyName;
+                break;
+            case KeyboardShortcutAction.RunShotClock14:
+                _draftKeyboardBindings.RunShotClock14Key = keyName;
+                break;
             case KeyboardShortcutAction.IncreaseHomeScore:
                 _draftKeyboardBindings.IncreaseHomeScoreKey = keyName;
                 break;
@@ -758,6 +786,10 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         {
             KeyboardShortcutAction.ToggleGameClock => _draftKeyboardBindings.ToggleGameClockKey,
             KeyboardShortcutAction.ToggleShotClock => _draftKeyboardBindings.ToggleShotClockKey,
+            KeyboardShortcutAction.SetShotClock24 => _draftKeyboardBindings.SetShotClock24Key,
+            KeyboardShortcutAction.SetShotClock14 => _draftKeyboardBindings.SetShotClock14Key,
+            KeyboardShortcutAction.RunShotClock24 => _draftKeyboardBindings.RunShotClock24Key,
+            KeyboardShortcutAction.RunShotClock14 => _draftKeyboardBindings.RunShotClock14Key,
             KeyboardShortcutAction.IncreaseHomeScore => _draftKeyboardBindings.IncreaseHomeScoreKey,
             KeyboardShortcutAction.DecreaseHomeScore => _draftKeyboardBindings.DecreaseHomeScoreKey,
             KeyboardShortcutAction.IncreaseGuestScore => _draftKeyboardBindings.IncreaseGuestScoreKey,
@@ -783,6 +815,10 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         {
             KeyboardShortcutAction.ToggleGameClock => bindings.ToggleGameClockKey,
             KeyboardShortcutAction.ToggleShotClock => bindings.ToggleShotClockKey,
+            KeyboardShortcutAction.SetShotClock24 => bindings.SetShotClock24Key,
+            KeyboardShortcutAction.SetShotClock14 => bindings.SetShotClock14Key,
+            KeyboardShortcutAction.RunShotClock24 => bindings.RunShotClock24Key,
+            KeyboardShortcutAction.RunShotClock14 => bindings.RunShotClock14Key,
             KeyboardShortcutAction.IncreaseHomeScore => bindings.IncreaseHomeScoreKey,
             KeyboardShortcutAction.DecreaseHomeScore => bindings.DecreaseHomeScoreKey,
             KeyboardShortcutAction.IncreaseGuestScore => bindings.IncreaseGuestScoreKey,
@@ -814,6 +850,18 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
                 break;
             case KeyboardShortcutAction.ToggleShotClock:
                 _scoreboard.Execute(new ToggleShotClockCommand());
+                break;
+            case KeyboardShortcutAction.SetShotClock24:
+                _scoreboard.Execute(new SetShotClockCommand(24));
+                break;
+            case KeyboardShortcutAction.SetShotClock14:
+                _scoreboard.Execute(new SetShotClockCommand(14));
+                break;
+            case KeyboardShortcutAction.RunShotClock24:
+                _scoreboard.Execute(new RunShotClockCommand(24));
+                break;
+            case KeyboardShortcutAction.RunShotClock14:
+                _scoreboard.Execute(new RunShotClockCommand(14));
                 break;
             case KeyboardShortcutAction.IncreaseHomeScore:
                 _scoreboard.Execute(new ChangeScoreCommand(TeamSide.Home, 1));
@@ -848,6 +896,10 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     {
         OnPropertyChanged(nameof(GameClockToggleButtonText));
         OnPropertyChanged(nameof(ShotClockToggleButtonText));
+        OnPropertyChanged(nameof(SetShotClock24ButtonText));
+        OnPropertyChanged(nameof(SetShotClock14ButtonText));
+        OnPropertyChanged(nameof(RunShotClock24ButtonText));
+        OnPropertyChanged(nameof(RunShotClock14ButtonText));
         OnPropertyChanged(nameof(IncreaseScoreAButtonText));
         OnPropertyChanged(nameof(DecreaseScoreAButtonText));
         OnPropertyChanged(nameof(IncreaseScoreBButtonText));
@@ -864,6 +916,10 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         {
             ToggleGameClockKey = source.ToggleGameClockKey,
             ToggleShotClockKey = source.ToggleShotClockKey,
+            SetShotClock24Key = source.SetShotClock24Key,
+            SetShotClock14Key = source.SetShotClock14Key,
+            RunShotClock24Key = source.RunShotClock24Key,
+            RunShotClock14Key = source.RunShotClock14Key,
             IncreaseHomeScoreKey = source.IncreaseHomeScoreKey,
             DecreaseHomeScoreKey = source.DecreaseHomeScoreKey,
             IncreaseGuestScoreKey = source.IncreaseGuestScoreKey,
@@ -881,6 +937,10 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         {
             KeyboardShortcutAction.ToggleGameClock => "Game clock start / stop",
             KeyboardShortcutAction.ToggleShotClock => "Shot clock start / stop",
+            KeyboardShortcutAction.SetShotClock24 => "Set shot clock to 24",
+            KeyboardShortcutAction.SetShotClock14 => "Set shot clock to 14",
+            KeyboardShortcutAction.RunShotClock24 => "Run shot clock from 24",
+            KeyboardShortcutAction.RunShotClock14 => "Run shot clock from 14",
             KeyboardShortcutAction.IncreaseHomeScore => "Home score +1",
             KeyboardShortcutAction.DecreaseHomeScore => "Home score -1",
             KeyboardShortcutAction.IncreaseGuestScore => "Guest score +1",

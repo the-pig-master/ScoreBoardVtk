@@ -80,6 +80,18 @@ public sealed class SettingsStore
             // Start or stop the 24-second shot clock.
             "toggleShotClockKey": {{ToJson(settings.KeyboardBindings.ToggleShotClockKey)}},
 
+            // Set the shot clock to 24 seconds without starting it.
+            "setShotClock24Key": {{ToJson(settings.KeyboardBindings.SetShotClock24Key)}},
+
+            // Set the shot clock to 14 seconds without starting it.
+            "setShotClock14Key": {{ToJson(settings.KeyboardBindings.SetShotClock14Key)}},
+
+            // Set the shot clock to 24 seconds and start it.
+            "runShotClock24Key": {{ToJson(settings.KeyboardBindings.RunShotClock24Key)}},
+
+            // Set the shot clock to 14 seconds and start it.
+            "runShotClock14Key": {{ToJson(settings.KeyboardBindings.RunShotClock14Key)}},
+
             // Add or remove one point from the home team.
             "increaseHomeScoreKey": {{ToJson(settings.KeyboardBindings.IncreaseHomeScoreKey)}},
             "decreaseHomeScoreKey": {{ToJson(settings.KeyboardBindings.DecreaseHomeScoreKey)}},
