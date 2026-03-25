@@ -126,10 +126,6 @@ public sealed class ScoreboardRuntimeTests
             PublishCount++;
         }
 
-        public void SyncClock(DateTime currentTime)
-        {
-        }
-
         public void Dispose()
         {
         }

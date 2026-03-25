@@ -27,7 +27,6 @@ Modern C# migration of the legacy scoreboard controller from `C:\WORK\final`.
   - set progression
 - Serial communication:
   - `AT+GD` game-state packets
-  - `AT+ST` time sync packets
   - CRC16
   - legacy byte remapping copied from the original project
 - Persisted match settings in `settings.json`

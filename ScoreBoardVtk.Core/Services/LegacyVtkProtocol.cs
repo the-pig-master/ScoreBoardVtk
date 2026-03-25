@@ -63,24 +63,6 @@ public sealed class LegacyVtkProtocol : IScoreboardProtocol
         return result;
     }
 
-    public byte[] CreateTimeSyncPacket(DateTime currentTime)
-    {
-        const int payloadLength = 13;
-        const int totalLength = 15;
-
-        var result = Enumerable.Repeat((byte)' ', totalLength).ToArray();
-        var command = "AT+ST" + currentTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
-        var encoded = Win1251.GetBytes(command);
-
-        Array.Copy(encoded, result, Math.Min(payloadLength, encoded.Length));
-
-        var crc = Crc16.Compute(result.AsSpan(0, payloadLength));
-        result[13] = (byte)((crc & 0xFF00) >> 8);
-        result[14] = (byte)(crc & 0x00FF);
-
-        return result;
-    }
-
     private static string BuildLegacyShotClockText(ScoreboardState state)
     {
         if (state.GameMode != GameMode.Basketball)

@@ -103,7 +103,6 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         ToggleShotClockCommand = new RelayCommand(() => _scoreboard.Execute(new ToggleShotClockCommand()));
         RefreshPortsCommand = new RelayCommand(() => RefreshPorts(SelectedPort));
         TogglePortCommand = new RelayCommand(TogglePort);
-        SyncTimeCommand = new RelayCommand(SyncTime);
         ApplySettingsCommand = new RelayCommand(ApplySettings);
 
         _scoreboard.StateChanged += ScoreboardOnStateChanged;
@@ -173,8 +172,6 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     public ICommand RefreshPortsCommand { get; }
 
     public ICommand TogglePortCommand { get; }
-
-    public ICommand SyncTimeCommand { get; }
 
     public ICommand ApplySettingsCommand { get; }
 
@@ -654,25 +651,6 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         {
             _scoreboard.Disconnect();
             UpdatePortState();
-            SystemMessageText = exception.Message;
-        }
-    }
-
-    private void SyncTime()
-    {
-        if (!_scoreboard.IsConnected)
-        {
-            SystemMessageText = "Open the COM port before syncing time.";
-            return;
-        }
-
-        try
-        {
-            _scoreboard.SyncClock(DateTime.Now);
-            SystemMessageText = "Device time sync packet sent.";
-        }
-        catch (Exception exception)
-        {
             SystemMessageText = exception.Message;
         }
     }

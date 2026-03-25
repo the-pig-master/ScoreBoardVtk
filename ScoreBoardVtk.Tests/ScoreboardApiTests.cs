@@ -72,11 +72,6 @@ public sealed class ScoreboardApiTests
             LastPublishedState = state;
             return [1, 2, 3];
         }
-
-        public byte[] CreateTimeSyncPacket(DateTime currentTime)
-        {
-            return [9];
-        }
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset currentTime) : TimeProvider

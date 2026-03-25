@@ -25,6 +25,4 @@ public interface IScoreboardApi : IDisposable
     void Disconnect();
 
     void Publish();
-
-    void SyncClock(DateTime currentTime);
 }

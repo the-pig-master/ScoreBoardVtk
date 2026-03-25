@@ -18,12 +18,17 @@
             </TextBlock>
         </StatusBarItem>
 
+        <StatusBarItem Width="170">
+            <TextBlock Text="{Binding HostClock, StringFormat=Host: {0:HH:mm:ss}}"
+                       VerticalAlignment="Center" />
+        </StatusBarItem>
+
         <StatusBarItem Width="220">
             <TextBlock Text="{Binding CurrentSnapshot.TimerPresetText, StringFormat=Preset: {0}}"
                        VerticalAlignment="Center" />
         </StatusBarItem>
 
-        <StatusBarItem Width="760">
+        <StatusBarItem Width="590">
             <TextBlock Text="{Binding CurrentSnapshot.PayloadText, StringFormat=Payload: {0}}"
                        VerticalAlignment="Center" FontFamily="Consolas"
                        TextTrimming="CharacterEllipsis" />

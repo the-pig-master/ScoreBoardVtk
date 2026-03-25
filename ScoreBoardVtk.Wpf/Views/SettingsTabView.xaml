@@ -20,10 +20,8 @@
                     <ColumnDefinition Width="220" />
                     <ColumnDefinition Width="150" />
                     <ColumnDefinition Width="150" />
-                    <ColumnDefinition Width="540" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="56" />
                     <RowDefinition Height="56" />
                 </Grid.RowDefinitions>
 
@@ -45,20 +43,6 @@
                         Width="130"
                         Command="{Binding TogglePortCommand}"
                         Style="{StaticResource PortToggleButtonStyle}" />
-                <TextBlock Grid.Row="0"
-                           Grid.Column="4"
-                           Text="{Binding HostClock, StringFormat=Host clock: {0:HH:mm:ss}}"
-                           Style="{StaticResource HostClockTextStyle}"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Center" />
-
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="Device time" Style="{StaticResource FieldCaptionStyle}" VerticalAlignment="Center" />
-                <Button Grid.Row="1"
-                        Grid.Column="1"
-                        Content="Sync Device Time"
-                        Width="160"
-                        Command="{Binding SyncTimeCommand}"
-                        Style="{StaticResource PrimaryButtonStyle}" />
             </Grid>
         </Border>
 

@@ -38,16 +38,4 @@ public sealed class LegacyVtkProtocolTests
 
         Assert.Equal(" 122  731:164S1110 HELLO", payload);
     }
-
-    [Fact]
-    public void CreateTimeSyncPacket_UsesExpectedPrefixAndLength()
-    {
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        var protocol = new LegacyVtkProtocol();
-
-        var packet = protocol.CreateTimeSyncPacket(new DateTime(2026, 3, 23, 12, 34, 56));
-
-        Assert.Equal(15, packet.Length);
-        Assert.Equal("AT+ST12:34:56", Encoding.GetEncoding(1251).GetString(packet[..13]));
-    }
 }

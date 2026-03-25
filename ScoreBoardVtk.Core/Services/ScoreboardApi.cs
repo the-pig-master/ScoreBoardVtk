@@ -68,16 +68,6 @@ public sealed class ScoreboardApi : IScoreboardApi
         _transport.Write(_protocol.CreateGamePacket(State, GetCurrentTime()));
     }
 
-    public void SyncClock(DateTime currentTime)
-    {
-        if (!_transport.IsOpen)
-        {
-            throw new InvalidOperationException("Open the COM port before syncing time.");
-        }
-
-        _transport.Write(_protocol.CreateTimeSyncPacket(currentTime));
-    }
-
     public void Dispose()
     {
         _controller.StateChanged -= ControllerOnStateChanged;

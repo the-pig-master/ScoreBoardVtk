@@ -206,33 +206,41 @@
                     <Border Grid.Column="1" Margin="0,0,18,0" Style="{StaticResource CardBorderStyle}">
                         <StackPanel>
                             <TextBlock Text="Match Desk" Style="{StaticResource PanelHeaderTextStyle}" />
+                                <Button Content="{Binding GameClockToggleButtonText}"
+                                        Margin="10 16 0 0"
+                                        HorizontalAlignment="Stretch" Width="NaN"
+                                        Command="{Binding ToggleGameClockCommand}" Style="{StaticResource GameClockToggleButtonStyle}" />
+
                             <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Content="{Binding GameClockToggleButtonText}" Command="{Binding ToggleGameClockCommand}" Style="{StaticResource GameClockToggleButtonStyle}" />
                                 <Button Content="Signal"
                                         Margin="10 0 0 0"
                                         Style="{StaticResource WarningDeskButtonStyle}"
                                         PreviewMouseLeftButtonDown="SignalButton_OnPreviewMouseLeftButtonDown"
                                         PreviewMouseLeftButtonUp="SignalButton_OnPreviewMouseLeftButtonUp"
                                         LostMouseCapture="SignalButton_OnLostMouseCapture" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                <Button Content="Period / Set"  Command="{Binding AdvancePeriodOrSetCommand}" Style="{StaticResource DeskButtonStyle}" />
-                               
                                 <StackPanel Orientation="Horizontal" Margin="45,10,0,0" VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <Ellipse Style="{StaticResource MainSignalIndicatorStyle}" />
                                     <Ellipse Style="{StaticResource ShotClockIndicatorStyle}" Margin="10,0,0,0" />
                                 </StackPanel>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                <Button Content="Reset"
+                            <StackPanel Orientation="Horizontal" Margin="10,12,0,0">
+                                <Button Content="Period / Set"
+                                        Command="{Binding AdvancePeriodOrSetCommand}"
+                                        IsEnabled="{Binding CanResetTimers}"
+                                        Style="{StaticResource DeskButtonStyle}" />
+                                <Button Content="Reset" Width="80" Margin="10 0 0 0"
                                         IsEnabled="{Binding CanResetTimers}"
                                         Click="ResetButton_OnClick"
                                         Style="{StaticResource DeskButtonStyle}" />
                                 <Button Content="Set"
+                                        Width="80"
+                                        IsEnabled="{Binding CanResetTimers}"
                                         Click="SetButton_OnClick"
                                         Style="{StaticResource DeskButtonStyle}"
                                         Margin="12,0,0,0" />
+
                             </StackPanel>
+
 
                         </StackPanel>
                     </Border>
@@ -240,15 +248,19 @@
                     <Border Grid.Column="2" Margin="0,0,18,0" Style="{StaticResource BasketballOnlyBorderStyle}">
                         <StackPanel>
                             <TextBlock Text="Shot Clock Desk" Style="{StaticResource PanelHeaderTextStyle}" />
-                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Content="{Binding SetShotClock24ButtonText}" Command="{Binding SetShotClock24Command}" Style="{StaticResource WarningDeskButtonStyle}" />
-                                <Button Content="{Binding SetShotClock14ButtonText}" Command="{Binding SetShotClock14Command}" Style="{StaticResource WarningDeskButtonStyle}" Margin="12,0,0,0" />
-                            </StackPanel>
+                            <Button Content="{Binding ShotClockToggleButtonText}"
+                                    HorizontalAlignment="Stretch" Width="NaN"
+                                    Command="{Binding ToggleShotClockCommand}" Style="{StaticResource ShotClockToggleButtonStyle}" Margin="0,12,0,0" />
                             <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
                                 <Button Content="{Binding RunShotClock24ButtonText}" Command="{Binding RunShotClock24Command}" Style="{StaticResource GameClockToggleButtonStyle}" />
                                 <Button Content="{Binding RunShotClock14ButtonText}" Command="{Binding RunShotClock14Command}" Style="{StaticResource GameClockToggleButtonStyle}" Margin="12,0,0,0" />
                             </StackPanel>
-                            <Button Content="{Binding ShotClockToggleButtonText}" Command="{Binding ToggleShotClockCommand}" Style="{StaticResource ShotClockToggleButtonStyle}" Margin="0,12,0,0" />
+                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                                <Button Content="{Binding SetShotClock24ButtonText}" Command="{Binding SetShotClock24Command}" Style="{StaticResource WarningDeskButtonStyle}" />
+                                <Button Content="{Binding SetShotClock14ButtonText}" Command="{Binding SetShotClock14Command}" Style="{StaticResource WarningDeskButtonStyle}" Margin="12,0,0,0" />
+                            </StackPanel>
+
+
                         </StackPanel>
                     </Border>
 
