@@ -15,10 +15,10 @@ public sealed class ScoreboardApi : IScoreboardApi
         IScoreboardProtocol? protocol = null,
         TimeProvider? timeProvider = null)
     {
-        _controller = new ScoreboardController(settings ?? new AppSettings());
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        _controller = new ScoreboardController(settings ?? new AppSettings(), _timeProvider);
         _protocol = protocol ?? new LegacyVtkProtocol();
         _transport = transport ?? throw new ArgumentNullException(nameof(transport));
-        _timeProvider = timeProvider ?? TimeProvider.System;
 
         _controller.StateChanged += ControllerOnStateChanged;
         State = _controller.State;

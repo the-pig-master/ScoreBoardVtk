@@ -8,8 +8,10 @@ public sealed class ScoreboardController
     private const int MaxScore = 999;
     private const int MaxPenaltyVolleyball = 9;
     private const int MaxPenaltyBasketball = 9;
+    private static readonly TimeSpan TenthInterval = TimeSpan.FromMilliseconds(100);
 
     private readonly AppSettings _settings;
+    private readonly TimeProvider _timeProvider;
 
     private int _presetTenths;
     private int _mainClockTenths;
@@ -18,16 +20,19 @@ public sealed class ScoreboardController
     private int _period;
     private int _penaltyA;
     private int _penaltyB;
-    private int _mainSignalRemainingSeconds;
+    private int _mainSignalRemainingTenths;
     private int _shotClockRemainingTenths;
     private int _shotClockSignalRemainingTenths;
     private bool _isGameClockRunning;
     private bool _isShotClockRunning;
     private bool _isManualSignalActive;
+    private DateTimeOffset? _lastTimingTimestamp;
+    private TimeSpan _timingRemainder = TimeSpan.Zero;
 
-    public ScoreboardController(AppSettings settings)
+    public ScoreboardController(AppSettings settings, TimeProvider? timeProvider = null)
     {
         _settings = settings;
+        _timeProvider = timeProvider ?? TimeProvider.System;
         ApplySettingsDefaults();
         ResetForCurrentMode();
         RefreshDisplay();
@@ -41,6 +46,11 @@ public sealed class ScoreboardController
 
     public void Apply(ScoreboardCommand command)
     {
+        if (command is not (TickMainClockCommand or TickMainSignalCommand or TickShotClockSignalCommand or RefreshDisplayCommand))
+        {
+            SynchronizeElapsedTime();
+        }
+
         switch (command)
         {
             case SetGameModeCommand typed:
@@ -165,6 +175,7 @@ public sealed class ScoreboardController
 
     public void RefreshDisplay()
     {
+        UpdateTimingTrackingState();
         State = BuildState();
         StateChanged?.Invoke(this, State);
     }
@@ -354,6 +365,8 @@ public sealed class ScoreboardController
             return;
         }
 
+        SynchronizeElapsedTime();
+
         if (_isGameClockRunning)
         {
             StopGameClockInternal();
@@ -373,6 +386,7 @@ public sealed class ScoreboardController
             return;
         }
 
+        SynchronizeElapsedTime();
         StopGameClockInternal();
         RefreshDisplay();
     }
@@ -451,6 +465,8 @@ public sealed class ScoreboardController
             return;
         }
 
+        SynchronizeElapsedTime();
+
         if (_isShotClockRunning)
         {
             _isShotClockRunning = false;
@@ -510,76 +526,32 @@ public sealed class ScoreboardController
             _shotClockRemainingTenths = 0;
         }
 
-        _mainSignalRemainingSeconds = 0;
+        _mainSignalRemainingTenths = 0;
         _shotClockSignalRemainingTenths = 0;
         _isManualSignalActive = false;
         _isGameClockRunning = false;
         _isShotClockRunning = false;
+        _lastTimingTimestamp = null;
+        _timingRemainder = TimeSpan.Zero;
 
         RefreshDisplay();
     }
 
     public void TickMainClock()
     {
-        if (_settings.GameMode != GameMode.Basketball || !_isGameClockRunning)
-        {
-            return;
-        }
-
-        if (_settings.TimerDirection == TimerDirection.Down)
-        {
-            if (_mainClockTenths > 0)
-            {
-                _mainClockTenths--;
-            }
-
-            if (_isShotClockRunning)
-            {
-                TickShotClock();
-            }
-
-            if (_mainClockTenths <= 0)
-            {
-                HandlePeriodCompleted();
-            }
-        }
-        else
-        {
-            _mainClockTenths++;
-
-            if (_isShotClockRunning)
-            {
-                TickShotClock();
-            }
-
-            if (_mainClockTenths >= _presetTenths)
-            {
-                HandlePeriodCompleted();
-            }
-        }
-
+        SynchronizeElapsedTime();
         RefreshDisplay();
     }
 
     public void TickMainSignal()
     {
-        if (_mainSignalRemainingSeconds <= 0)
-        {
-            return;
-        }
-
-        _mainSignalRemainingSeconds--;
+        SynchronizeElapsedTime();
         RefreshDisplay();
     }
 
     public void TickShotClockSignal()
     {
-        if (_shotClockSignalRemainingTenths <= 0)
-        {
-            return;
-        }
-
-        _shotClockSignalRemainingTenths--;
+        SynchronizeElapsedTime();
         RefreshDisplay();
     }
 
@@ -605,11 +577,13 @@ public sealed class ScoreboardController
         _penaltyA = 0;
         _penaltyB = 0;
         _period = 1;
-        _mainSignalRemainingSeconds = 0;
+        _mainSignalRemainingTenths = 0;
         _shotClockSignalRemainingTenths = 0;
         _isManualSignalActive = false;
         _isGameClockRunning = false;
         _isShotClockRunning = false;
+        _lastTimingTimestamp = null;
+        _timingRemainder = TimeSpan.Zero;
 
         ResetMainClockOnly();
     }
@@ -623,11 +597,13 @@ public sealed class ScoreboardController
 
     private void ResetBasketballTimersOnly()
     {
-        _mainSignalRemainingSeconds = 0;
+        _mainSignalRemainingTenths = 0;
         _shotClockSignalRemainingTenths = 0;
         _isManualSignalActive = false;
         _isGameClockRunning = false;
         _isShotClockRunning = false;
+        _lastTimingTimestamp = null;
+        _timingRemainder = TimeSpan.Zero;
         ResetMainClockOnly();
     }
 
@@ -642,7 +618,7 @@ public sealed class ScoreboardController
     {
         _isGameClockRunning = false;
         _isShotClockRunning = false;
-        _mainSignalRemainingSeconds = _settings.MainSignalDurationSeconds;
+        _mainSignalRemainingTenths = _settings.MainSignalDurationSeconds * 10;
 
         if (_settings.TimerDirection == TimerDirection.Down)
         {
@@ -747,10 +723,99 @@ public sealed class ScoreboardController
         return Math.Min(requestedTenths, _mainClockTenths);
     }
 
-    private void TickShotClock()
+    private void SynchronizeElapsedTime()
     {
+        if (!HasActiveTimedState())
+        {
+            _lastTimingTimestamp = null;
+            _timingRemainder = TimeSpan.Zero;
+            return;
+        }
+
+        var now = _timeProvider.GetUtcNow();
+
+        if (_lastTimingTimestamp is null)
+        {
+            _lastTimingTimestamp = now;
+            return;
+        }
+
+        var elapsed = now - _lastTimingTimestamp.Value;
+        _lastTimingTimestamp = now;
+        _timingRemainder += elapsed;
+
+        var elapsedTenths = 0;
+
+        while (_timingRemainder >= TenthInterval)
+        {
+            _timingRemainder -= TenthInterval;
+            elapsedTenths++;
+        }
+
+        if (elapsedTenths <= 0)
+        {
+            return;
+        }
+
+        AdvanceTimedState(elapsedTenths);
+    }
+
+    private void AdvanceTimedState(int elapsedTenths)
+    {
+        for (var index = 0; index < elapsedTenths; index++)
+        {
+            if (_mainSignalRemainingTenths > 0)
+            {
+                _mainSignalRemainingTenths--;
+            }
+
+            if (_shotClockSignalRemainingTenths > 0)
+            {
+                _shotClockSignalRemainingTenths--;
+            }
+
+            if (_settings.GameMode != GameMode.Basketball || !_isGameClockRunning)
+            {
+                continue;
+            }
+
+            if (_settings.TimerDirection == TimerDirection.Down)
+            {
+                if (_mainClockTenths > 0)
+                {
+                    _mainClockTenths--;
+                }
+
+                AdvanceShotClockOneTenth();
+
+                if (_mainClockTenths <= 0)
+                {
+                    HandlePeriodCompleted();
+                }
+            }
+            else
+            {
+                _mainClockTenths++;
+                AdvanceShotClockOneTenth();
+
+                if (_mainClockTenths >= _presetTenths)
+                {
+                    HandlePeriodCompleted();
+                }
+            }
+        }
+    }
+
+    private void AdvanceShotClockOneTenth()
+    {
+        if (!_isShotClockRunning)
+        {
+            return;
+        }
+
         if (_shotClockRemainingTenths <= 0)
         {
+            _shotClockRemainingTenths = 0;
             _isShotClockRunning = false;
             return;
         }
@@ -763,6 +828,25 @@ public sealed class ScoreboardController
             _isShotClockRunning = false;
             _shotClockSignalRemainingTenths = _settings.ShotClockSignalDurationTenths;
         }
+    }
+
+    private void UpdateTimingTrackingState()
+    {
+        if (HasActiveTimedState())
+        {
+            _lastTimingTimestamp ??= _timeProvider.GetUtcNow();
+            return;
+        }
+
+        _lastTimingTimestamp = null;
+        _timingRemainder = TimeSpan.Zero;
+    }
+
+    private bool HasActiveTimedState()
+    {
+        return (_settings.GameMode == GameMode.Basketball && _isGameClockRunning) ||
+               _mainSignalRemainingTenths > 0 ||
+               _shotClockSignalRemainingTenths > 0;
     }
 
     private int GetCurrentPeriodPresetTenths()
@@ -801,7 +885,7 @@ public sealed class ScoreboardController
             _penaltyB,
             _mainClockTenths,
             _presetTenths,
-            _mainSignalRemainingSeconds,
+            (_mainSignalRemainingTenths + 9) / 10,
             _settings.GameMode == GameMode.Basketball ? _shotClockRemainingTenths : 0,
             _shotClockSignalRemainingTenths,
             _settings.RunningText,
@@ -810,7 +894,7 @@ public sealed class ScoreboardController
             _isGameClockRunning,
             _isShotClockRunning,
             _isManualSignalActive,
-            _isManualSignalActive || _mainSignalRemainingSeconds > 0,
+            _isManualSignalActive || _mainSignalRemainingTenths > 0,
             _shotClockSignalRemainingTenths > 0);
     }
 

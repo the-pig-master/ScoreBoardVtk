@@ -77,12 +77,13 @@ public sealed class ScoreboardControllerTests
     [Fact]
     public void AdvancePeriodOrSet_InBasketball_WhenClockStopped_RearmsClockForNewQuarter()
     {
-        var controller = new ScoreboardController(CreateBasketballSettings());
+        var controller = CreateBasketballController(out var timeProvider);
 
         controller.ToggleGameClock();
 
         for (var index = 0; index < 6000; index++)
         {
+            timeProvider.Advance(TimeSpan.FromMilliseconds(100));
             controller.TickMainClock();
         }
 
@@ -188,10 +189,11 @@ public sealed class ScoreboardControllerTests
     [Fact]
     public void TickMainClock_WhenPeriodEnds_StopsAtZeroAndActivatesMainSignal()
     {
-        var controller = new ScoreboardController(CreateBasketballSettings());
+        var controller = CreateBasketballController(out var timeProvider);
 
         controller.Apply(new SetTimerPresetCommand(0, 0, 1));
         controller.ToggleGameClock();
+        timeProvider.Advance(TimeSpan.FromMilliseconds(100));
         controller.TickMainClock();
 
         Assert.False(controller.State.IsGameClockRunning);
@@ -202,19 +204,109 @@ public sealed class ScoreboardControllerTests
     [Fact]
     public void TickMainClock_WhenShotClockExpires_StopsShotClockAtZeroAndActivatesSignal()
     {
-        var controller = new ScoreboardController(CreateBasketballSettings());
+        var controller = CreateBasketballController(out var timeProvider);
 
         controller.Apply(new RunShotClockCommand(14));
         controller.ToggleGameClock();
 
         for (var index = 0; index < 140; index++)
         {
+            timeProvider.Advance(TimeSpan.FromMilliseconds(100));
             controller.TickMainClock();
         }
 
         Assert.True(controller.State.IsShotClockSignalActive);
         Assert.False(controller.State.IsShotClockRunning);
         Assert.Equal(0, controller.State.ShotClockTenths);
+    }
+
+    [Fact]
+    public void TickMainClock_UsesElapsedTimeWhenTickIsDelayed()
+    {
+        var controller = CreateBasketballController(out var timeProvider);
+
+        controller.Apply(new SetTimerPresetCommand(0, 0, 5));
+        controller.ToggleGameClock();
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(350));
+        controller.TickMainClock();
+
+        Assert.Equal(2, controller.State.MainClockTenths);
+    }
+
+    [Fact]
+    public void TickMainClock_AccumulatesSubTenthJitterAcrossCalls()
+    {
+        var controller = CreateBasketballController(out var timeProvider);
+
+        controller.Apply(new SetTimerPresetCommand(0, 1, 0));
+        controller.ToggleGameClock();
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(55));
+        controller.TickMainClock();
+        Assert.Equal(10, controller.State.MainClockTenths);
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(55));
+        controller.TickMainClock();
+        Assert.Equal(9, controller.State.MainClockTenths);
+    }
+
+    [Fact]
+    public void StopGameClock_SynchronizesElapsedTimeBeforeStopping()
+    {
+        var controller = CreateBasketballController(out var timeProvider);
+
+        controller.Apply(new SetTimerPresetCommand(0, 1, 0));
+        controller.ToggleGameClock();
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(250));
+        controller.ToggleGameClock();
+
+        Assert.False(controller.State.IsGameClockRunning);
+        Assert.Equal(8, controller.State.MainClockTenths);
+    }
+
+    [Fact]
+    public void TickMainSignal_UsesOvershootFromPeriodCompletion()
+    {
+        var settings = CreateBasketballSettings();
+        settings.MainSignalDurationSeconds = 3;
+        var timeProvider = new ManualTimeProvider();
+        var controller = new ScoreboardController(settings, timeProvider);
+
+        controller.Apply(new SetTimerPresetCommand(0, 0, 1));
+        controller.ToggleGameClock();
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(300));
+        controller.TickMainClock();
+        Assert.True(controller.State.IsMainSignalActive);
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(2800));
+        controller.TickMainSignal();
+
+        Assert.False(controller.State.IsMainSignalActive);
+    }
+
+    [Fact]
+    public void TickShotClockSignal_UsesOvershootFromShotClockExpiry()
+    {
+        var settings = CreateBasketballSettings();
+        settings.ShotClockSignalDurationTenths = 5;
+        var timeProvider = new ManualTimeProvider();
+        var controller = new ScoreboardController(settings, timeProvider);
+
+        controller.Apply(new SetScoreboardValuesCommand(0, 0, 0, 0, 1, 100, 1));
+        controller.ToggleShotClock();
+        controller.ToggleGameClock();
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(300));
+        controller.TickMainClock();
+        Assert.True(controller.State.IsShotClockSignalActive);
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(300));
+        controller.TickShotClockSignal();
+
+        Assert.False(controller.State.IsShotClockSignalActive);
     }
 
     [Fact]
@@ -254,5 +346,37 @@ public sealed class ScoreboardControllerTests
             RunningTextEnabled = false,
             RunningText = string.Empty,
         };
+    }
+
+    private static ScoreboardController CreateBasketballController(out ManualTimeProvider timeProvider)
+    {
+        timeProvider = new ManualTimeProvider();
+        return new ScoreboardController(CreateBasketballSettings(), timeProvider);
+    }
+
+    private sealed class ManualTimeProvider : TimeProvider
+    {
+        private DateTimeOffset _utcNow = DateTimeOffset.UnixEpoch;
+        private long _timestamp;
+
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+
+        public override DateTimeOffset GetUtcNow()
+        {
+            return _utcNow;
+        }
+
+        public override long GetTimestamp()
+        {
+            return _timestamp;
+        }
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+
+        public void Advance(TimeSpan elapsed)
+        {
+            _utcNow = _utcNow.Add(elapsed);
+            _timestamp += elapsed.Ticks;
+        }
     }
 }
