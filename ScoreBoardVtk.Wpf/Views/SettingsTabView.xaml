@@ -15,12 +15,12 @@
         <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="140" />
-                    <ColumnDefinition Width="220" />
-                    <ColumnDefinition Width="110" />
-                    <ColumnDefinition Width="180" />
-                    <ColumnDefinition Width="150" />
-                    <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
@@ -30,33 +30,36 @@
                            VerticalAlignment="Center" />
 
                 <ComboBox Grid.Column="1"
-                          Width="200"
+                          Width="200" Margin="16 0 16 0"
                           ItemsSource="{Binding AvailablePorts}"
                           SelectedItem="{Binding SelectedPort}"
                           HorizontalAlignment="Left"
                           VerticalAlignment="Center" />
 
-                <TextBlock Grid.Column="2"
+                <TextBlock Grid.Column="4"
+                           Margin="16 0 0 0"
                            Text="{DynamicResource SettingsLanguage}"
                            Style="{StaticResource FieldCaptionStyle}"
                            VerticalAlignment="Center" />
 
-                <ComboBox Grid.Column="3"
+                <ComboBox Grid.Column="5"
                           Width="160"
+                          Margin="16 0 0 0"
                           HorizontalAlignment="Left"
                           ItemsSource="{Binding UiLanguages}"
                           DisplayMemberPath="Label"
                           SelectedItem="{Binding SelectedUiLanguage}"
                           VerticalAlignment="Center" />
 
-                <Button Grid.Column="4"
+                <Button Grid.Column="2"
                         Content="{DynamicResource SettingsRefreshPorts}"
                         Width="130"
+                        Margin="0 0 16 0"
                         Command="{Binding RefreshPortsCommand}"
                         VerticalAlignment="Center"
                         Style="{StaticResource DeskButtonStyle}" />
 
-                <Button Grid.Column="5"
+                <Button Grid.Column="3"
                         Width="130"
                         Command="{Binding TogglePortCommand}"
                         VerticalAlignment="Center"
