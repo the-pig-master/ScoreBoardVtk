@@ -8,9 +8,15 @@
     <Resource Include="Assets\ScoreBoardVtk.ico" />
     <None Update="hostsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Update="hostsettings.Release.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
     <None Update="settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
   </ItemGroup>
 
@@ -23,5 +29,15 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Assets\ScoreBoardVtk.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <Target Name="UseReleaseHostSettings" AfterTargets="Build;Publish" Condition="'$(Configuration)' == 'Release' and Exists('hostsettings.Release.json')">
+    <Copy SourceFiles="hostsettings.Release.json"
+          DestinationFiles="$(OutDir)hostsettings.json"
+          SkipUnchangedFiles="false" />
+    <Copy SourceFiles="hostsettings.Release.json"
+          DestinationFiles="$(PublishDir)hostsettings.json"
+          SkipUnchangedFiles="false"
+          Condition="'$(PublishDir)' != ''" />
+  </Target>
 
 </Project>

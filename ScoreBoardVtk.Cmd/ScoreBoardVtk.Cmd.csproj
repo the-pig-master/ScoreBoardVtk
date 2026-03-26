@@ -7,6 +7,11 @@
   <ItemGroup>
     <None Update="hostsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Update="hostsettings.Release.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
 
@@ -17,5 +22,15 @@
     <Nullable>enable</Nullable>
     <RootNamespace>ScoreBoardVtk.Cmd</RootNamespace>
   </PropertyGroup>
+
+  <Target Name="UseReleaseHostSettings" AfterTargets="Build;Publish" Condition="'$(Configuration)' == 'Release' and Exists('hostsettings.Release.json')">
+    <Copy SourceFiles="hostsettings.Release.json"
+          DestinationFiles="$(OutDir)hostsettings.json"
+          SkipUnchangedFiles="false" />
+    <Copy SourceFiles="hostsettings.Release.json"
+          DestinationFiles="$(PublishDir)hostsettings.json"
+          SkipUnchangedFiles="false"
+          Condition="'$(PublishDir)' != ''" />
+  </Target>
 
 </Project>

@@ -1,0 +1,17 @@
+{
+  // Boot profile used to select the transport implementation.
+  // Release builds use only real hardware serial ports.
+  "profile": "Hardware",
+
+  // File name for persisted game settings.
+  // This file is resolved relative to hostsettings.json.
+  "gameSettingsFileName": "settings.json",
+
+  "runtime": {
+    // Shared timing loop interval for game clock, shot clock, and buzzer timing.
+    "timingIntervalMilliseconds": 100,
+
+    // Packet publish interval in milliseconds.
+    "publishIntervalMilliseconds": 50
+  }
+}

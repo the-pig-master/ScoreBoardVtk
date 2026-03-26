@@ -29,5 +29,6 @@ _ReSharper*/
 [Tt]est[Rr]esult*
 .vs/
 .idea/
+artifacts/
 #Nuget packages folder
 packages/
