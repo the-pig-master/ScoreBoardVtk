@@ -22,7 +22,7 @@ public static class ScoreboardCompositionRoot
         var scoreboard = new ScoreboardApi(settingsStore.Load(), transport);
         var runtime = new ScoreboardRuntime(scoreboard, hostSettings.Runtime.ToRuntimeOptions());
 
-        return new ScoreboardApplicationServices(hostSettingsStore, hostSettings, settingsStore, scoreboard, runtime);
+        return new ScoreboardApplicationServices(settingsStore, scoreboard, runtime);
     }
 
     public static IScoreboardApi CreateConsoleApi(

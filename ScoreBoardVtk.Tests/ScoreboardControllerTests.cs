@@ -10,8 +10,8 @@ public sealed class ScoreboardControllerTests
     {
         var controller = new ScoreboardController(CreateBasketballSettings());
 
-        controller.ToggleGameClock();
-        controller.SetTimerDirection(TimerDirection.Up);
+        controller.Apply(new ToggleGameClockCommand());
+        controller.Apply(new SetTimerDirectionCommand(TimerDirection.Up));
 
         Assert.Equal(TimerDirection.Down, controller.State.TimerDirection);
         Assert.True(controller.State.IsGameClockRunning);
@@ -22,7 +22,7 @@ public sealed class ScoreboardControllerTests
     {
         var controller = new ScoreboardController(CreateBasketballSettings());
 
-        controller.SetTimerDirection(TimerDirection.Up);
+        controller.Apply(new SetTimerDirectionCommand(TimerDirection.Up));
 
         Assert.Equal(TimerDirection.Down, controller.State.TimerDirection);
     }
@@ -32,10 +32,10 @@ public sealed class ScoreboardControllerTests
     {
         var controller = new ScoreboardController(CreateBasketballSettings());
 
-        controller.AdvancePeriodOrSet();
-        controller.AdvancePeriodOrSet();
-        controller.AdvancePeriodOrSet();
-        controller.AdvancePeriodOrSet();
+        controller.Apply(new AdvancePeriodOrSetCommand());
+        controller.Apply(new AdvancePeriodOrSetCommand());
+        controller.Apply(new AdvancePeriodOrSetCommand());
+        controller.Apply(new AdvancePeriodOrSetCommand());
 
         Assert.Equal(5, controller.State.PeriodNumber);
         Assert.Equal(3000, controller.State.TimerPresetTenths);
@@ -48,10 +48,10 @@ public sealed class ScoreboardControllerTests
         var controller = new ScoreboardController(CreateBasketballSettings());
 
         controller.Apply(new SetOvertimeTimerPresetCommand(3, 30, 0));
-        controller.AdvancePeriodOrSet();
-        controller.AdvancePeriodOrSet();
-        controller.AdvancePeriodOrSet();
-        controller.AdvancePeriodOrSet();
+        controller.Apply(new AdvancePeriodOrSetCommand());
+        controller.Apply(new AdvancePeriodOrSetCommand());
+        controller.Apply(new AdvancePeriodOrSetCommand());
+        controller.Apply(new AdvancePeriodOrSetCommand());
 
         Assert.Equal(5, controller.State.PeriodNumber);
         Assert.Equal(2100, controller.State.TimerPresetTenths);
@@ -63,11 +63,11 @@ public sealed class ScoreboardControllerTests
     {
         var controller = new ScoreboardController(CreateBasketballSettings());
 
-        controller.AdvancePeriodOrSet();
-        controller.AdvancePeriodOrSet();
-        controller.AdvancePeriodOrSet();
-        controller.AdvancePeriodOrSet();
-        controller.AdvancePeriodOrSet();
+        controller.Apply(new AdvancePeriodOrSetCommand());
+        controller.Apply(new AdvancePeriodOrSetCommand());
+        controller.Apply(new AdvancePeriodOrSetCommand());
+        controller.Apply(new AdvancePeriodOrSetCommand());
+        controller.Apply(new AdvancePeriodOrSetCommand());
 
         Assert.Equal(1, controller.State.PeriodNumber);
         Assert.Equal(6000, controller.State.TimerPresetTenths);
@@ -79,15 +79,15 @@ public sealed class ScoreboardControllerTests
     {
         var controller = CreateBasketballController(out var timeProvider);
 
-        controller.ToggleGameClock();
+        controller.Apply(new ToggleGameClockCommand());
 
         for (var index = 0; index < 6000; index++)
         {
             timeProvider.Advance(TimeSpan.FromMilliseconds(100));
-            controller.TickMainClock();
+            controller.Apply(new TickMainClockCommand());
         }
 
-        controller.AdvancePeriodOrSet();
+        controller.Apply(new AdvancePeriodOrSetCommand());
 
         Assert.Equal(2, controller.State.PeriodNumber);
         Assert.Equal(6000, controller.State.MainClockTenths);
@@ -99,8 +99,8 @@ public sealed class ScoreboardControllerTests
     {
         var controller = new ScoreboardController(CreateBasketballSettings());
 
-        controller.ToggleGameClock();
-        controller.AdvancePeriodOrSet();
+        controller.Apply(new ToggleGameClockCommand());
+        controller.Apply(new AdvancePeriodOrSetCommand());
 
         Assert.Equal(1, controller.State.PeriodNumber);
         Assert.True(controller.State.IsGameClockRunning);
@@ -115,9 +115,9 @@ public sealed class ScoreboardControllerTests
         controller.Apply(new ChangeScoreCommand(TeamSide.Guest, 7));
         controller.Apply(new ChangeSecondaryCounterCommand(TeamSide.Home, 3));
         controller.Apply(new ChangeSecondaryCounterCommand(TeamSide.Guest, 2));
-        controller.AdvancePeriodOrSet();
-        controller.SetShotClock14();
-        controller.Reset();
+        controller.Apply(new AdvancePeriodOrSetCommand());
+        controller.Apply(new SetShotClockCommand(14));
+        controller.Apply(new ResetScoreboardCommand());
 
         Assert.Equal(12, controller.State.HomeScore);
         Assert.Equal(7, controller.State.GuestScore);
@@ -137,8 +137,8 @@ public sealed class ScoreboardControllerTests
     {
         var controller = new ScoreboardController(CreateBasketballSettings());
 
-        controller.ToggleGameClock();
-        controller.Reset();
+        controller.Apply(new ToggleGameClockCommand());
+        controller.Apply(new ResetScoreboardCommand());
 
         Assert.True(controller.State.IsGameClockRunning);
         Assert.Equal(6000, controller.State.MainClockTenths);
@@ -149,7 +149,7 @@ public sealed class ScoreboardControllerTests
     {
         var controller = new ScoreboardController(CreateBasketballSettings());
 
-        controller.ToggleGameClock();
+        controller.Apply(new ToggleGameClockCommand());
         controller.Apply(new SetScoreboardValuesCommand(87, 79, 4, 3, 5, 125, 143));
 
         Assert.Equal(87, controller.State.HomeScore);
@@ -192,9 +192,9 @@ public sealed class ScoreboardControllerTests
         var controller = CreateBasketballController(out var timeProvider);
 
         controller.Apply(new SetTimerPresetCommand(0, 0, 1));
-        controller.ToggleGameClock();
+        controller.Apply(new ToggleGameClockCommand());
         timeProvider.Advance(TimeSpan.FromMilliseconds(100));
-        controller.TickMainClock();
+        controller.Apply(new TickMainClockCommand());
 
         Assert.False(controller.State.IsGameClockRunning);
         Assert.True(controller.State.IsMainSignalActive);
@@ -207,12 +207,12 @@ public sealed class ScoreboardControllerTests
         var controller = CreateBasketballController(out var timeProvider);
 
         controller.Apply(new RunShotClockCommand(14));
-        controller.ToggleGameClock();
+        controller.Apply(new ToggleGameClockCommand());
 
         for (var index = 0; index < 140; index++)
         {
             timeProvider.Advance(TimeSpan.FromMilliseconds(100));
-            controller.TickMainClock();
+            controller.Apply(new TickMainClockCommand());
         }
 
         Assert.True(controller.State.IsShotClockSignalActive);
@@ -226,10 +226,10 @@ public sealed class ScoreboardControllerTests
         var controller = CreateBasketballController(out var timeProvider);
 
         controller.Apply(new SetTimerPresetCommand(0, 0, 5));
-        controller.ToggleGameClock();
+        controller.Apply(new ToggleGameClockCommand());
 
         timeProvider.Advance(TimeSpan.FromMilliseconds(350));
-        controller.TickMainClock();
+        controller.Apply(new TickMainClockCommand());
 
         Assert.Equal(2, controller.State.MainClockTenths);
     }
@@ -240,14 +240,14 @@ public sealed class ScoreboardControllerTests
         var controller = CreateBasketballController(out var timeProvider);
 
         controller.Apply(new SetTimerPresetCommand(0, 1, 0));
-        controller.ToggleGameClock();
+        controller.Apply(new ToggleGameClockCommand());
 
         timeProvider.Advance(TimeSpan.FromMilliseconds(55));
-        controller.TickMainClock();
+        controller.Apply(new TickMainClockCommand());
         Assert.Equal(10, controller.State.MainClockTenths);
 
         timeProvider.Advance(TimeSpan.FromMilliseconds(55));
-        controller.TickMainClock();
+        controller.Apply(new TickMainClockCommand());
         Assert.Equal(9, controller.State.MainClockTenths);
     }
 
@@ -257,17 +257,17 @@ public sealed class ScoreboardControllerTests
         var controller = CreateBasketballController(out var timeProvider);
 
         controller.Apply(new SetTimerPresetCommand(0, 1, 0));
-        controller.ToggleGameClock();
+        controller.Apply(new ToggleGameClockCommand());
 
         timeProvider.Advance(TimeSpan.FromMilliseconds(250));
-        controller.ToggleGameClock();
+        controller.Apply(new ToggleGameClockCommand());
 
         Assert.False(controller.State.IsGameClockRunning);
         Assert.Equal(8, controller.State.MainClockTenths);
     }
 
     [Fact]
-    public void TickMainSignal_UsesOvershootFromPeriodCompletion()
+    public void TickMainClock_UsesOvershootFromPeriodCompletionSignal()
     {
         var settings = CreateBasketballSettings();
         settings.MainSignalDurationSeconds = 3;
@@ -275,20 +275,20 @@ public sealed class ScoreboardControllerTests
         var controller = new ScoreboardController(settings, timeProvider);
 
         controller.Apply(new SetTimerPresetCommand(0, 0, 1));
-        controller.ToggleGameClock();
+        controller.Apply(new ToggleGameClockCommand());
 
         timeProvider.Advance(TimeSpan.FromMilliseconds(300));
-        controller.TickMainClock();
+        controller.Apply(new TickMainClockCommand());
         Assert.True(controller.State.IsMainSignalActive);
 
         timeProvider.Advance(TimeSpan.FromMilliseconds(2800));
-        controller.TickMainSignal();
+        controller.Apply(new TickMainClockCommand());
 
         Assert.False(controller.State.IsMainSignalActive);
     }
 
     [Fact]
-    public void TickShotClockSignal_UsesOvershootFromShotClockExpiry()
+    public void TickMainClock_UsesOvershootFromShotClockExpirySignal()
     {
         var settings = CreateBasketballSettings();
         settings.ShotClockSignalDurationTenths = 5;
@@ -296,15 +296,15 @@ public sealed class ScoreboardControllerTests
         var controller = new ScoreboardController(settings, timeProvider);
 
         controller.Apply(new SetScoreboardValuesCommand(0, 0, 0, 0, 1, 100, 1));
-        controller.ToggleShotClock();
-        controller.ToggleGameClock();
+        controller.Apply(new ToggleShotClockCommand());
+        controller.Apply(new ToggleGameClockCommand());
 
         timeProvider.Advance(TimeSpan.FromMilliseconds(300));
-        controller.TickMainClock();
+        controller.Apply(new TickMainClockCommand());
         Assert.True(controller.State.IsShotClockSignalActive);
 
         timeProvider.Advance(TimeSpan.FromMilliseconds(300));
-        controller.TickShotClockSignal();
+        controller.Apply(new TickMainClockCommand());
 
         Assert.False(controller.State.IsShotClockSignalActive);
     }
@@ -321,7 +321,7 @@ public sealed class ScoreboardControllerTests
 
         controller.Apply(new ChangeScoreCommand(TeamSide.Home, 5));
         controller.Apply(new ChangeScoreCommand(TeamSide.Guest, 3));
-        controller.AdvancePeriodOrSet();
+        controller.Apply(new AdvancePeriodOrSetCommand());
 
         Assert.Equal(GameMode.Volleyball, controller.State.GameMode);
         Assert.Equal(SecondaryCounterKind.Sets, controller.State.SecondaryCounterKind);

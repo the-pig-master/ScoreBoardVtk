@@ -14,6 +14,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     private readonly IScoreboardApi _scoreboard;
     private readonly IScoreboardRuntime _runtime;
     private readonly Dispatcher _dispatcher;
+    private readonly DispatcherTimer _displayRefreshTimer;
     private readonly KeyboardBindingsSettings _draftKeyboardBindings = new();
 
     private bool _suppressControllerSync;
@@ -93,7 +94,6 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         IncreasePenaltyBCommand = new RelayCommand(() => _scoreboard.Execute(new ChangeSecondaryCounterCommand(TeamSide.Guest, 1)));
         DecreasePenaltyBCommand = new RelayCommand(() => _scoreboard.Execute(new ChangeSecondaryCounterCommand(TeamSide.Guest, -1)));
         ToggleGameClockCommand = new RelayCommand(() => _scoreboard.Execute(new ToggleGameClockCommand()));
-        StopGameClockCommand = new RelayCommand(() => _scoreboard.Execute(new StopGameClockCommand()));
         AdvancePeriodOrSetCommand = new RelayCommand(() => _scoreboard.Execute(new AdvancePeriodOrSetCommand()));
         ResetCommand = new RelayCommand(() => _scoreboard.Execute(new ResetScoreboardCommand()));
         SetShotClock24Command = new RelayCommand(() => _scoreboard.Execute(new SetShotClockCommand(24)));
@@ -107,12 +107,18 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
 
         _scoreboard.StateChanged += ScoreboardOnStateChanged;
         _runtime.Faulted += RuntimeOnFaulted;
+        _displayRefreshTimer = new DispatcherTimer(DispatcherPriority.Background, _dispatcher)
+        {
+            Interval = TimeSpan.FromSeconds(1),
+        };
+        _displayRefreshTimer.Tick += DisplayRefreshTimerOnTick;
 
         ApplySettingsFromController();
         RefreshPorts(_scoreboard.Settings.SelectedPort);
         UpdatePortState();
         RefreshScoreboardState(_scoreboard.State);
         _runtime.Start();
+        _displayRefreshTimer.Start();
     }
 
     public ObservableCollection<string> AvailablePorts { get; }
@@ -152,8 +158,6 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     public ICommand DecreasePenaltyBCommand { get; }
 
     public ICommand ToggleGameClockCommand { get; }
-
-    public ICommand StopGameClockCommand { get; }
 
     public ICommand AdvancePeriodOrSetCommand { get; }
 
@@ -461,6 +465,8 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
+        _displayRefreshTimer.Stop();
+        _displayRefreshTimer.Tick -= DisplayRefreshTimerOnTick;
         _scoreboard.StateChanged -= ScoreboardOnStateChanged;
         _runtime.Faulted -= RuntimeOnFaulted;
         _runtime.Dispose();
@@ -477,6 +483,12 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         }
 
         RefreshScoreboardState(state);
+    }
+
+    private void DisplayRefreshTimerOnTick(object? sender, EventArgs e)
+    {
+        HostClock = DateTime.Now;
+        _scoreboard.Execute(new RefreshDisplayCommand());
     }
 
     private void RuntimeOnFaulted(object? sender, ScoreboardRuntimeFaultedEventArgs e)

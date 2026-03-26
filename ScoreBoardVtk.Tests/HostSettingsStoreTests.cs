@@ -68,10 +68,7 @@ public sealed class HostSettingsStoreTests
                 GameSettingsFileName = "game-state.json",
                 Runtime = new HostRuntimeSettings
                 {
-                    MainClockIntervalMilliseconds = 101,
-                    MainSignalIntervalMilliseconds = 202,
-                    ShotClockSignalIntervalMilliseconds = 303,
-                    DisplayRefreshIntervalMilliseconds = 404,
+                    TimingIntervalMilliseconds = 101,
                     PublishIntervalMilliseconds = 505,
                 },
             };
@@ -82,9 +79,10 @@ public sealed class HostSettingsStoreTests
 
             Assert.Equal(ApplicationProfile.Mock, actual.Profile);
             Assert.Equal("game-state.json", actual.GameSettingsFileName);
-            Assert.Equal(101, actual.Runtime.MainClockIntervalMilliseconds);
+            Assert.Equal(101, actual.Runtime.TimingIntervalMilliseconds);
             Assert.Equal(505, actual.Runtime.PublishIntervalMilliseconds);
             Assert.Contains("// Boot profile used to select the transport implementation.", json);
+            Assert.Contains("\"timingIntervalMilliseconds\": 101", json);
         }
         finally
         {

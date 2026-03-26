@@ -100,7 +100,7 @@ Location for WPF:
 Purpose:
 
 - selects the startup profile,
-- configures runtime intervals,
+- configures runtime timing and publish intervals,
 - points to the game settings file.
 
 Supported profiles:

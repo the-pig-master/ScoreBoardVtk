@@ -10,8 +10,6 @@
     <SolidColorBrush x:Key="ScoreboardShellBorderBrush" Color="#3B4751" />
     <SolidColorBrush x:Key="ScoreboardPanelBackgroundBrush" Color="#0E1419" />
     <SolidColorBrush x:Key="ScoreboardPanelBorderBrush" Color="#28333B" />
-    <SolidColorBrush x:Key="StatusChipBackgroundBrush" Color="#11181E" />
-    <SolidColorBrush x:Key="StatusChipBorderBrush" Color="#28343E" />
     <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#FFFFFF" />
     <SolidColorBrush x:Key="ButtonBorderBrush" Color="#C9D3DB" />
     <SolidColorBrush x:Key="ButtonForegroundBrush" Color="#25313A" />
@@ -56,14 +54,6 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="14" />
         <Setter Property="Padding" Value="14" />
-    </Style>
-
-    <Style x:Key="StatusChipStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource StatusChipBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource StatusChipBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="10" />
-        <Setter Property="Padding" Value="10,6" />
     </Style>
 
     <Style x:Key="ButtonBaseStyle" TargetType="Button">
@@ -212,15 +202,6 @@
     </Style>
 
     <Style x:Key="BasketballOnlyBorderStyle" TargetType="Border" BasedOn="{StaticResource CardBorderStyle}">
-        <Setter Property="IsEnabled" Value="False" />
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding CurrentState.GameMode}" Value="{x:Static core:GameMode.Basketball}">
-                <Setter Property="IsEnabled" Value="True" />
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-
-    <Style x:Key="BasketballOnlyCheckBoxStyle" TargetType="CheckBox">
         <Setter Property="IsEnabled" Value="False" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding CurrentState.GameMode}" Value="{x:Static core:GameMode.Basketball}">

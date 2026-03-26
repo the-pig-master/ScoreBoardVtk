@@ -40,13 +40,13 @@ public sealed class ScoreboardController
 
     public event EventHandler<ScoreboardState>? StateChanged;
 
-    public AppSettings Settings => _settings;
+    internal AppSettings Settings => _settings;
 
     public ScoreboardState State { get; private set; } = default!;
 
     public void Apply(ScoreboardCommand command)
     {
-        if (command is not (TickMainClockCommand or TickMainSignalCommand or TickShotClockSignalCommand or RefreshDisplayCommand))
+        if (command is not (TickMainClockCommand or RefreshDisplayCommand))
         {
             SynchronizeElapsedTime();
         }
@@ -136,10 +136,6 @@ public sealed class ScoreboardController
                 ToggleGameClock();
                 break;
 
-            case StopGameClockCommand:
-                StopGameClock();
-                break;
-
             case AdvancePeriodOrSetCommand:
                 AdvancePeriodOrSet();
                 break;
@@ -156,14 +152,6 @@ public sealed class ScoreboardController
                 TickMainClock();
                 break;
 
-            case TickMainSignalCommand:
-                TickMainSignal();
-                break;
-
-            case TickShotClockSignalCommand:
-                TickShotClockSignal();
-                break;
-
             case RefreshDisplayCommand:
                 RefreshDisplay();
                 break;
@@ -173,14 +161,14 @@ public sealed class ScoreboardController
         }
     }
 
-    public void RefreshDisplay()
+    private void RefreshDisplay()
     {
         UpdateTimingTrackingState();
         State = BuildState();
         StateChanged?.Invoke(this, State);
     }
 
-    public void SetGameMode(GameMode gameMode)
+    private void SetGameMode(GameMode gameMode)
     {
         _settings.GameMode = gameMode;
 
@@ -193,13 +181,13 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void SetFontMode(FontMode fontMode)
+    private void SetFontMode(FontMode fontMode)
     {
         _settings.FontMode = fontMode;
         RefreshDisplay();
     }
 
-    public void SetTimerDirection(TimerDirection timerDirection)
+    private void SetTimerDirection(TimerDirection timerDirection)
     {
         if (_isGameClockRunning)
         {
@@ -216,7 +204,7 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void SetCountFoulsToFive(bool enabled)
+    private void SetCountFoulsToFive(bool enabled)
     {
         _settings.CountFoulsToFive = enabled;
 
@@ -229,31 +217,31 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void SetMainSignalDurationSeconds(int seconds)
+    private void SetMainSignalDurationSeconds(int seconds)
     {
         _settings.MainSignalDurationSeconds = Math.Clamp(seconds, 0, 9);
         RefreshDisplay();
     }
 
-    public void SetShotClockSignalDurationTenths(int tenths)
+    private void SetShotClockSignalDurationTenths(int tenths)
     {
         _settings.ShotClockSignalDurationTenths = Math.Clamp(tenths, 5, 30);
         RefreshDisplay();
     }
 
-    public void SetRunningTextEnabled(bool enabled)
+    private void SetRunningTextEnabled(bool enabled)
     {
         _settings.RunningTextEnabled = enabled;
         RefreshDisplay();
     }
 
-    public void SetRunningText(string text)
+    private void SetRunningText(string text)
     {
         _settings.RunningText = (text ?? string.Empty).TrimEnd();
         RefreshDisplay();
     }
 
-    public void SetTimerPreset(int minutes, int seconds, int tenths)
+    private void SetTimerPreset(int minutes, int seconds, int tenths)
     {
         if (_isGameClockRunning)
         {
@@ -271,7 +259,7 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void SetOvertimeTimerPreset(int minutes, int seconds, int tenths)
+    private void SetOvertimeTimerPreset(int minutes, int seconds, int tenths)
     {
         minutes = Math.Clamp(minutes, 0, 59);
         seconds = Math.Clamp(seconds, 0, 59);
@@ -288,31 +276,31 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void IncreaseScoreA()
+    private void IncreaseScoreA()
     {
         _scoreA = (_scoreA + 1) % (MaxScore + 1);
         RefreshDisplay();
     }
 
-    public void DecreaseScoreA()
+    private void DecreaseScoreA()
     {
         _scoreA = _scoreA == 0 ? MaxScore : _scoreA - 1;
         RefreshDisplay();
     }
 
-    public void IncreaseScoreB()
+    private void IncreaseScoreB()
     {
         _scoreB = (_scoreB + 1) % (MaxScore + 1);
         RefreshDisplay();
     }
 
-    public void DecreaseScoreB()
+    private void DecreaseScoreB()
     {
         _scoreB = _scoreB == 0 ? MaxScore : _scoreB - 1;
         RefreshDisplay();
     }
 
-    public void IncreasePenaltyA()
+    private void IncreasePenaltyA()
     {
         if (_settings.GameMode != GameMode.Basketball)
         {
@@ -323,7 +311,7 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void DecreasePenaltyA()
+    private void DecreasePenaltyA()
     {
         if (_settings.GameMode != GameMode.Basketball)
         {
@@ -335,7 +323,7 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void IncreasePenaltyB()
+    private void IncreasePenaltyB()
     {
         if (_settings.GameMode != GameMode.Basketball)
         {
@@ -346,7 +334,7 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void DecreasePenaltyB()
+    private void DecreasePenaltyB()
     {
         if (_settings.GameMode != GameMode.Basketball)
         {
@@ -358,7 +346,7 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void ToggleGameClock()
+    private void ToggleGameClock()
     {
         if (_settings.GameMode != GameMode.Basketball)
         {
@@ -379,19 +367,7 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void StopGameClock()
-    {
-        if (_settings.GameMode != GameMode.Basketball)
-        {
-            return;
-        }
-
-        SynchronizeElapsedTime();
-        StopGameClockInternal();
-        RefreshDisplay();
-    }
-
-    public void Reset()
+    private void Reset()
     {
         if (_settings.GameMode == GameMode.Basketball)
         {
@@ -409,7 +385,7 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void AdvancePeriodOrSet()
+    private void AdvancePeriodOrSet()
     {
         if (_settings.GameMode == GameMode.Basketball)
         {
@@ -448,17 +424,7 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void SetShotClock24()
-    {
-        SetShotClock(24);
-    }
-
-    public void SetShotClock14()
-    {
-        SetShotClock(14);
-    }
-
-    public void ToggleShotClock()
+    private void ToggleShotClock()
     {
         if (_settings.GameMode != GameMode.Basketball)
         {
@@ -485,19 +451,19 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void StartManualSignal()
+    private void StartManualSignal()
     {
         _isManualSignalActive = true;
         RefreshDisplay();
     }
 
-    public void StopManualSignal()
+    private void StopManualSignal()
     {
         _isManualSignalActive = false;
         RefreshDisplay();
     }
 
-    public void SetScoreboardValues(
+    private void SetScoreboardValues(
         int homeScore,
         int guestScore,
         int homeSecondaryCounter,
@@ -537,7 +503,7 @@ public sealed class ScoreboardController
         RefreshDisplay();
     }
 
-    public void TickMainClock()
+    private void TickMainClock()
     {
         if (!HasActiveTimedState())
         {
@@ -546,16 +512,6 @@ public sealed class ScoreboardController
 
         SynchronizeElapsedTime();
         RefreshDisplay();
-    }
-
-    public void TickMainSignal()
-    {
-        TickMainClock();
-    }
-
-    public void TickShotClockSignal()
-    {
-        TickMainClock();
     }
 
     private void ApplySettingsDefaults()

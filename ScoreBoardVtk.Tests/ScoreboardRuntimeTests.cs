@@ -7,15 +7,12 @@ namespace ScoreBoardVtk.Tests;
 public sealed class ScoreboardRuntimeTests
 {
     [Fact]
-    public async Task Start_SchedulesTicksRefreshAndPublish()
+    public async Task Start_SchedulesTicksAndPublish()
     {
         var api = new FakeScoreboardApi { IsConnected = true };
         using var runtime = new ScoreboardRuntime(api, new ScoreboardRuntimeOptions
         {
-            MainClockInterval = TimeSpan.FromMilliseconds(20),
-            MainSignalInterval = TimeSpan.FromMilliseconds(25),
-            ShotClockSignalInterval = TimeSpan.FromMilliseconds(20),
-            DisplayRefreshInterval = TimeSpan.FromMilliseconds(30),
+            TimingInterval = TimeSpan.FromMilliseconds(20),
             PublishInterval = TimeSpan.FromMilliseconds(15),
         });
 
@@ -24,7 +21,6 @@ public sealed class ScoreboardRuntimeTests
         runtime.Stop();
 
         Assert.Contains(api.ExecutedCommands, command => command is TickMainClockCommand);
-        Assert.Contains(api.ExecutedCommands, command => command is RefreshDisplayCommand);
         Assert.True(api.PublishCount > 0);
     }
 

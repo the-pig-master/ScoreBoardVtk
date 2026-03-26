@@ -10,17 +10,8 @@
   "gameSettingsFileName": "settings.json",
 
   "runtime": {
-    // Main game clock tick interval in milliseconds.
-    "mainClockIntervalMilliseconds": 100,
-
-    // Main buzzer countdown tick interval in milliseconds.
-    "mainSignalIntervalMilliseconds": 1000,
-
-    // Shot-clock buzzer countdown tick interval in milliseconds.
-    "shotClockSignalIntervalMilliseconds": 100,
-
-    // UI/display refresh interval in milliseconds.
-    "displayRefreshIntervalMilliseconds": 1000,
+    // Shared timing loop interval for game clock, shot clock, and buzzer timing.
+    "timingIntervalMilliseconds": 100,
 
     // Packet publish interval in milliseconds.
     "publishIntervalMilliseconds": 50

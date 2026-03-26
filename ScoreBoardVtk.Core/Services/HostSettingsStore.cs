@@ -68,17 +68,8 @@ public sealed class HostSettingsStore
           "gameSettingsFileName": {{ToJson(settings.GameSettingsFileName)}},
 
           "runtime": {
-            // Main game clock tick interval in milliseconds.
-            "mainClockIntervalMilliseconds": {{ToJson(settings.Runtime.MainClockIntervalMilliseconds)}},
-
-            // Main buzzer countdown tick interval in milliseconds.
-            "mainSignalIntervalMilliseconds": {{ToJson(settings.Runtime.MainSignalIntervalMilliseconds)}},
-
-            // Shot-clock buzzer countdown tick interval in milliseconds.
-            "shotClockSignalIntervalMilliseconds": {{ToJson(settings.Runtime.ShotClockSignalIntervalMilliseconds)}},
-
-            // UI/display refresh interval in milliseconds.
-            "displayRefreshIntervalMilliseconds": {{ToJson(settings.Runtime.DisplayRefreshIntervalMilliseconds)}},
+            // Shared timing loop interval for game clock, shot clock, and buzzer timing.
+            "timingIntervalMilliseconds": {{ToJson(settings.Runtime.TimingIntervalMilliseconds)}},
 
             // Packet publish interval in milliseconds.
             "publishIntervalMilliseconds": {{ToJson(settings.Runtime.PublishIntervalMilliseconds)}}

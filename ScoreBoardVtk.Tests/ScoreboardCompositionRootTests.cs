@@ -28,7 +28,9 @@ public sealed class ScoreboardCompositionRootTests
             using var services = ScoreboardCompositionRoot.CreateDesktopServices(hostSettingsPath);
 
             Assert.True(File.Exists(hostSettingsPath));
-            Assert.Equal(ApplicationProfile.Development, services.HostSettings.Profile);
+            Assert.NotNull(services.SettingsStore);
+            Assert.NotNull(services.ScoreboardApi);
+            Assert.NotNull(services.Runtime);
         }
         finally
         {

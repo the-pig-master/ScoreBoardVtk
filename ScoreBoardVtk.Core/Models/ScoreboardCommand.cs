@@ -43,8 +43,6 @@ public sealed record SetManualSignalCommand(bool IsActive) : ScoreboardCommand;
 
 public sealed record ToggleGameClockCommand : ScoreboardCommand;
 
-public sealed record StopGameClockCommand : ScoreboardCommand;
-
 public sealed record AdvancePeriodOrSetCommand : ScoreboardCommand;
 
 public sealed record ResetScoreboardCommand : ScoreboardCommand;
@@ -52,9 +50,5 @@ public sealed record ResetScoreboardCommand : ScoreboardCommand;
 public sealed record ToggleShotClockCommand : ScoreboardCommand;
 
 public sealed record TickMainClockCommand : ScoreboardCommand;
-
-public sealed record TickMainSignalCommand : ScoreboardCommand;
-
-public sealed record TickShotClockSignalCommand : ScoreboardCommand;
 
 public sealed record RefreshDisplayCommand : ScoreboardCommand;

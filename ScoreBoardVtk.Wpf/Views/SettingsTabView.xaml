@@ -29,7 +29,6 @@
 
                 <ComboBox Grid.Column="1"
                           Width="200"
-                          Height="36"
                           ItemsSource="{Binding AvailablePorts}"
                           SelectedItem="{Binding SelectedPort}"
                           HorizontalAlignment="Left"
@@ -73,7 +72,6 @@
                     <TextBlock Grid.Row="0" Text="Game mode" Style="{StaticResource FieldCaptionStyle}" />
                     <ComboBox Grid.Row="1"
                               Width="260"
-                              Height="36"
                               HorizontalAlignment="Left"
                               ItemsSource="{Binding GameModes}"
                               DisplayMemberPath="Label"
@@ -88,7 +86,6 @@
                     <TextBlock Grid.Row="0" Text="Font mode" Style="{StaticResource FieldCaptionStyle}" />
                     <ComboBox Grid.Row="1"
                               Width="260"
-                              Height="36"
                               HorizontalAlignment="Left"
                               ItemsSource="{Binding FontModes}"
                               DisplayMemberPath="Label"
@@ -103,7 +100,6 @@
                     <TextBlock Grid.Row="0" Text="Timer direction" Style="{StaticResource FieldCaptionStyle}" />
                     <ComboBox Grid.Row="1"
                               Width="260"
-                              Height="36"
                               HorizontalAlignment="Left"
                               ItemsSource="{Binding TimerDirections}"
                               DisplayMemberPath="Label"
@@ -125,15 +121,12 @@
                             <ColumnDefinition Width="84" />
                         </Grid.ColumnDefinitions>
                         <ComboBox Grid.Column="0"
-                                  Height="36"
                                   ItemsSource="{Binding PresetMinuteOptions}"
                                   SelectedItem="{Binding PresetMinutes}" />
                         <ComboBox Grid.Column="2"
-                                  Height="36"
                                   ItemsSource="{Binding PresetSecondOptions}"
                                   SelectedItem="{Binding PresetSeconds}" />
                         <ComboBox Grid.Column="4"
-                                  Height="36"
                                   ItemsSource="{Binding PresetTenthsOptions}"
                                   SelectedItem="{Binding PresetTenths}" />
                     </Grid>
@@ -154,15 +147,12 @@
                             <ColumnDefinition Width="84" />
                         </Grid.ColumnDefinitions>
                         <ComboBox Grid.Column="0"
-                                  Height="36"
                                   ItemsSource="{Binding PresetMinuteOptions}"
                                   SelectedItem="{Binding OvertimePresetMinutes}" />
                         <ComboBox Grid.Column="2"
-                                  Height="36"
                                   ItemsSource="{Binding PresetSecondOptions}"
                                   SelectedItem="{Binding OvertimePresetSeconds}" />
                         <ComboBox Grid.Column="4"
-                                  Height="36"
                                   ItemsSource="{Binding PresetTenthsOptions}"
                                   SelectedItem="{Binding OvertimePresetTenths}" />
                     </Grid>
@@ -180,19 +170,17 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Row="0" Text="Main buzzer, sec" Style="{StaticResource FieldCaptionStyle}" />
                     <ComboBox Grid.Row="1"
-                              Height="36"
                               HorizontalAlignment="Stretch"
                               ItemsSource="{Binding SignalDurationOptions}"
                               SelectedItem="{Binding MainSignalDurationSeconds}" />
                     <TextBlock Grid.Row="0" Grid.Column="2" Text="24 sec buzzer, tenths" Style="{StaticResource FieldCaptionStyle}" />
                     <ComboBox Grid.Row="1" Grid.Column="2"
-            Height="36"
             HorizontalAlignment="Stretch"
             ItemsSource="{Binding ShotClockSignalOptions}"
             SelectedItem="{Binding ShotClockSignalDurationTenths}" />
                 </Grid>
 
-                
+
                 <CheckBox Grid.Row="2"
                           Grid.Column="0"
                           Grid.ColumnSpan="3"
@@ -273,65 +261,5 @@
             </Grid>
         </Border>
 
-        <!--<Border Grid.Row="2" Margin="0,20,0,0" Style="{StaticResource CardBorderStyle}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <TextBlock Text="Keyboard Shortcuts"
-                           Style="{StaticResource PayloadHeaderTextStyle}"
-                           Margin="0,0,0,8" />
-
-                <TextBlock Grid.Row="1"
-                           Text="{Binding KeyboardShortcutCaptureText}"
-                           Style="{StaticResource FieldCaptionStyle}"
-                           Margin="0,0,0,12" />
-
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding KeyboardShortcutBindings}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Margin="0,0,0,10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="360" />
-                                        <ColumnDefinition Width="160" />
-                                        <ColumnDefinition Width="140" />
-                                        <ColumnDefinition Width="120" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Grid.Column="0"
-                                               Text="{Binding Label}"
-                                               VerticalAlignment="Center"
-                                               FontSize="14"
-                                               FontWeight="SemiBold" />
-
-                                    <TextBlock Grid.Column="1"
-                                               Text="{Binding AssignedKeyDisplay}"
-                                               VerticalAlignment="Center"
-                                               FontFamily="Consolas"
-                                               FontSize="14" />
-
-                                    <Button Grid.Column="2"
-                                            Content="{Binding AssignButtonText}"
-                                            Command="{Binding BeginAssignCommand}"
-                                            Width="120"
-                                            Style="{StaticResource DeskButtonStyle}" />
-
-                                    <Button Grid.Column="3"
-                                            Content="Clear"
-                                            Command="{Binding ClearCommand}"
-                                            Width="100"
-                                            Style="{StaticResource DeskButtonStyle}"
-                                            Margin="12,0,0,0" />
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-            </Grid>
-        </Border>-->
     </Grid>
 </UserControl>

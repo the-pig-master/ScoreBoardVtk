@@ -8,7 +8,6 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
     private readonly ScoreboardRuntimeOptions _options;
 
     private ScheduledLoop? _timingLoop;
-    private ScheduledLoop? _displayRefreshLoop;
     private ScheduledLoop? _publishLoop;
     private bool _disposed;
 
@@ -31,12 +30,10 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
             return;
         }
 
-        _timingLoop = new ScheduledLoop(GetTimingInterval(), "TickMainClock", () => _scoreboard.Execute(new TickMainClockCommand()), OnFaulted);
-        _displayRefreshLoop = new ScheduledLoop(_options.DisplayRefreshInterval, "RefreshDisplay", () => _scoreboard.Execute(new RefreshDisplayCommand()), OnFaulted);
+        _timingLoop = new ScheduledLoop(_options.TimingInterval, "TickMainClock", () => _scoreboard.Execute(new TickMainClockCommand()), OnFaulted);
         _publishLoop = new ScheduledLoop(_options.PublishInterval, "Publish", () => _scoreboard.Publish(), OnFaulted);
 
         IsRunning = true;
-        SafeInvoke("InitialRefresh", () => _scoreboard.Execute(new RefreshDisplayCommand()));
     }
 
     public void Stop()
@@ -47,11 +44,9 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
         }
 
         _timingLoop?.Dispose();
-        _displayRefreshLoop?.Dispose();
         _publishLoop?.Dispose();
 
         _timingLoop = null;
-        _displayRefreshLoop = null;
         _publishLoop = null;
         IsRunning = false;
     }
@@ -72,37 +67,9 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
         Faulted?.Invoke(this, new ScoreboardRuntimeFaultedEventArgs(operationName, exception));
     }
 
-    private void SafeInvoke(string operationName, Action action)
-    {
-        try
-        {
-            action();
-        }
-        catch (Exception exception)
-        {
-            OnFaulted(operationName, exception);
-        }
-    }
-
     private void ThrowIfDisposed()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-    }
-
-    private TimeSpan GetTimingInterval()
-    {
-        return MinPositiveInterval(
-            _options.MainClockInterval,
-            _options.MainSignalInterval,
-            _options.ShotClockSignalInterval);
-    }
-
-    private static TimeSpan MinPositiveInterval(params TimeSpan[] intervals)
-    {
-        return intervals
-            .Where(interval => interval > TimeSpan.Zero)
-            .DefaultIfEmpty(TimeSpan.FromMilliseconds(100))
-            .Min();
     }
 
     private sealed class ScheduledLoop : IDisposable
