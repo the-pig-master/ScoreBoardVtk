@@ -6,6 +6,7 @@
         xmlns:views="clr-namespace:ScoreBoardVtk.Wpf.Views"
         mc:Ignorable="d"
         Title="ScoreBoardVtk"
+        Icon="Assets/ScoreBoardVtk.ico"
         Width="1440"
         Height="900"
         MinWidth="960"

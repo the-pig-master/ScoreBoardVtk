@@ -5,6 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\ScoreBoardVtk.ico" />
     <None Update="hostsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -20,6 +21,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>ScoreBoardVtk.Wpf</RootNamespace>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\ScoreBoardVtk.ico</ApplicationIcon>
   </PropertyGroup>
 
 </Project>
