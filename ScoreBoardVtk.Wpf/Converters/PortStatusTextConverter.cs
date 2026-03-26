@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Windows.Data;
+using ScoreBoardVtk.Wpf.Localization;
 
 namespace ScoreBoardVtk.Wpf.Converters;
 
@@ -12,12 +13,15 @@ public sealed class PortStatusTextConverter : IMultiValueConverter
 
         if (!isConnected)
         {
-            return "Port: closed";
+            return LocalizationManager.Instance.GetString("StatusPortClosed");
         }
 
         return string.IsNullOrWhiteSpace(portName)
-            ? "Port: open"
-            : $"Port: open ({portName})";
+            ? LocalizationManager.Instance.GetString("StatusPortOpen")
+            : string.Format(
+                culture,
+                LocalizationManager.Instance.GetString("StatusPortOpenWithName"),
+                portName);
     }
 
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

@@ -3,6 +3,10 @@
   // Leave empty to select the port manually in the UI.
   "selectedPort": "",
 
+  // User interface language.
+  // Allowed values: "English", "Russian"
+  "uiLanguage": "English",
+
   // Main game timer preset.
   // Supported formats: "mm:ss" or "mm:ss.t"
   "gameTimePreset": "10:00",

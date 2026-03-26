@@ -38,7 +38,7 @@
                                     </Grid.RowDefinitions>
 
                                     <TextBlock Grid.Row="0"
-                                               Text="HOME"
+                                               Text="{DynamicResource GameDisplayHome}"
                                                Style="{StaticResource DisplayCaptionStyle}"
                                                HorizontalAlignment="Left" />
                                     <Viewbox Grid.Row="1" Width="470" Height="150" Stretch="Uniform">
@@ -52,7 +52,7 @@
                                             <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
                                         <TextBlock Grid.Row="0"
-                                                   Text="{Binding CurrentSnapshot.PenaltyLabelText}"
+                                                   Text="{Binding SecondaryCounterLabelText}"
                                                    Style="{StaticResource DisplayCaptionStyle}"
                                                    VerticalAlignment="Center" />
                                         <TextBlock Grid.Row="1"
@@ -83,7 +83,7 @@
                                         </Grid.RowDefinitions>
 
                                         <TextBlock Grid.Row="0"
-                                                   Text="PERIOD / SET"
+                                                   Text="{DynamicResource GameDisplayPeriodSet}"
                                                    Style="{StaticResource DisplayCaptionStyle}"
                                                    HorizontalAlignment="Center" />
                                         <TextBlock Grid.Row="1"
@@ -92,7 +92,7 @@
                                                    FontSize="42" />
                                         <TextBlock Grid.Row="0"
                                                    Grid.Column="1"
-                                                   Text="SHOT READY"
+                                                   Text="{DynamicResource GameDisplayShotReady}"
                                                    Style="{StaticResource DisplayCaptionStyle}"
                                                    HorizontalAlignment="Center" />
                                         <Ellipse Grid.Row="1"
@@ -109,7 +109,7 @@
                                             <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
                                         <TextBlock Grid.Row="0"
-                                                   Text="GAME CLOCK"
+                                                   Text="{DynamicResource GameDisplayGameClock}"
                                                    Style="{StaticResource DisplayCaptionStyle}"
                                                    HorizontalAlignment="Center" />
                                         <TextBlock Grid.Row="1"
@@ -132,7 +132,7 @@
                                                 <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
                                             <TextBlock Grid.Row="0"
-                                                       Text="SHOT CLOCK"
+                                                       Text="{DynamicResource GameDisplayShotClock}"
                                                        Style="{StaticResource DisplayCaptionStyle}"
                                                        HorizontalAlignment="Center" />
                                             <Grid Grid.Row="1" Margin="0,6,0,0" HorizontalAlignment="Center">
@@ -160,7 +160,7 @@
                                                 <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
                                             <TextBlock Grid.Row="0"
-                                                       Text="SIGNALS"
+                                                       Text="{DynamicResource GameDisplaySignals}"
                                                        Style="{StaticResource DisplayCaptionStyle}"
                                                        HorizontalAlignment="Center" />
                                             <Grid Grid.Row="1" Margin="0,8,0,0" HorizontalAlignment="Center">
@@ -175,7 +175,7 @@
                                                     </Grid.RowDefinitions>
                                                     <Ellipse Grid.Row="0" Style="{StaticResource MainSignalIndicatorStyle}" />
                                                     <TextBlock Grid.Row="1"
-                                                               Text="MAIN"
+                                                               Text="{DynamicResource GameDisplayMainSignalShort}"
                                                                Style="{StaticResource DisplayCaptionStyle}"
                                                                HorizontalAlignment="Center"
                                                                Margin="0,6,0,0" />
@@ -206,7 +206,7 @@
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <TextBlock Grid.Row="0"
-                                               Text="GUEST"
+                                               Text="{DynamicResource GameDisplayGuest}"
                                                Style="{StaticResource DisplayCaptionStyle}"
                                                HorizontalAlignment="Right" />
                                     <Viewbox Grid.Row="1" Width="470" Height="150" Stretch="Uniform">
@@ -220,7 +220,7 @@
                                             <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
                                         <TextBlock Grid.Row="0"
-                                                   Text="{Binding CurrentSnapshot.PenaltyLabelText}"
+                                                   Text="{Binding SecondaryCounterLabelText}"
                                                    Style="{StaticResource DisplayCaptionStyle}"
                                                    HorizontalAlignment="Right"
                                                    VerticalAlignment="Center" />
@@ -262,8 +262,8 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Home Console" Style="{StaticResource PanelHeaderTextStyle}" />
-                            <TextBlock Grid.Row="1" Text="Score" Style="{StaticResource FieldCaptionStyle}" Margin="0,16,0,8" />
+                            <TextBlock Grid.Row="0" Text="{DynamicResource GameHomeConsole}" Style="{StaticResource PanelHeaderTextStyle}" />
+                            <TextBlock Grid.Row="1" Text="{DynamicResource GameLabelScore}" Style="{StaticResource FieldCaptionStyle}" Margin="0,16,0,8" />
                             <Grid Grid.Row="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -280,7 +280,7 @@
                                         Margin="12,0,0,0" />
                             </Grid>
                             <TextBlock Grid.Row="3"
-                                       Text="{Binding CurrentSnapshot.PenaltyLabelText}"
+                                       Text="{Binding SecondaryCounterLabelText}"
                                        Style="{StaticResource FieldCaptionStyle}"
                                        Margin="0,18,0,8" />
                             <Grid Grid.Row="4">
@@ -309,7 +309,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Match Desk" Style="{StaticResource PanelHeaderTextStyle}" />
+                            <TextBlock Grid.Row="0" Text="{DynamicResource GameMatchDesk}" Style="{StaticResource PanelHeaderTextStyle}" />
                             <Button Grid.Row="1"
                                     Content="{Binding GameClockToggleButtonText}"
                                     Margin="10,16,0,0"
@@ -323,7 +323,7 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <Button Grid.Column="0"
-                                        Content="Signal"
+                                        Content="{DynamicResource GameSignalButton}"
                                         Margin="10,0,0,0"
                                         Style="{StaticResource WarningDeskButtonStyle}"
                                         PreviewMouseLeftButtonDown="SignalButton_OnPreviewMouseLeftButtonDown"
@@ -341,10 +341,10 @@
                                         </Grid.RowDefinitions>
                                         <Ellipse Grid.Row="0" Style="{StaticResource MainSignalIndicatorStyle}" />
                                         <TextBlock Grid.Row="1"
-                    Text="MAIN"
-                    Style="{StaticResource DisplayCaptionStyle}"
-                    HorizontalAlignment="Center"
-                    Margin="0,6,0,0" />
+                                                   Text="{DynamicResource GameDisplayMainSignalShort}"
+                                                   Style="{StaticResource DisplayCaptionStyle}"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,6,0,0" />
                                     </Grid>
                                     <Grid Grid.Column="1">
                                         <Grid.RowDefinitions>
@@ -367,19 +367,19 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Button Grid.Column="0"
-                                        Content="Period / Set"
+                                        Content="{DynamicResource GamePeriodSetButton}"
                                         IsEnabled="{Binding CanResetTimers}"
                                         Click="AdvancePeriodButton_OnClick"
                                         Style="{StaticResource DeskButtonStyle}" />
                                 <Button Grid.Column="1"
-                                        Content="Reset"
+                                        Content="{DynamicResource GameResetButton}"
                                         Width="80"
                                         Margin="10,0,0,0"
                                         IsEnabled="{Binding CanResetTimers}"
                                         Click="ResetButton_OnClick"
                                         Style="{StaticResource DeskButtonStyle}" />
                                 <Button Grid.Column="2"
-                                        Content="Set"
+                                        Content="{DynamicResource GameSetButton}"
                                         Width="80"
                                         IsEnabled="{Binding CanResetTimers}"
                                         Click="SetButton_OnClick"
@@ -397,7 +397,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Shot Clock Desk" Style="{StaticResource PanelHeaderTextStyle}" />
+                            <TextBlock Grid.Row="0" Text="{DynamicResource GameShotClockDesk}" Style="{StaticResource PanelHeaderTextStyle}" />
                             <Button Grid.Row="1"
                                     Content="{Binding ShotClockToggleButtonText}"
                                     HorizontalAlignment="Stretch"
@@ -447,8 +447,8 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Guest Console" Style="{StaticResource PanelHeaderTextStyle}" />
-                            <TextBlock Grid.Row="1" Text="Score" Style="{StaticResource FieldCaptionStyle}" Margin="0,16,0,8" />
+                            <TextBlock Grid.Row="0" Text="{DynamicResource GameGuestConsole}" Style="{StaticResource PanelHeaderTextStyle}" />
+                            <TextBlock Grid.Row="1" Text="{DynamicResource GameLabelScore}" Style="{StaticResource FieldCaptionStyle}" Margin="0,16,0,8" />
                             <Grid Grid.Row="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -465,7 +465,7 @@
                                         Margin="12,0,0,0" />
                             </Grid>
                             <TextBlock Grid.Row="3"
-                                       Text="{Binding CurrentSnapshot.PenaltyLabelText}"
+                                       Text="{Binding SecondaryCounterLabelText}"
                                        Style="{StaticResource FieldCaptionStyle}"
                                        Margin="0,18,0,8" />
                             <Grid Grid.Row="4">
@@ -500,16 +500,16 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Operator Message" Style="{StaticResource SectionHeaderTextStyle}" />
+                            <TextBlock Grid.Row="0" Text="{DynamicResource GameOperatorMessage}" Style="{StaticResource SectionHeaderTextStyle}" />
                             <CheckBox Grid.Row="1"
-                                      Content="Enable running text"
+                                      Content="{DynamicResource GameEnableRunningText}"
                                       IsChecked="{Binding RunningTextEnabled}"
                                       Margin="0,8,0,0"
                                       Style="{StaticResource MutedCheckBoxStyle}" />
                         </Grid>
 
                         <TextBlock Grid.Column="1"
-                                   Text="Text"
+                                   Text="{DynamicResource GameTextLabel}"
                                    Style="{StaticResource FieldCaptionStyle}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,12,0" />

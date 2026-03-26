@@ -163,13 +163,13 @@
     </Style>
 
     <Style x:Key="GameClockToggleButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-        <Setter Property="Content" Value="Start" />
+        <Setter Property="Content" Value="{DynamicResource CommonStart}" />
         <Setter Property="Background" Value="{StaticResource StartButtonBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource StartButtonBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ButtonBackgroundBrush}" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding CurrentState.IsGameClockRunning}" Value="True">
-                <Setter Property="Content" Value="Stop" />
+                <Setter Property="Content" Value="{DynamicResource CommonStop}" />
                 <Setter Property="Background" Value="{StaticResource AccentButtonBrush}" />
                 <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBrush}" />
                 <Setter Property="Foreground" Value="{StaticResource ButtonBackgroundBrush}" />
@@ -178,13 +178,13 @@
     </Style>
 
     <Style x:Key="ShotClockToggleButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-        <Setter Property="Content" Value="Start" />
+        <Setter Property="Content" Value="{DynamicResource CommonStart}" />
         <Setter Property="Background" Value="{StaticResource StartButtonBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource StartButtonBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ButtonBackgroundBrush}" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding CurrentState.IsShotClockRunning}" Value="True">
-                <Setter Property="Content" Value="Stop" />
+                <Setter Property="Content" Value="{DynamicResource CommonStop}" />
                 <Setter Property="Background" Value="{StaticResource AccentButtonBrush}" />
                 <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBrush}" />
                 <Setter Property="Foreground" Value="{StaticResource ButtonBackgroundBrush}" />
@@ -193,10 +193,10 @@
     </Style>
 
     <Style x:Key="PortToggleButtonStyle" TargetType="Button" BasedOn="{StaticResource DeskButtonStyle}">
-        <Setter Property="Content" Value="Open Port" />
+        <Setter Property="Content" Value="{DynamicResource SettingsOpenPort}" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsConnected}" Value="True">
-                <Setter Property="Content" Value="Close Port" />
+                <Setter Property="Content" Value="{DynamicResource SettingsClosePort}" />
             </DataTrigger>
         </Style.Triggers>
     </Style>

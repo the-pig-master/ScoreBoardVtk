@@ -4,6 +4,7 @@ using System.Windows.Threading;
 using ScoreBoardVtk.Core.Models;
 using ScoreBoardVtk.Core.Services;
 using ScoreBoardVtk.Wpf.Infrastructure;
+using ScoreBoardVtk.Wpf.Localization;
 using ScoreBoardVtk.Wpf.Models;
 
 namespace ScoreBoardVtk.Wpf.ViewModels;
@@ -15,6 +16,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     private readonly IScoreboardRuntime _runtime;
     private readonly Dispatcher _dispatcher;
     private readonly DispatcherTimer _displayRefreshTimer;
+    private readonly LocalizationManager _localization;
     private readonly KeyboardBindingsSettings _draftKeyboardBindings = new();
 
     private bool _suppressControllerSync;
@@ -40,6 +42,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     private OptionItem<GameMode>? _selectedGameMode;
     private OptionItem<FontMode>? _selectedFontMode;
     private OptionItem<TimerDirection>? _selectedTimerDirection;
+    private OptionItem<UiLanguage>? _selectedUiLanguage;
 
     public ScoreboardWorkspaceViewModel(SettingsStore settingsStore, IScoreboardApi scoreboard, IScoreboardRuntime runtime)
     {
@@ -47,42 +50,32 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         _scoreboard = scoreboard;
         _runtime = runtime;
         _dispatcher = Dispatcher.CurrentDispatcher;
+        _localization = LocalizationManager.Instance;
 
         AvailablePorts = new ObservableCollection<string>();
-        GameModes =
-        [
-            new OptionItem<GameMode>(GameMode.Basketball, "Basketball"),
-            new OptionItem<GameMode>(GameMode.Volleyball, "Volleyball"),
-        ];
-        FontModes =
-        [
-            new OptionItem<FontMode>(FontMode.Font6x8, "Font 6x8"),
-            new OptionItem<FontMode>(FontMode.Font8x8, "Font 8x8"),
-        ];
-        TimerDirections =
-        [
-            new OptionItem<TimerDirection>(TimerDirection.Up, "Count Up"),
-            new OptionItem<TimerDirection>(TimerDirection.Down, "Count Down"),
-        ];
+        GameModes = Array.Empty<OptionItem<GameMode>>();
+        FontModes = Array.Empty<OptionItem<FontMode>>();
+        TimerDirections = Array.Empty<OptionItem<TimerDirection>>();
+        UiLanguages = Array.Empty<OptionItem<UiLanguage>>();
         PresetMinuteOptions = Enumerable.Range(0, 60).ToArray();
         PresetSecondOptions = Enumerable.Range(0, 60).ToArray();
         PresetTenthsOptions = Enumerable.Range(0, 10).ToArray();
         KeyboardShortcutBindings =
         [
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.ToggleGameClock, "Game clock start / stop", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.ToggleShotClock, "Shot clock start / stop", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.SetShotClock24, "Set shot clock to 24", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.SetShotClock14, "Set shot clock to 14", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.RunShotClock24, "Run shot clock from 24", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.RunShotClock14, "Run shot clock from 14", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseHomeScore, "Home score +1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseHomeScore, "Home score -1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseGuestScore, "Guest score +1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseGuestScore, "Guest score -1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseHomeFouls, "Home fouls +1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseHomeFouls, "Home fouls -1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseGuestFouls, "Guest fouls +1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
-            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseGuestFouls, "Guest fouls -1", BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.ToggleGameClock, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.ToggleShotClock, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.SetShotClock24, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.SetShotClock14, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.RunShotClock24, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.RunShotClock14, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseHomeScore, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseHomeScore, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseGuestScore, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseGuestScore, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseHomeFouls, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseHomeFouls, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.IncreaseGuestFouls, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
+            new KeyboardShortcutBindingViewModel(KeyboardShortcutAction.DecreaseGuestFouls, string.Empty, BeginKeyboardShortcutCapture, ClearKeyboardShortcut),
         ];
 
         IncreaseScoreACommand = new RelayCommand(() => _scoreboard.Execute(new ChangeScoreCommand(TeamSide.Home, 1)));
@@ -107,11 +100,16 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
 
         _scoreboard.StateChanged += ScoreboardOnStateChanged;
         _runtime.Faulted += RuntimeOnFaulted;
+        _localization.LanguageChanged += LocalizationOnLanguageChanged;
         _displayRefreshTimer = new DispatcherTimer(DispatcherPriority.Background, _dispatcher)
         {
             Interval = TimeSpan.FromSeconds(1),
         };
         _displayRefreshTimer.Tick += DisplayRefreshTimerOnTick;
+
+        RefreshLocalizedCollections();
+        RefreshLocalizedText();
+        SystemMessageText = L("MessageReady");
 
         ApplySettingsFromController();
         RefreshPorts(_scoreboard.Settings.SelectedPort);
@@ -123,11 +121,13 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<string> AvailablePorts { get; }
 
-    public IReadOnlyList<OptionItem<GameMode>> GameModes { get; }
+    public IReadOnlyList<OptionItem<GameMode>> GameModes { get; private set; }
 
-    public IReadOnlyList<OptionItem<FontMode>> FontModes { get; }
+    public IReadOnlyList<OptionItem<FontMode>> FontModes { get; private set; }
 
-    public IReadOnlyList<OptionItem<TimerDirection>> TimerDirections { get; }
+    public IReadOnlyList<OptionItem<TimerDirection>> TimerDirections { get; private set; }
+
+    public IReadOnlyList<OptionItem<UiLanguage>> UiLanguages { get; private set; }
 
     public IReadOnlyList<int> PresetMinuteOptions { get; }
 
@@ -231,28 +231,34 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     }
 
     public string KeyboardShortcutCaptureText => _pendingKeyboardShortcutAction is null
-        ? "Click Assign and press a key. Use Clear to disable that shortcut."
-        : $"Press a key for {GetKeyboardShortcutLabel(_pendingKeyboardShortcutAction.Value)}. Press Esc to clear.";
+        ? L("ShortcutCaptureIdle")
+        : string.Format(
+            L("ShortcutCapturePrompt"),
+            GetKeyboardShortcutLabel(_pendingKeyboardShortcutAction.Value));
 
     public bool CanResetTimers => _currentState is not null &&
                                   !_currentState.IsGameClockRunning &&
                                   !_currentState.IsShotClockRunning;
 
+    public string SecondaryCounterLabelText => CurrentState.SecondaryCounterKind == SecondaryCounterKind.Fouls
+        ? L("CommonFouls")
+        : L("CommonSets");
+
     public string GameClockToggleButtonText => BuildButtonText(
-        _currentState is not null && _currentState.IsGameClockRunning ? "Stop" : "Start",
+        _currentState is not null && _currentState.IsGameClockRunning ? L("CommonStop") : L("CommonStart"),
         GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.ToggleGameClock));
 
     public string ShotClockToggleButtonText => BuildButtonText(
-        _currentState is not null && _currentState.IsShotClockRunning ? "Stop" : "Start",
+        _currentState is not null && _currentState.IsShotClockRunning ? L("CommonStop") : L("CommonStart"),
         GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.ToggleShotClock));
 
-    public string SetShotClock24ButtonText => BuildButtonText("Set 24", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.SetShotClock24));
+    public string SetShotClock24ButtonText => BuildButtonText(L("GameButtonSet24"), GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.SetShotClock24));
 
-    public string SetShotClock14ButtonText => BuildButtonText("Set 14", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.SetShotClock14));
+    public string SetShotClock14ButtonText => BuildButtonText(L("GameButtonSet14"), GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.SetShotClock14));
 
-    public string RunShotClock24ButtonText => BuildButtonText("Run 24", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.RunShotClock24));
+    public string RunShotClock24ButtonText => BuildButtonText(L("GameButtonRun24"), GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.RunShotClock24));
 
-    public string RunShotClock14ButtonText => BuildButtonText("Run 14", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.RunShotClock14));
+    public string RunShotClock14ButtonText => BuildButtonText(L("GameButtonRun14"), GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.RunShotClock14));
 
     public string IncreaseScoreAButtonText => BuildButtonText("+1", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.IncreaseHomeScore));
 
@@ -389,6 +395,12 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         }
     }
 
+    public OptionItem<UiLanguage>? SelectedUiLanguage
+    {
+        get => _selectedUiLanguage;
+        set => SetProperty(ref _selectedUiLanguage, value);
+    }
+
     public void StartManualSignal()
     {
         _scoreboard.Execute(new SetManualSignalCommand(true));
@@ -412,7 +424,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
             values.MainClockTenths,
             values.ShotClockTenths));
 
-        SystemMessageText = "Values applied.";
+        SystemMessageText = L("MessageValuesApplied");
     }
 
     public bool TryHandleKeyboardShortcutCapture(Key key)
@@ -425,18 +437,23 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         if (key == Key.Escape)
         {
             SetDraftKeyboardShortcut(_pendingKeyboardShortcutAction.Value, string.Empty);
-            SystemMessageText = $"{GetKeyboardShortcutLabel(_pendingKeyboardShortcutAction.Value)} shortcut cleared.";
+            SystemMessageText = string.Format(
+                L("ShortcutClearedMessage"),
+                GetKeyboardShortcutLabel(_pendingKeyboardShortcutAction.Value));
         }
         else if (!IsAssignableKeyboardShortcut(key))
         {
-            SystemMessageText = "This key cannot be assigned as a shortcut.";
+            SystemMessageText = L("ShortcutInvalidKeyMessage");
             return true;
         }
         else
         {
             RemoveDraftKeyboardShortcut(key, _pendingKeyboardShortcutAction.Value);
             SetDraftKeyboardShortcut(_pendingKeyboardShortcutAction.Value, key.ToString());
-            SystemMessageText = $"{GetKeyboardShortcutLabel(_pendingKeyboardShortcutAction.Value)} shortcut set to {FormatKeyDisplay(key)}.";
+            SystemMessageText = string.Format(
+                L("ShortcutSetMessage"),
+                GetKeyboardShortcutLabel(_pendingKeyboardShortcutAction.Value),
+                FormatKeyDisplay(key));
         }
 
         _pendingKeyboardShortcutAction = null;
@@ -467,6 +484,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     {
         _displayRefreshTimer.Stop();
         _displayRefreshTimer.Tick -= DisplayRefreshTimerOnTick;
+        _localization.LanguageChanged -= LocalizationOnLanguageChanged;
         _scoreboard.StateChanged -= ScoreboardOnStateChanged;
         _runtime.Faulted -= RuntimeOnFaulted;
         _runtime.Dispose();
@@ -491,6 +509,21 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         _scoreboard.Execute(new RefreshDisplayCommand());
     }
 
+    private void LocalizationOnLanguageChanged(object? sender, EventArgs e)
+    {
+        if (!_dispatcher.CheckAccess())
+        {
+            _ = _dispatcher.InvokeAsync(() => LocalizationOnLanguageChanged(sender, e));
+            return;
+        }
+
+        RefreshLocalizedCollections();
+        RefreshLocalizedText();
+        OnPropertyChanged(nameof(SecondaryCounterLabelText));
+        OnPropertyChanged(nameof(IsConnected));
+        OnPropertyChanged(nameof(ConnectedPortName));
+    }
+
     private void RuntimeOnFaulted(object? sender, ScoreboardRuntimeFaultedEventArgs e)
     {
         if (!_dispatcher.CheckAccess())
@@ -508,18 +541,83 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         SystemMessageText = e.Exception.Message;
     }
 
+    private string L(string key)
+    {
+        return _localization.GetString(key);
+    }
+
+    private void RefreshLocalizedCollections()
+    {
+        var selectedGameModeValue = SelectedGameMode?.Value ?? _scoreboard.Settings.GameMode;
+        var selectedFontModeValue = SelectedFontMode?.Value ?? _scoreboard.Settings.FontMode;
+        var selectedTimerDirectionValue = SelectedTimerDirection?.Value ?? _scoreboard.Settings.TimerDirection;
+        var selectedUiLanguageValue = SelectedUiLanguage?.Value ?? _scoreboard.Settings.UiLanguage;
+
+        _suppressControllerSync = true;
+
+        UiLanguages =
+        [
+            new OptionItem<UiLanguage>(UiLanguage.English, L("OptionEnglish")),
+            new OptionItem<UiLanguage>(UiLanguage.Russian, L("OptionRussian")),
+        ];
+        OnPropertyChanged(nameof(UiLanguages));
+
+        GameModes =
+        [
+            new OptionItem<GameMode>(GameMode.Basketball, L("OptionBasketball")),
+            new OptionItem<GameMode>(GameMode.Volleyball, L("OptionVolleyball")),
+        ];
+        OnPropertyChanged(nameof(GameModes));
+
+        FontModes =
+        [
+            new OptionItem<FontMode>(FontMode.Font6x8, L("OptionFont6x8")),
+            new OptionItem<FontMode>(FontMode.Font8x8, L("OptionFont8x8")),
+        ];
+        OnPropertyChanged(nameof(FontModes));
+
+        TimerDirections =
+        [
+            new OptionItem<TimerDirection>(TimerDirection.Up, L("OptionCountUp")),
+            new OptionItem<TimerDirection>(TimerDirection.Down, L("OptionCountDown")),
+        ];
+        OnPropertyChanged(nameof(TimerDirections));
+
+        SelectedUiLanguage = UiLanguages.First(option => option.Value == selectedUiLanguageValue);
+        SelectedGameMode = GameModes.First(option => option.Value == selectedGameModeValue);
+        SelectedFontMode = FontModes.First(option => option.Value == selectedFontModeValue);
+        SelectedTimerDirection = TimerDirections.First(option => option.Value == selectedTimerDirectionValue);
+
+        _suppressControllerSync = false;
+    }
+
+    private void RefreshLocalizedText()
+    {
+        foreach (var binding in KeyboardShortcutBindings)
+        {
+            binding.Label = GetKeyboardShortcutLabel(binding.Action);
+            binding.NotifyLocalizationChanged();
+        }
+
+        RefreshKeyboardShortcutBindings();
+        NotifyKeyboardShortcutButtonTextChanged();
+        OnPropertyChanged(nameof(KeyboardShortcutCaptureText));
+    }
+
     private void ApplySettingsFromController()
     {
         _suppressControllerSync = true;
 
         var settings = _scoreboard.Settings;
 
+        RefreshLocalizedCollections();
         RunningText = settings.RunningText;
         RunningTextEnabled = settings.RunningTextEnabled;
         CountFoulsToFive = settings.CountFoulsToFive;
         MainSignalDurationSeconds = settings.MainSignalDurationSeconds;
         ShotClockSignalDurationTenths = settings.ShotClockSignalDurationTenths;
         SelectedPort = settings.SelectedPort;
+        SelectedUiLanguage = UiLanguages.First(option => option.Value == settings.UiLanguage);
         SelectedGameMode = GameModes.First(option => option.Value == settings.GameMode);
         SelectedFontMode = FontModes.First(option => option.Value == settings.FontMode);
         SelectedTimerDirection = TimerDirections.First(option => option.Value == settings.TimerDirection);
@@ -534,6 +632,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     {
         CurrentState = state;
         OnPropertyChanged(nameof(CanResetTimers));
+        OnPropertyChanged(nameof(SecondaryCounterLabelText));
         CurrentSnapshot = _scoreboard.Snapshot;
         HostClock = DateTime.Now;
         NotifyKeyboardShortcutButtonTextChanged();
@@ -560,8 +659,11 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         var requestedTimerDirection = SelectedTimerDirection?.Value ?? CurrentState.TimerDirection;
         var requestedTimerPreset = FormatPreset(PresetMinutes, PresetSeconds, PresetTenths);
         var requestedOvertimePreset = FormatPreset(OvertimePresetMinutes, OvertimePresetSeconds, OvertimePresetTenths);
+        var requestedUiLanguage = SelectedUiLanguage?.Value ?? _scoreboard.Settings.UiLanguage;
+        var languageChanged = requestedUiLanguage != _scoreboard.Settings.UiLanguage;
 
         _scoreboard.Settings.SelectedPort = SelectedPort ?? string.Empty;
+        _scoreboard.Settings.UiLanguage = requestedUiLanguage;
 
         if (SelectedGameMode is not null)
         {
@@ -585,6 +687,11 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         _scoreboard.Execute(new SetOvertimeTimerPresetCommand(OvertimePresetMinutes, OvertimePresetSeconds, OvertimePresetTenths));
         _scoreboard.Settings.KeyboardBindings = CloneKeyboardBindings(_draftKeyboardBindings);
 
+        if (languageChanged)
+        {
+            _localization.ApplyLanguage(requestedUiLanguage);
+        }
+
         ApplySettingsFromController();
 
         var requestedCurrentPreset = CurrentState.IsExtraPeriod
@@ -595,15 +702,15 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
             CurrentSnapshot.TimerPresetText != requestedCurrentPreset;
 
         SystemMessageText = CurrentState.IsGameClockRunning && timerSettingsPending
-            ? "Settings applied. Stop the game clock to apply timer direction and timer preset."
-            : "Settings applied.";
+            ? L("MessageSettingsAppliedPendingTimer")
+            : L("MessageSettingsApplied");
     }
 
     private void BeginKeyboardShortcutCapture(KeyboardShortcutAction action)
     {
         _pendingKeyboardShortcutAction = action;
         RefreshKeyboardShortcutBindings();
-        SystemMessageText = $"Press a key for {GetKeyboardShortcutLabel(action)}. Press Esc to clear.";
+        SystemMessageText = string.Format(L("ShortcutCapturePrompt"), GetKeyboardShortcutLabel(action));
     }
 
     private void ClearKeyboardShortcut(KeyboardShortcutAction action)
@@ -616,7 +723,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         }
 
         RefreshKeyboardShortcutBindings();
-        SystemMessageText = $"{GetKeyboardShortcutLabel(action)} shortcut cleared.";
+        SystemMessageText = string.Format(L("ShortcutClearedMessage"), GetKeyboardShortcutLabel(action));
     }
 
     private void RefreshPorts(string? preferredPort)
@@ -648,13 +755,13 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
             if (_scoreboard.IsConnected)
             {
                 _scoreboard.Disconnect();
-                SystemMessageText = "COM port closed.";
+                SystemMessageText = L("MessageComPortClosed");
             }
             else
             {
                 _scoreboard.Connect(SelectedPort);
                 _scoreboard.Settings.SelectedPort = SelectedPort;
-                SystemMessageText = $"COM port {SelectedPort} opened.";
+                SystemMessageText = string.Format(L("MessageComPortOpened"), SelectedPort);
             }
 
             UpdatePortState();
@@ -921,25 +1028,25 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         };
     }
 
-    private static string GetKeyboardShortcutLabel(KeyboardShortcutAction action)
+    private string GetKeyboardShortcutLabel(KeyboardShortcutAction action)
     {
         return action switch
         {
-            KeyboardShortcutAction.ToggleGameClock => "Game clock start / stop",
-            KeyboardShortcutAction.ToggleShotClock => "Shot clock start / stop",
-            KeyboardShortcutAction.SetShotClock24 => "Set shot clock to 24",
-            KeyboardShortcutAction.SetShotClock14 => "Set shot clock to 14",
-            KeyboardShortcutAction.RunShotClock24 => "Run shot clock from 24",
-            KeyboardShortcutAction.RunShotClock14 => "Run shot clock from 14",
-            KeyboardShortcutAction.IncreaseHomeScore => "Home score +1",
-            KeyboardShortcutAction.DecreaseHomeScore => "Home score -1",
-            KeyboardShortcutAction.IncreaseGuestScore => "Guest score +1",
-            KeyboardShortcutAction.DecreaseGuestScore => "Guest score -1",
-            KeyboardShortcutAction.IncreaseHomeFouls => "Home fouls +1",
-            KeyboardShortcutAction.DecreaseHomeFouls => "Home fouls -1",
-            KeyboardShortcutAction.IncreaseGuestFouls => "Guest fouls +1",
-            KeyboardShortcutAction.DecreaseGuestFouls => "Guest fouls -1",
-            _ => "Shortcut",
+            KeyboardShortcutAction.ToggleGameClock => L("ActionToggleGameClock"),
+            KeyboardShortcutAction.ToggleShotClock => L("ActionToggleShotClock"),
+            KeyboardShortcutAction.SetShotClock24 => L("ActionSetShotClock24"),
+            KeyboardShortcutAction.SetShotClock14 => L("ActionSetShotClock14"),
+            KeyboardShortcutAction.RunShotClock24 => L("ActionRunShotClock24"),
+            KeyboardShortcutAction.RunShotClock14 => L("ActionRunShotClock14"),
+            KeyboardShortcutAction.IncreaseHomeScore => L("ActionIncreaseHomeScore"),
+            KeyboardShortcutAction.DecreaseHomeScore => L("ActionDecreaseHomeScore"),
+            KeyboardShortcutAction.IncreaseGuestScore => L("ActionIncreaseGuestScore"),
+            KeyboardShortcutAction.DecreaseGuestScore => L("ActionDecreaseGuestScore"),
+            KeyboardShortcutAction.IncreaseHomeFouls => L("ActionIncreaseHomeFouls"),
+            KeyboardShortcutAction.DecreaseHomeFouls => L("ActionDecreaseHomeFouls"),
+            KeyboardShortcutAction.IncreaseGuestFouls => L("ActionIncreaseGuestFouls"),
+            KeyboardShortcutAction.DecreaseGuestFouls => L("ActionDecreaseGuestFouls"),
+            _ => L("SettingsKeyboardShortcuts"),
         };
     }
 
@@ -966,11 +1073,11 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         return false;
     }
 
-    private static string FormatAssignedKeyDisplay(string? keyName)
+    private string FormatAssignedKeyDisplay(string? keyName)
     {
         return TryGetAssignedKey(keyName, out var key)
             ? FormatKeyDisplay(key)
-            : "Not assigned";
+            : L("ShortcutNotAssigned");
     }
 
     private static string FormatKeyDisplay(Key key)

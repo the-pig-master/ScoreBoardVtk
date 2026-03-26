@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Set Values"
+        Title="{DynamicResource SetValuesTitle}"
         Width="520"
         SizeToContent="Height"
         ResizeMode="NoResize"
@@ -33,10 +33,10 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Text="" />
-                <TextBlock Grid.Column="1" Text="Home" Style="{StaticResource FieldCaptionStyle}" />
-                <TextBlock Grid.Column="2" Text="Guest" Style="{StaticResource FieldCaptionStyle}" />
+                <TextBlock Grid.Column="1" Text="{DynamicResource SetValuesHome}" Style="{StaticResource FieldCaptionStyle}" />
+                <TextBlock Grid.Column="2" Text="{DynamicResource SetValuesGuest}" Style="{StaticResource FieldCaptionStyle}" />
 
-                <TextBlock Grid.Row="1" Text="Score" Style="{StaticResource FieldCaptionStyle}" Margin="0,10,0,0" />
+                <TextBlock Grid.Row="1" Text="{DynamicResource SetValuesScore}" Style="{StaticResource FieldCaptionStyle}" Margin="0,10,0,0" />
                 <TextBox Grid.Row="1"
                          Grid.Column="1"
                          Margin="0,10,12,0"
@@ -72,7 +72,7 @@
 
         <Border Grid.Row="1" Margin="0,12,0,0" Style="{StaticResource CardBorderStyle}">
             <StackPanel>
-                <TextBlock Text="Period" Style="{StaticResource FieldCaptionStyle}" />
+                <TextBlock Text="{DynamicResource SetValuesPeriod}" Style="{StaticResource FieldCaptionStyle}" />
                 <ComboBox Width="140"
                           HorizontalAlignment="Left"
                           ItemsSource="{Binding PeriodOptions}"
@@ -84,7 +84,7 @@
 
         <Border Grid.Row="2" Margin="0,12,0,0" Style="{StaticResource CardBorderStyle}">
             <StackPanel>
-                <TextBlock Text="Game Clock" Style="{StaticResource FieldCaptionStyle}" />
+                <TextBlock Text="{DynamicResource SetValuesGameClock}" Style="{StaticResource FieldCaptionStyle}" />
                 <StackPanel Orientation="Horizontal">
                     <ComboBox Width="90" ItemsSource="{Binding MinuteOptions}" SelectedItem="{Binding MainMinutes}" />
                     <ComboBox Width="90" Margin="12,0,0,0" ItemsSource="{Binding SecondOptions}" SelectedItem="{Binding MainSeconds}" />
@@ -95,7 +95,7 @@
 
         <Border Grid.Row="3" Margin="0,12,0,0" Style="{StaticResource CardBorderStyle}">
             <StackPanel>
-                <TextBlock Text="24-Second Clock" Style="{StaticResource FieldCaptionStyle}" />
+                <TextBlock Text="{DynamicResource SetValuesShotClock}" Style="{StaticResource FieldCaptionStyle}" />
                 <StackPanel Orientation="Horizontal">
                     <ComboBox Width="90" ItemsSource="{Binding ShotSecondOptions}" SelectedItem="{Binding ShotSeconds}" />
                     <ComboBox Width="90" Margin="12,0,0,0" ItemsSource="{Binding TenthsOptions}" SelectedItem="{Binding ShotTenths}" />
@@ -105,13 +105,13 @@
 
         <TextBlock Grid.Row="4"
                    Margin="4,12,0,0"
-                   Text="Applying values stops both timers and clears active signals."
+                   Text="{DynamicResource SetValuesApplyHint}"
                    Style="{StaticResource FieldCaptionStyle}" />
 
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button Content="Reset All" Width="100" Margin="0,0,12,0" Click="ResetAllButton_OnClick" Style="{StaticResource DeskButtonStyle}" />
-            <Button Content="OK" Width="100" Margin="0,0,12,0" Click="OkButton_OnClick" IsDefault="True" Style="{StaticResource PrimaryButtonStyle}" />
-            <Button Content="Cancel" Width="100" IsCancel="True" Style="{StaticResource DeskButtonStyle}" />
+            <Button Content="{DynamicResource SetValuesResetAll}" Width="100" Margin="0,0,12,0" Click="ResetAllButton_OnClick" Style="{StaticResource DeskButtonStyle}" />
+            <Button Content="{DynamicResource CommonOk}" Width="100" Margin="0,0,12,0" Click="OkButton_OnClick" IsDefault="True" Style="{StaticResource PrimaryButtonStyle}" />
+            <Button Content="{DynamicResource CommonCancel}" Width="100" IsCancel="True" Style="{StaticResource DeskButtonStyle}" />
         </StackPanel>
     </Grid>
 </Window>

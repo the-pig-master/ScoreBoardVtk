@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ScoreBoardVtk.Core.Models;
+using ScoreBoardVtk.Wpf.Localization;
 using ScoreBoardVtk.Wpf.Models;
 
 namespace ScoreBoardVtk.Wpf.Views;
@@ -10,10 +11,12 @@ public partial class SetValuesWindow : Window
 {
     private readonly GameMode _gameMode;
     private readonly int _defaultMainClockTenths;
+    private readonly SecondaryCounterKind _secondaryCounterKind;
 
     public SetValuesWindow(ScoreboardState state, int defaultMainClockTenths)
     {
         _gameMode = state.GameMode;
+        _secondaryCounterKind = state.SecondaryCounterKind;
         _defaultMainClockTenths = Math.Clamp(defaultMainClockTenths, 0, 59 * 60 * 10 + 59 * 10 + 9);
         PeriodOptions = state.GameMode == GameMode.Basketball
             ?
@@ -39,7 +42,9 @@ public partial class SetValuesWindow : Window
         ShotSecondOptions = state.GameMode == GameMode.Basketball
             ? Enumerable.Range(0, 25).ToArray()
             : [0];
-        SecondaryCounterLabel = state.SecondaryCounterKind == SecondaryCounterKind.Fouls ? "Fouls" : "Sets";
+        SecondaryCounterLabel = state.SecondaryCounterKind == SecondaryCounterKind.Fouls
+            ? L("CommonFouls")
+            : L("CommonSets");
 
         ApplyState(state);
 
@@ -83,14 +88,21 @@ public partial class SetValuesWindow : Window
 
     private void OkButton_OnClick(object sender, RoutedEventArgs e)
     {
-        if (!TryParseInteger(HomeScoreText, "Home score", 0, 999, out var homeScore) ||
-            !TryParseInteger(GuestScoreText, "Guest score", 0, 999, out var guestScore))
+        if (!TryParseInteger(HomeScoreText, L("FieldHomeScore"), 0, 999, out var homeScore) ||
+            !TryParseInteger(GuestScoreText, L("FieldGuestScore"), 0, 999, out var guestScore))
         {
             return;
         }
 
-        if (!TryParseInteger(HomeSecondaryText, $"Home {SecondaryCounterLabel.ToLowerInvariant()}", 0, 9, out var homeSecondary) ||
-            !TryParseInteger(GuestSecondaryText, $"Guest {SecondaryCounterLabel.ToLowerInvariant()}", 0, 9, out var guestSecondary))
+        var homeSecondaryField = _secondaryCounterKind == SecondaryCounterKind.Fouls
+            ? L("FieldHomeFouls")
+            : L("FieldHomeSets");
+        var guestSecondaryField = _secondaryCounterKind == SecondaryCounterKind.Fouls
+            ? L("FieldGuestFouls")
+            : L("FieldGuestSets");
+
+        if (!TryParseInteger(HomeSecondaryText, homeSecondaryField, 0, 9, out var homeSecondary) ||
+            !TryParseInteger(GuestSecondaryText, guestSecondaryField, 0, 9, out var guestSecondary))
         {
             return;
         }
@@ -98,25 +110,25 @@ public partial class SetValuesWindow : Window
         var periodMax = _gameMode == GameMode.Basketball ? 5 : 5;
         if (SelectedPeriod < 1 || SelectedPeriod > periodMax)
         {
-            ShowValidationMessage($"Period must be between 1 and {periodMax}.");
+            ShowValidationMessage(string.Format(L("ValidationPeriodRange"), periodMax));
             return;
         }
 
         if (MainMinutes is < 0 or > 59 || MainSeconds is < 0 or > 59 || MainTenths is < 0 or > 9)
         {
-            ShowValidationMessage("Game clock must be within 00:00.0 and 59:59.9.");
+            ShowValidationMessage(L("ValidationGameClockRange"));
             return;
         }
 
         if (ShotSeconds is < 0 or > 24 || ShotTenths is < 0 or > 9 || (ShotSeconds == 24 && ShotTenths > 0))
         {
-            ShowValidationMessage("24-second clock must be within 00.0 and 24.0.");
+            ShowValidationMessage(L("ValidationShotClockRange"));
             return;
         }
 
         if (_gameMode != GameMode.Basketball && (ShotSeconds != 0 || ShotTenths != 0))
         {
-            ShowValidationMessage("24-second clock is available only in basketball mode.");
+            ShowValidationMessage(L("ValidationShotClockBasketballOnly"));
             return;
         }
 
@@ -176,11 +188,11 @@ public partial class SetValuesWindow : Window
                 return true;
             }
 
-            ShowValidationMessage($"{fieldName} must be between {minValue} and {maxValue}.");
+            ShowValidationMessage(string.Format(LocalizationManager.Instance.GetString("ValidationBetweenRange"), fieldName, minValue, maxValue));
             return false;
         }
 
-        ShowValidationMessage($"{fieldName} must be an integer value.");
+        ShowValidationMessage(string.Format(LocalizationManager.Instance.GetString("ValidationMustBeInteger"), fieldName));
         return false;
     }
 
@@ -205,8 +217,13 @@ public partial class SetValuesWindow : Window
     {
         MessageBox.Show(
             message,
-            "Invalid Value",
+            LocalizationManager.Instance.GetString("ValidationInvalidValueTitle"),
             MessageBoxButton.OK,
             MessageBoxImage.Warning);
+    }
+
+    private static string L(string key)
+    {
+        return LocalizationManager.Instance.GetString(key);
     }
 }

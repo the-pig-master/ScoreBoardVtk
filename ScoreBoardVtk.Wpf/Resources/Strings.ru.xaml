@@ -1,0 +1,133 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:String x:Key="MainTabGame">Игра</sys:String>
+    <sys:String x:Key="MainTabSettings">Настройки</sys:String>
+
+    <sys:String x:Key="GameDisplayHome">ХОЗЯЕВА</sys:String>
+    <sys:String x:Key="GameDisplayGuest">ГОСТИ</sys:String>
+    <sys:String x:Key="GameDisplayPeriodSet">ПЕРИОД / СЕТ</sys:String>
+    <sys:String x:Key="GameDisplayShotReady">ГОТОВНОСТЬ</sys:String>
+    <sys:String x:Key="GameDisplayGameClock">ИГРОВОЕ ВРЕМЯ</sys:String>
+    <sys:String x:Key="GameDisplayShotClock">24 СЕКУНДЫ</sys:String>
+    <sys:String x:Key="GameDisplaySignals">СИГНАЛЫ</sys:String>
+    <sys:String x:Key="GameDisplayMainSignalShort">ОСН.</sys:String>
+
+    <sys:String x:Key="GameHomeConsole">Пульт хозяев</sys:String>
+    <sys:String x:Key="GameGuestConsole">Пульт гостей</sys:String>
+    <sys:String x:Key="GameMatchDesk">Пульт матча</sys:String>
+    <sys:String x:Key="GameShotClockDesk">Пульт 24 секунд</sys:String>
+    <sys:String x:Key="GameLabelScore">Счет</sys:String>
+    <sys:String x:Key="GameSignalButton">Сигнал</sys:String>
+    <sys:String x:Key="GamePeriodSetButton">Период / Сет</sys:String>
+    <sys:String x:Key="GameResetButton">Сброс</sys:String>
+    <sys:String x:Key="GameSetButton">Установить</sys:String>
+    <sys:String x:Key="GameOperatorMessage">Сообщение оператора</sys:String>
+    <sys:String x:Key="GameEnableRunningText">Включить бегущую строку</sys:String>
+    <sys:String x:Key="GameTextLabel">Текст</sys:String>
+    <sys:String x:Key="GameButtonSet24">Уст. 24</sys:String>
+    <sys:String x:Key="GameButtonSet14">Уст. 14</sys:String>
+    <sys:String x:Key="GameButtonRun24">Пуск 24</sys:String>
+    <sys:String x:Key="GameButtonRun14">Пуск 14</sys:String>
+
+    <sys:String x:Key="SettingsComPort">COM-порт</sys:String>
+    <sys:String x:Key="SettingsRefreshPorts">Обновить порты</sys:String>
+    <sys:String x:Key="SettingsOpenPort">Открыть порт</sys:String>
+    <sys:String x:Key="SettingsClosePort">Закрыть порт</sys:String>
+    <sys:String x:Key="SettingsLanguage">Язык</sys:String>
+    <sys:String x:Key="SettingsGameMode">Режим игры</sys:String>
+    <sys:String x:Key="SettingsFontMode">Шрифт</sys:String>
+    <sys:String x:Key="SettingsTimerDirection">Направление таймера</sys:String>
+    <sys:String x:Key="SettingsMainTimerPreset">Основное время</sys:String>
+    <sys:String x:Key="SettingsOvertimePreset">Овертайм</sys:String>
+    <sys:String x:Key="SettingsMainBuzzerSeconds">Основной сигнал, сек</sys:String>
+    <sys:String x:Key="SettingsShotClockBuzzerTenths">Сигнал 24 сек, десятые</sys:String>
+    <sys:String x:Key="SettingsBasketballFoulsCapAt5">Фолы в баскетболе до 5</sys:String>
+    <sys:String x:Key="SettingsApply">Применить</sys:String>
+    <sys:String x:Key="SettingsKeyboardShortcuts">Горячие клавиши</sys:String>
+
+    <sys:String x:Key="StatusHostPrefix">Хост: </sys:String>
+    <sys:String x:Key="StatusPresetPrefix">Пресет: </sys:String>
+    <sys:String x:Key="StatusPayloadPrefix">Пакет: </sys:String>
+    <sys:String x:Key="StatusPortClosed">Порт: закрыт</sys:String>
+    <sys:String x:Key="StatusPortOpen">Порт: открыт</sys:String>
+    <sys:String x:Key="StatusPortOpenWithName">Порт: открыт ({0})</sys:String>
+
+    <sys:String x:Key="SetValuesTitle">Установка значений</sys:String>
+    <sys:String x:Key="SetValuesHome">Хозяева</sys:String>
+    <sys:String x:Key="SetValuesGuest">Гости</sys:String>
+    <sys:String x:Key="SetValuesScore">Счет</sys:String>
+    <sys:String x:Key="SetValuesPeriod">Период</sys:String>
+    <sys:String x:Key="SetValuesGameClock">Игровое время</sys:String>
+    <sys:String x:Key="SetValuesShotClock">24 секунды</sys:String>
+    <sys:String x:Key="SetValuesApplyHint">Применение значений остановит оба таймера и выключит активные сигналы.</sys:String>
+    <sys:String x:Key="SetValuesResetAll">Сбросить все</sys:String>
+
+    <sys:String x:Key="CommonOk">OK</sys:String>
+    <sys:String x:Key="CommonCancel">Отмена</sys:String>
+    <sys:String x:Key="CommonStart">Старт</sys:String>
+    <sys:String x:Key="CommonStop">Стоп</sys:String>
+    <sys:String x:Key="CommonFouls">Фолы</sys:String>
+    <sys:String x:Key="CommonSets">Сеты</sys:String>
+
+    <sys:String x:Key="OptionEnglish">English</sys:String>
+    <sys:String x:Key="OptionRussian">Русский</sys:String>
+    <sys:String x:Key="OptionBasketball">Баскетбол</sys:String>
+    <sys:String x:Key="OptionVolleyball">Волейбол</sys:String>
+    <sys:String x:Key="OptionFont6x8">Шрифт 6x8</sys:String>
+    <sys:String x:Key="OptionFont8x8">Шрифт 8x8</sys:String>
+    <sys:String x:Key="OptionCountUp">Прямой счет</sys:String>
+    <sys:String x:Key="OptionCountDown">Обратный счет</sys:String>
+
+    <sys:String x:Key="ActionToggleGameClock">Старт / стоп игрового таймера</sys:String>
+    <sys:String x:Key="ActionToggleShotClock">Старт / стоп таймера 24 секунд</sys:String>
+    <sys:String x:Key="ActionSetShotClock24">Установить 24 секунды</sys:String>
+    <sys:String x:Key="ActionSetShotClock14">Установить 14 секунд</sys:String>
+    <sys:String x:Key="ActionRunShotClock24">Запустить с 24 секунд</sys:String>
+    <sys:String x:Key="ActionRunShotClock14">Запустить с 14 секунд</sys:String>
+    <sys:String x:Key="ActionIncreaseHomeScore">Хозяева +1 очко</sys:String>
+    <sys:String x:Key="ActionDecreaseHomeScore">Хозяева -1 очко</sys:String>
+    <sys:String x:Key="ActionIncreaseGuestScore">Гости +1 очко</sys:String>
+    <sys:String x:Key="ActionDecreaseGuestScore">Гости -1 очко</sys:String>
+    <sys:String x:Key="ActionIncreaseHomeFouls">Хозяева +1 фол</sys:String>
+    <sys:String x:Key="ActionDecreaseHomeFouls">Хозяева -1 фол</sys:String>
+    <sys:String x:Key="ActionIncreaseGuestFouls">Гости +1 фол</sys:String>
+    <sys:String x:Key="ActionDecreaseGuestFouls">Гости -1 фол</sys:String>
+
+    <sys:String x:Key="ShortcutCaptureIdle">Нажмите «Назначить», затем клавишу. Используйте «Очистить», чтобы снять назначение.</sys:String>
+    <sys:String x:Key="ShortcutCapturePrompt">Нажмите клавишу для действия: {0}. Esc очищает назначение.</sys:String>
+    <sys:String x:Key="ShortcutAssign">Назначить</sys:String>
+    <sys:String x:Key="ShortcutAssignCapturing">Нажмите клавишу...</sys:String>
+    <sys:String x:Key="ShortcutClear">Очистить</sys:String>
+    <sys:String x:Key="ShortcutNotAssigned">Не назначено</sys:String>
+    <sys:String x:Key="ShortcutClearedMessage">Горячая клавиша для действия "{0}" очищена.</sys:String>
+    <sys:String x:Key="ShortcutSetMessage">Для действия "{0}" назначена клавиша {1}.</sys:String>
+    <sys:String x:Key="ShortcutInvalidKeyMessage">Эту клавишу нельзя использовать как горячую.</sys:String>
+
+    <sys:String x:Key="MessageReady">Готово.</sys:String>
+    <sys:String x:Key="MessageValuesApplied">Значения применены.</sys:String>
+    <sys:String x:Key="MessageSettingsApplied">Настройки применены.</sys:String>
+    <sys:String x:Key="MessageSettingsAppliedPendingTimer">Настройки применены. Остановите игровой таймер, чтобы применить направление таймера и пресет времени.</sys:String>
+    <sys:String x:Key="MessageLanguageApplied">Язык интерфейса применен.</sys:String>
+    <sys:String x:Key="MessageComPortClosed">COM-порт закрыт.</sys:String>
+    <sys:String x:Key="MessageComPortOpened">COM-порт {0} открыт.</sys:String>
+
+    <sys:String x:Key="PromptResetConfirmTitle">Подтверждение сброса</sys:String>
+    <sys:String x:Key="PromptResetConfirmBody">Сбросить игровой таймер и таймер 24 секунд?</sys:String>
+    <sys:String x:Key="PromptPeriodChangeTitle">Подтверждение смены периода</sys:String>
+    <sys:String x:Key="PromptPeriodChangeBody">Основное игровое время еще не истекло. Все равно переключить период?</sys:String>
+
+    <sys:String x:Key="ValidationInvalidValueTitle">Некорректное значение</sys:String>
+    <sys:String x:Key="ValidationPeriodRange">Период должен быть в диапазоне от 1 до {0}.</sys:String>
+    <sys:String x:Key="ValidationGameClockRange">Игровое время должно быть в диапазоне от 00:00.0 до 59:59.9.</sys:String>
+    <sys:String x:Key="ValidationShotClockRange">Таймер 24 секунд должен быть в диапазоне от 00.0 до 24.0.</sys:String>
+    <sys:String x:Key="ValidationShotClockBasketballOnly">Таймер 24 секунд доступен только в режиме баскетбола.</sys:String>
+    <sys:String x:Key="ValidationMustBeInteger">Поле "{0}" должно содержать целое число.</sys:String>
+    <sys:String x:Key="ValidationBetweenRange">Поле "{0}" должно быть в диапазоне от {1} до {2}.</sys:String>
+    <sys:String x:Key="FieldHomeScore">счет хозяев</sys:String>
+    <sys:String x:Key="FieldGuestScore">счет гостей</sys:String>
+    <sys:String x:Key="FieldHomeFouls">фолы хозяев</sys:String>
+    <sys:String x:Key="FieldGuestFouls">фолы гостей</sys:String>
+    <sys:String x:Key="FieldHomeSets">сеты хозяев</sys:String>
+    <sys:String x:Key="FieldGuestSets">сеты гостей</sys:String>
+</ResourceDictionary>

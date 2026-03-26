@@ -1,0 +1,133 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:String x:Key="MainTabGame">Game</sys:String>
+    <sys:String x:Key="MainTabSettings">Settings</sys:String>
+
+    <sys:String x:Key="GameDisplayHome">HOME</sys:String>
+    <sys:String x:Key="GameDisplayGuest">GUEST</sys:String>
+    <sys:String x:Key="GameDisplayPeriodSet">PERIOD / SET</sys:String>
+    <sys:String x:Key="GameDisplayShotReady">SHOT READY</sys:String>
+    <sys:String x:Key="GameDisplayGameClock">GAME CLOCK</sys:String>
+    <sys:String x:Key="GameDisplayShotClock">SHOT CLOCK</sys:String>
+    <sys:String x:Key="GameDisplaySignals">SIGNALS</sys:String>
+    <sys:String x:Key="GameDisplayMainSignalShort">MAIN</sys:String>
+
+    <sys:String x:Key="GameHomeConsole">Home Console</sys:String>
+    <sys:String x:Key="GameGuestConsole">Guest Console</sys:String>
+    <sys:String x:Key="GameMatchDesk">Match Desk</sys:String>
+    <sys:String x:Key="GameShotClockDesk">Shot Clock Desk</sys:String>
+    <sys:String x:Key="GameLabelScore">Score</sys:String>
+    <sys:String x:Key="GameSignalButton">Signal</sys:String>
+    <sys:String x:Key="GamePeriodSetButton">Period / Set</sys:String>
+    <sys:String x:Key="GameResetButton">Reset</sys:String>
+    <sys:String x:Key="GameSetButton">Set</sys:String>
+    <sys:String x:Key="GameOperatorMessage">Operator Message</sys:String>
+    <sys:String x:Key="GameEnableRunningText">Enable running text</sys:String>
+    <sys:String x:Key="GameTextLabel">Text</sys:String>
+    <sys:String x:Key="GameButtonSet24">Set 24</sys:String>
+    <sys:String x:Key="GameButtonSet14">Set 14</sys:String>
+    <sys:String x:Key="GameButtonRun24">Run 24</sys:String>
+    <sys:String x:Key="GameButtonRun14">Run 14</sys:String>
+
+    <sys:String x:Key="SettingsComPort">COM port</sys:String>
+    <sys:String x:Key="SettingsRefreshPorts">Refresh Ports</sys:String>
+    <sys:String x:Key="SettingsOpenPort">Open Port</sys:String>
+    <sys:String x:Key="SettingsClosePort">Close Port</sys:String>
+    <sys:String x:Key="SettingsLanguage">Language</sys:String>
+    <sys:String x:Key="SettingsGameMode">Game mode</sys:String>
+    <sys:String x:Key="SettingsFontMode">Font mode</sys:String>
+    <sys:String x:Key="SettingsTimerDirection">Timer direction</sys:String>
+    <sys:String x:Key="SettingsMainTimerPreset">Main timer preset</sys:String>
+    <sys:String x:Key="SettingsOvertimePreset">Overtime preset</sys:String>
+    <sys:String x:Key="SettingsMainBuzzerSeconds">Main buzzer, sec</sys:String>
+    <sys:String x:Key="SettingsShotClockBuzzerTenths">24 sec buzzer, tenths</sys:String>
+    <sys:String x:Key="SettingsBasketballFoulsCapAt5">Basketball fouls cap at 5</sys:String>
+    <sys:String x:Key="SettingsApply">Apply</sys:String>
+    <sys:String x:Key="SettingsKeyboardShortcuts">Keyboard Shortcuts</sys:String>
+
+    <sys:String x:Key="StatusHostPrefix">Host: </sys:String>
+    <sys:String x:Key="StatusPresetPrefix">Preset: </sys:String>
+    <sys:String x:Key="StatusPayloadPrefix">Payload: </sys:String>
+    <sys:String x:Key="StatusPortClosed">Port: closed</sys:String>
+    <sys:String x:Key="StatusPortOpen">Port: open</sys:String>
+    <sys:String x:Key="StatusPortOpenWithName">Port: open ({0})</sys:String>
+
+    <sys:String x:Key="SetValuesTitle">Set Values</sys:String>
+    <sys:String x:Key="SetValuesHome">Home</sys:String>
+    <sys:String x:Key="SetValuesGuest">Guest</sys:String>
+    <sys:String x:Key="SetValuesScore">Score</sys:String>
+    <sys:String x:Key="SetValuesPeriod">Period</sys:String>
+    <sys:String x:Key="SetValuesGameClock">Game Clock</sys:String>
+    <sys:String x:Key="SetValuesShotClock">24-Second Clock</sys:String>
+    <sys:String x:Key="SetValuesApplyHint">Applying values stops both timers and clears active signals.</sys:String>
+    <sys:String x:Key="SetValuesResetAll">Reset All</sys:String>
+
+    <sys:String x:Key="CommonOk">OK</sys:String>
+    <sys:String x:Key="CommonCancel">Cancel</sys:String>
+    <sys:String x:Key="CommonStart">Start</sys:String>
+    <sys:String x:Key="CommonStop">Stop</sys:String>
+    <sys:String x:Key="CommonFouls">Fouls</sys:String>
+    <sys:String x:Key="CommonSets">Sets</sys:String>
+
+    <sys:String x:Key="OptionEnglish">English</sys:String>
+    <sys:String x:Key="OptionRussian">Russian</sys:String>
+    <sys:String x:Key="OptionBasketball">Basketball</sys:String>
+    <sys:String x:Key="OptionVolleyball">Volleyball</sys:String>
+    <sys:String x:Key="OptionFont6x8">Font 6x8</sys:String>
+    <sys:String x:Key="OptionFont8x8">Font 8x8</sys:String>
+    <sys:String x:Key="OptionCountUp">Count Up</sys:String>
+    <sys:String x:Key="OptionCountDown">Count Down</sys:String>
+
+    <sys:String x:Key="ActionToggleGameClock">Game clock start / stop</sys:String>
+    <sys:String x:Key="ActionToggleShotClock">Shot clock start / stop</sys:String>
+    <sys:String x:Key="ActionSetShotClock24">Set shot clock to 24</sys:String>
+    <sys:String x:Key="ActionSetShotClock14">Set shot clock to 14</sys:String>
+    <sys:String x:Key="ActionRunShotClock24">Run shot clock from 24</sys:String>
+    <sys:String x:Key="ActionRunShotClock14">Run shot clock from 14</sys:String>
+    <sys:String x:Key="ActionIncreaseHomeScore">Home score +1</sys:String>
+    <sys:String x:Key="ActionDecreaseHomeScore">Home score -1</sys:String>
+    <sys:String x:Key="ActionIncreaseGuestScore">Guest score +1</sys:String>
+    <sys:String x:Key="ActionDecreaseGuestScore">Guest score -1</sys:String>
+    <sys:String x:Key="ActionIncreaseHomeFouls">Home fouls +1</sys:String>
+    <sys:String x:Key="ActionDecreaseHomeFouls">Home fouls -1</sys:String>
+    <sys:String x:Key="ActionIncreaseGuestFouls">Guest fouls +1</sys:String>
+    <sys:String x:Key="ActionDecreaseGuestFouls">Guest fouls -1</sys:String>
+
+    <sys:String x:Key="ShortcutCaptureIdle">Click Assign and press a key. Use Clear to disable that shortcut.</sys:String>
+    <sys:String x:Key="ShortcutCapturePrompt">Press a key for {0}. Press Esc to clear.</sys:String>
+    <sys:String x:Key="ShortcutAssign">Assign</sys:String>
+    <sys:String x:Key="ShortcutAssignCapturing">Press key...</sys:String>
+    <sys:String x:Key="ShortcutClear">Clear</sys:String>
+    <sys:String x:Key="ShortcutNotAssigned">Not assigned</sys:String>
+    <sys:String x:Key="ShortcutClearedMessage">{0} shortcut cleared.</sys:String>
+    <sys:String x:Key="ShortcutSetMessage">{0} shortcut set to {1}.</sys:String>
+    <sys:String x:Key="ShortcutInvalidKeyMessage">This key cannot be assigned as a shortcut.</sys:String>
+
+    <sys:String x:Key="MessageReady">Ready.</sys:String>
+    <sys:String x:Key="MessageValuesApplied">Values applied.</sys:String>
+    <sys:String x:Key="MessageSettingsApplied">Settings applied.</sys:String>
+    <sys:String x:Key="MessageSettingsAppliedPendingTimer">Settings applied. Stop the game clock to apply timer direction and timer preset.</sys:String>
+    <sys:String x:Key="MessageLanguageApplied">Language applied.</sys:String>
+    <sys:String x:Key="MessageComPortClosed">COM port closed.</sys:String>
+    <sys:String x:Key="MessageComPortOpened">COM port {0} opened.</sys:String>
+
+    <sys:String x:Key="PromptResetConfirmTitle">Confirm Reset</sys:String>
+    <sys:String x:Key="PromptResetConfirmBody">Reset the game and shot clocks?</sys:String>
+    <sys:String x:Key="PromptPeriodChangeTitle">Confirm Period Change</sys:String>
+    <sys:String x:Key="PromptPeriodChangeBody">The main game clock has not expired. Switch period anyway?</sys:String>
+
+    <sys:String x:Key="ValidationInvalidValueTitle">Invalid Value</sys:String>
+    <sys:String x:Key="ValidationPeriodRange">Period must be between 1 and {0}.</sys:String>
+    <sys:String x:Key="ValidationGameClockRange">Game clock must be within 00:00.0 and 59:59.9.</sys:String>
+    <sys:String x:Key="ValidationShotClockRange">24-second clock must be within 00.0 and 24.0.</sys:String>
+    <sys:String x:Key="ValidationShotClockBasketballOnly">24-second clock is available only in basketball mode.</sys:String>
+    <sys:String x:Key="ValidationMustBeInteger">{0} must be an integer value.</sys:String>
+    <sys:String x:Key="ValidationBetweenRange">{0} must be between {1} and {2}.</sys:String>
+    <sys:String x:Key="FieldHomeScore">Home score</sys:String>
+    <sys:String x:Key="FieldGuestScore">Guest score</sys:String>
+    <sys:String x:Key="FieldHomeFouls">Home fouls</sys:String>
+    <sys:String x:Key="FieldGuestFouls">Guest fouls</sys:String>
+    <sys:String x:Key="FieldHomeSets">Home sets</sys:String>
+    <sys:String x:Key="FieldGuestSets">Guest sets</sys:String>
+</ResourceDictionary>

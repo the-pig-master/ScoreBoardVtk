@@ -63,6 +63,10 @@ public sealed class SettingsStore
           // Leave empty to select the port manually in the UI.
           "selectedPort": {{ToJson(settings.SelectedPort)}},
 
+          // User interface language.
+          // Allowed values: "English", "Russian"
+          "uiLanguage": {{ToJson(settings.UiLanguage)}},
+
           // Main game timer preset.
           // Supported formats: "mm:ss" or "mm:ss.t"
           "gameTimePreset": {{ToJson(settings.GameTimePreset)}},

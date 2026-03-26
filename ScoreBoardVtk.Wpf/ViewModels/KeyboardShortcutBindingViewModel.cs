@@ -1,13 +1,15 @@
 using System.Windows.Input;
 using ScoreBoardVtk.Wpf.Infrastructure;
+using ScoreBoardVtk.Wpf.Localization;
 using ScoreBoardVtk.Wpf.Models;
 
 namespace ScoreBoardVtk.Wpf.ViewModels;
 
 public sealed class KeyboardShortcutBindingViewModel : ObservableObject
 {
-    private string _assignedKeyDisplay = "Not assigned";
+    private string _assignedKeyDisplay = LocalizationManager.Instance.GetString("ShortcutNotAssigned");
     private bool _isCapturing;
+    private string _label = string.Empty;
 
     public KeyboardShortcutBindingViewModel(
         KeyboardShortcutAction action,
@@ -23,7 +25,11 @@ public sealed class KeyboardShortcutBindingViewModel : ObservableObject
 
     public KeyboardShortcutAction Action { get; }
 
-    public string Label { get; }
+    public string Label
+    {
+        get => _label;
+        set => SetProperty(ref _label, value);
+    }
 
     public ICommand BeginAssignCommand { get; }
 
@@ -47,5 +53,15 @@ public sealed class KeyboardShortcutBindingViewModel : ObservableObject
         }
     }
 
-    public string AssignButtonText => IsCapturing ? "Press key..." : "Assign";
+    public string AssignButtonText => IsCapturing
+        ? LocalizationManager.Instance.GetString("ShortcutAssignCapturing")
+        : LocalizationManager.Instance.GetString("ShortcutAssign");
+
+    public string ClearButtonText => LocalizationManager.Instance.GetString("ShortcutClear");
+
+    public void NotifyLocalizationChanged()
+    {
+        OnPropertyChanged(nameof(AssignButtonText));
+        OnPropertyChanged(nameof(ClearButtonText));
+    }
 }

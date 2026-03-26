@@ -4,6 +4,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using ScoreBoardVtk.Core.Services;
+using ScoreBoardVtk.Wpf.Localization;
 using ScoreBoardVtk.Wpf.ViewModels;
 
 namespace ScoreBoardVtk.Wpf;
@@ -14,8 +15,9 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
-        InitializeComponent();
         var services = ScoreboardCompositionRoot.CreateDesktopServices();
+        LocalizationManager.Instance.ApplyLanguage(services.ScoreboardApi.Settings.UiLanguage);
+        InitializeComponent();
         ViewModel = new MainWindowViewModel(services.SettingsStore, services.ScoreboardApi, services.Runtime);
         DataContext = ViewModel;
     }

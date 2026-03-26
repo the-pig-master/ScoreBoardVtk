@@ -20,6 +20,7 @@ public sealed class SettingsStoreTests
               "selectedPort": "COM7",
               // Active game mode.
               "gameMode": "Volleyball",
+              "uiLanguage": "Russian",
               "gameTimePreset": "08:00",
               "overtimeTimePreset": "03:00",
               "keyboardBindings": {
@@ -36,6 +37,7 @@ public sealed class SettingsStoreTests
 
             Assert.Equal("COM7", settings.SelectedPort);
             Assert.Equal(GameMode.Volleyball, settings.GameMode);
+            Assert.Equal(UiLanguage.Russian, settings.UiLanguage);
             Assert.Equal("08:00", settings.GameTimePreset);
             Assert.Equal("03:00", settings.OvertimeTimePreset);
             Assert.Equal("Space", settings.KeyboardBindings.ToggleGameClockKey);
@@ -62,6 +64,7 @@ public sealed class SettingsStoreTests
             store.Save(new AppSettings
             {
                 SelectedPort = "COM3",
+                UiLanguage = UiLanguage.Russian,
                 GameMode = GameMode.Basketball,
                 RunningText = "TEST"
             });
@@ -70,6 +73,7 @@ public sealed class SettingsStoreTests
 
             Assert.Contains("// Serial port used by the scoreboard application.", json);
             Assert.Contains("\"selectedPort\": \"COM3\"", json);
+            Assert.Contains("\"uiLanguage\": \"Russian\"", json);
             Assert.Contains("\"overtimeTimePreset\": \"05:00\"", json);
             Assert.Contains("\"keyboardBindings\": {", json);
             Assert.Contains("\"runShotClock24Key\": \"\"", json);

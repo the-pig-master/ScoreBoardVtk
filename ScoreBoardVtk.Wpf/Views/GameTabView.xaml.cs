@@ -2,6 +2,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows;
 using ScoreBoardVtk.Core.Models;
+using ScoreBoardVtk.Wpf.Localization;
 using ScoreBoardVtk.Wpf.ViewModels;
 
 namespace ScoreBoardVtk.Wpf.Views;
@@ -38,8 +39,8 @@ public partial class GameTabView : UserControl
         }
 
         var result = MessageBox.Show(
-            "Reset the game and shot clocks?",
-            "Confirm Reset",
+            LocalizationManager.Instance.GetString("PromptResetConfirmBody"),
+            LocalizationManager.Instance.GetString("PromptResetConfirmTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
@@ -61,8 +62,8 @@ public partial class GameTabView : UserControl
         if (state.GameMode == GameMode.Basketball && state.MainClockTenths > 0)
         {
             var result = MessageBox.Show(
-                "The main game clock has not expired. Switch period anyway?",
-                "Confirm Period Change",
+                LocalizationManager.Instance.GetString("PromptPeriodChangeBody"),
+                LocalizationManager.Instance.GetString("PromptPeriodChangeTitle"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 

@@ -18,11 +18,11 @@
         </Grid.RowDefinitions>
 
         <TabControl x:Name="MainTabs" Grid.Row="0" Margin="16,16,16,0" FontSize="16">
-            <TabItem Header="Game">
+            <TabItem Header="{DynamicResource MainTabGame}">
                 <views:GameTabView DataContext="{Binding GameTab}" />
             </TabItem>
 
-            <TabItem Header="Settings">
+            <TabItem Header="{DynamicResource MainTabSettings}">
                 <views:SettingsTabView DataContext="{Binding SettingsTab}" />
             </TabItem>
         </TabControl>

@@ -4,6 +4,8 @@ public sealed class AppSettings
 {
     public string SelectedPort { get; set; } = string.Empty;
 
+    public UiLanguage UiLanguage { get; set; } = UiLanguage.English;
+
     public string GameTimePreset { get; set; } = "10:00";
 
     public string OvertimeTimePreset { get; set; } = "05:00";

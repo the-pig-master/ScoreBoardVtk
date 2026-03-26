@@ -17,13 +17,15 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="140" />
                     <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="110" />
+                    <ColumnDefinition Width="180" />
                     <ColumnDefinition Width="150" />
                     <ColumnDefinition Width="150" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Column="0"
-                           Text="COM port"
+                           Text="{DynamicResource SettingsComPort}"
                            Style="{StaticResource FieldCaptionStyle}"
                            VerticalAlignment="Center" />
 
@@ -34,14 +36,27 @@
                           HorizontalAlignment="Left"
                           VerticalAlignment="Center" />
 
-                <Button Grid.Column="2"
-                        Content="Refresh Ports"
+                <TextBlock Grid.Column="2"
+                           Text="{DynamicResource SettingsLanguage}"
+                           Style="{StaticResource FieldCaptionStyle}"
+                           VerticalAlignment="Center" />
+
+                <ComboBox Grid.Column="3"
+                          Width="160"
+                          HorizontalAlignment="Left"
+                          ItemsSource="{Binding UiLanguages}"
+                          DisplayMemberPath="Label"
+                          SelectedItem="{Binding SelectedUiLanguage}"
+                          VerticalAlignment="Center" />
+
+                <Button Grid.Column="4"
+                        Content="{DynamicResource SettingsRefreshPorts}"
                         Width="130"
                         Command="{Binding RefreshPortsCommand}"
                         VerticalAlignment="Center"
                         Style="{StaticResource DeskButtonStyle}" />
 
-                <Button Grid.Column="3"
+                <Button Grid.Column="5"
                         Width="130"
                         Command="{Binding TogglePortCommand}"
                         VerticalAlignment="Center"
@@ -69,7 +84,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="Game mode" Style="{StaticResource FieldCaptionStyle}" />
+                    <TextBlock Grid.Row="0" Text="{DynamicResource SettingsGameMode}" Style="{StaticResource FieldCaptionStyle}" />
                     <ComboBox Grid.Row="1"
                               Width="260"
                               HorizontalAlignment="Left"
@@ -83,7 +98,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="Font mode" Style="{StaticResource FieldCaptionStyle}" />
+                    <TextBlock Grid.Row="0" Text="{DynamicResource SettingsFontMode}" Style="{StaticResource FieldCaptionStyle}" />
                     <ComboBox Grid.Row="1"
                               Width="260"
                               HorizontalAlignment="Left"
@@ -97,7 +112,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="Timer direction" Style="{StaticResource FieldCaptionStyle}" />
+                    <TextBlock Grid.Row="0" Text="{DynamicResource SettingsTimerDirection}" Style="{StaticResource FieldCaptionStyle}" />
                     <ComboBox Grid.Row="1"
                               Width="260"
                               HorizontalAlignment="Left"
@@ -111,7 +126,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="Main timer preset" Style="{StaticResource FieldCaptionStyle}" />
+                    <TextBlock Grid.Row="0" Text="{DynamicResource SettingsMainTimerPreset}" Style="{StaticResource FieldCaptionStyle}" />
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="84" />
@@ -137,7 +152,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="Overtime preset" Style="{StaticResource FieldCaptionStyle}" />
+                    <TextBlock Grid.Row="0" Text="{DynamicResource SettingsOvertimePreset}" Style="{StaticResource FieldCaptionStyle}" />
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="84" />
@@ -168,12 +183,12 @@
                         <ColumnDefinition Width="16"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" Text="Main buzzer, sec" Style="{StaticResource FieldCaptionStyle}" />
+                    <TextBlock Grid.Row="0" Text="{DynamicResource SettingsMainBuzzerSeconds}" Style="{StaticResource FieldCaptionStyle}" />
                     <ComboBox Grid.Row="1"
                               HorizontalAlignment="Stretch"
                               ItemsSource="{Binding SignalDurationOptions}"
                               SelectedItem="{Binding MainSignalDurationSeconds}" />
-                    <TextBlock Grid.Row="0" Grid.Column="2" Text="24 sec buzzer, tenths" Style="{StaticResource FieldCaptionStyle}" />
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="{DynamicResource SettingsShotClockBuzzerTenths}" Style="{StaticResource FieldCaptionStyle}" />
                     <ComboBox Grid.Row="1" Grid.Column="2"
             HorizontalAlignment="Stretch"
             ItemsSource="{Binding ShotClockSignalOptions}"
@@ -184,7 +199,7 @@
                 <CheckBox Grid.Row="2"
                           Grid.Column="0"
                           Grid.ColumnSpan="3"
-                          Content="Basketball fouls cap at 5"
+                          Content="{DynamicResource SettingsBasketballFoulsCapAt5}"
                           IsChecked="{Binding CountFoulsToFive}"
                           FontSize="14"
                           FontWeight="SemiBold"
@@ -194,20 +209,20 @@
 
                 <Button Grid.Row="0"
                         Grid.Column="3"
-                        Content="Apply"
+                        Content="{DynamicResource SettingsApply}"
                         Width="130"
                         Margin="0,16,0,0"
                         HorizontalAlignment="Right"
                         Command="{Binding ApplySettingsCommand}"
                         Style="{StaticResource DeskButtonStyle}" />
-                <Grid Grid.Row="3" Grid.ColumnSpan="5" Margin="0 16 0 0">
+                <Grid Grid.Row="3" Grid.ColumnSpan="4" Margin="0 16 0 0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="Keyboard Shortcuts"
+                    <TextBlock Text="{DynamicResource SettingsKeyboardShortcuts}"
                 Style="{StaticResource PayloadHeaderTextStyle}"
                 Margin="0,0,0,8" />
 
@@ -247,7 +262,7 @@
                                  Style="{StaticResource DeskButtonStyle}" />
 
                                         <Button Grid.Column="3"
-                                 Content="Clear"
+                                 Content="{Binding ClearButtonText}"
                                  Command="{Binding ClearCommand}"
                                  Width="100"
                                  Style="{StaticResource DeskButtonStyle}"

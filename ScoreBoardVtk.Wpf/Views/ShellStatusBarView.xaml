@@ -19,18 +19,23 @@
         </StatusBarItem>
 
         <StatusBarItem Margin="16 0 0 0">
-            <TextBlock Text="{Binding HostClock, StringFormat=Host: {0:HH:mm:ss}}"
-                       VerticalAlignment="Center" />
+            <TextBlock VerticalAlignment="Center">
+                <Run Text="{DynamicResource StatusHostPrefix}" />
+                <Run Text="{Binding HostClock, Mode=OneWay, StringFormat={}{0:HH:mm:ss}}" />
+            </TextBlock>
         </StatusBarItem>
         <StatusBarItem Margin="16 0 0 0">
-            <TextBlock Text="{Binding CurrentSnapshot.TimerPresetText, StringFormat=Preset: {0}}"
-                       VerticalAlignment="Center" />
+            <TextBlock VerticalAlignment="Center">
+                <Run Text="{DynamicResource StatusPresetPrefix}" />
+                <Run Text="{Binding CurrentSnapshot.TimerPresetText, Mode=OneWay}" />
+            </TextBlock>
         </StatusBarItem>
 
         <StatusBarItem Margin="16 0 0 0">
-            <TextBlock Text="{Binding CurrentSnapshot.PayloadText, StringFormat=Payload: {0}}"
-                       VerticalAlignment="Center" FontFamily="Consolas"
-                       TextTrimming="CharacterEllipsis" />
+            <TextBlock VerticalAlignment="Center" FontFamily="Consolas" TextTrimming="CharacterEllipsis">
+                <Run Text="{DynamicResource StatusPayloadPrefix}" />
+                <Run Text="{Binding CurrentSnapshot.PayloadText, Mode=OneWay}" />
+            </TextBlock>
         </StatusBarItem>
 
         <StatusBarItem  HorizontalContentAlignment="Right" Margin="16 0 0 0">
