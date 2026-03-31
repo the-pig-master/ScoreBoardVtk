@@ -15,6 +15,7 @@ public sealed class HostSettingsStoreTests
 
         Assert.Equal(ApplicationProfile.Development, settings.Profile);
         Assert.Equal("settings.json", settings.GameSettingsFileName);
+        Assert.True(settings.ShowDebugTab);
         Assert.Equal(50, settings.Runtime.PublishIntervalMilliseconds);
     }
 
@@ -32,6 +33,7 @@ public sealed class HostSettingsStoreTests
               // Boot profile.
               "profile": "Mock",
               "gameSettingsFileName": "match.json",
+              "showDebugTab": false,
               "runtime": {
                 // Publish interval.
                 "publishIntervalMilliseconds": 77
@@ -44,6 +46,7 @@ public sealed class HostSettingsStoreTests
 
             Assert.Equal(ApplicationProfile.Mock, settings.Profile);
             Assert.Equal("match.json", settings.GameSettingsFileName);
+            Assert.False(settings.ShowDebugTab);
             Assert.Equal(77, settings.Runtime.PublishIntervalMilliseconds);
         }
         finally
@@ -66,6 +69,7 @@ public sealed class HostSettingsStoreTests
             {
                 Profile = ApplicationProfile.Mock,
                 GameSettingsFileName = "game-state.json",
+                ShowDebugTab = false,
                 Runtime = new HostRuntimeSettings
                 {
                     TimingIntervalMilliseconds = 101,
@@ -79,9 +83,11 @@ public sealed class HostSettingsStoreTests
 
             Assert.Equal(ApplicationProfile.Mock, actual.Profile);
             Assert.Equal("game-state.json", actual.GameSettingsFileName);
+            Assert.False(actual.ShowDebugTab);
             Assert.Equal(101, actual.Runtime.TimingIntervalMilliseconds);
             Assert.Equal(505, actual.Runtime.PublishIntervalMilliseconds);
             Assert.Contains("// Boot profile used to select the transport implementation.", json);
+            Assert.Contains("\"showDebugTab\": false", json);
             Assert.Contains("\"timingIntervalMilliseconds\": 101", json);
         }
         finally

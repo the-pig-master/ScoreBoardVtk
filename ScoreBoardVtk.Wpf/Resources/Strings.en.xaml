@@ -3,6 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="MainTabGame">Game</sys:String>
     <sys:String x:Key="MainTabSettings">Settings</sys:String>
+    <sys:String x:Key="MainTabDebug">Debug</sys:String>
 
     <sys:String x:Key="GameDisplayHome">HOME</sys:String>
     <sys:String x:Key="GameDisplayGuest">GUEST</sys:String>
@@ -45,6 +46,10 @@
     <sys:String x:Key="SettingsBasketballFoulsCapAt5">Basketball fouls cap at 5</sys:String>
     <sys:String x:Key="SettingsApply">Apply</sys:String>
     <sys:String x:Key="SettingsKeyboardShortcuts">Keyboard Shortcuts</sys:String>
+
+    <sys:String x:Key="DebugModeToggle">Debug mode (pause periodic payload publishing)</sys:String>
+    <sys:String x:Key="DebugPayload">Payload</sys:String>
+    <sys:String x:Key="DebugSend">Send</sys:String>
 
     <sys:String x:Key="StatusHostPrefix">Host: </sys:String>
     <sys:String x:Key="StatusPresetPrefix">Preset: </sys:String>
@@ -111,6 +116,9 @@
     <sys:String x:Key="MessageLanguageApplied">Language applied.</sys:String>
     <sys:String x:Key="MessageComPortClosed">COM port closed.</sys:String>
     <sys:String x:Key="MessageComPortOpened">COM port {0} opened.</sys:String>
+    <sys:String x:Key="MessageDebugModeEnabled">Debug mode enabled. Periodic payload publishing paused.</sys:String>
+    <sys:String x:Key="MessageDebugModeDisabled">Debug mode disabled. Periodic payload publishing resumed.</sys:String>
+    <sys:String x:Key="MessageManualPayloadSent">Manual payload sent.</sys:String>
 
     <sys:String x:Key="PromptResetConfirmTitle">Confirm Reset</sys:String>
     <sys:String x:Key="PromptResetConfirmBody">Reset the game and shot clocks?</sys:String>

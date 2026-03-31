@@ -9,6 +9,7 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
 
     private ScheduledLoop? _timingLoop;
     private ScheduledLoop? _publishLoop;
+    private int _publishEnabled = 1;
     private bool _disposed;
 
     public ScoreboardRuntime(IScoreboardApi scoreboard, ScoreboardRuntimeOptions? options = null)
@@ -21,6 +22,8 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
 
     public bool IsRunning { get; private set; }
 
+    public bool IsPublishEnabled => Volatile.Read(ref _publishEnabled) == 1;
+
     public void Start()
     {
         ThrowIfDisposed();
@@ -31,7 +34,7 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
         }
 
         _timingLoop = new ScheduledLoop(_options.TimingInterval, "TickMainClock", () => _scoreboard.Execute(new TickMainClockCommand()), OnFaulted);
-        _publishLoop = new ScheduledLoop(_options.PublishInterval, "Publish", () => _scoreboard.Publish(), OnFaulted);
+        _publishLoop = new ScheduledLoop(_options.PublishInterval, "Publish", PublishIfEnabled, OnFaulted);
 
         IsRunning = true;
     }
@@ -51,6 +54,12 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
         IsRunning = false;
     }
 
+    public void SetPublishEnabled(bool enabled)
+    {
+        ThrowIfDisposed();
+        Volatile.Write(ref _publishEnabled, enabled ? 1 : 0);
+    }
+
     public void Dispose()
     {
         if (_disposed)
@@ -65,6 +74,16 @@ public sealed class ScoreboardRuntime : IScoreboardRuntime
     private void OnFaulted(string operationName, Exception exception)
     {
         Faulted?.Invoke(this, new ScoreboardRuntimeFaultedEventArgs(operationName, exception));
+    }
+
+    private void PublishIfEnabled()
+    {
+        if (!IsPublishEnabled)
+        {
+            return;
+        }
+
+        _scoreboard.Publish();
     }
 
     private void ThrowIfDisposed()

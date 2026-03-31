@@ -24,6 +24,29 @@ public sealed class ScoreboardRuntimeTests
         Assert.True(api.PublishCount > 0);
     }
 
+    [Fact]
+    public async Task SetPublishEnabled_False_StopsPublishButKeepsTimingTicks()
+    {
+        var api = new FakeScoreboardApi { IsConnected = true };
+        using var runtime = new ScoreboardRuntime(api, new ScoreboardRuntimeOptions
+        {
+            TimingInterval = TimeSpan.FromMilliseconds(20),
+            PublishInterval = TimeSpan.FromMilliseconds(15),
+        });
+
+        runtime.Start();
+        await Task.Delay(60);
+        runtime.SetPublishEnabled(false);
+        await Task.Delay(50);
+        var publishCountAfterPause = api.PublishCount;
+        await Task.Delay(50);
+        runtime.Stop();
+
+        Assert.True(publishCountAfterPause > 0);
+        Assert.Equal(publishCountAfterPause, api.PublishCount);
+        Assert.Contains(api.ExecutedCommands, command => command is TickMainClockCommand);
+    }
+
     private sealed class FakeScoreboardApi : IScoreboardApi
     {
         public event EventHandler<ScoreboardState>? StateChanged
@@ -118,6 +141,10 @@ public sealed class ScoreboardRuntimeTests
         public void Publish()
         {
             PublishCount++;
+        }
+
+        public void SendPayload(string payload)
+        {
         }
 
         public void Dispose()

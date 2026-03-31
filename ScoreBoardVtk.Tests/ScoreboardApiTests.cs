@@ -22,6 +22,20 @@ public sealed class ScoreboardApiTests
         Assert.Equal("PAYLOAD", api.Snapshot.PayloadText);
     }
 
+    [Fact]
+    public void SendPayload_UsesProtocolPacketFromManualPayload()
+    {
+        var transport = new FakeSerialTransport();
+        var protocol = new FakeProtocol();
+        var api = new ScoreboardApi(new AppSettings(), transport, protocol, new FixedTimeProvider(new DateTimeOffset(2026, 3, 23, 12, 34, 56, TimeSpan.Zero)));
+
+        api.Connect("COM9");
+        api.SendPayload("001100210:00001  24S");
+
+        Assert.Equal("001100210:00001  24S", protocol.LastManualPayload);
+        Assert.Equal(new byte[] { 7, 8, 9 }, transport.LastWrite);
+    }
+
     private sealed class FakeSerialTransport : ISerialTransport
     {
         public byte[] LastWrite { get; private set; } = [];
@@ -62,6 +76,8 @@ public sealed class ScoreboardApiTests
     {
         public ScoreboardState? LastPublishedState { get; private set; }
 
+        public string? LastManualPayload { get; private set; }
+
         public string CreateGamePayload(ScoreboardState state, DateTime currentTime)
         {
             return "PAYLOAD";
@@ -71,6 +87,12 @@ public sealed class ScoreboardApiTests
         {
             LastPublishedState = state;
             return [1, 2, 3];
+        }
+
+        public byte[] CreateGamePacket(string payload)
+        {
+            LastManualPayload = payload;
+            return [7, 8, 9];
         }
     }
 

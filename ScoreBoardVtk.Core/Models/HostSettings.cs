@@ -6,5 +6,7 @@ public sealed class HostSettings
 
     public string GameSettingsFileName { get; set; } = "settings.json";
 
+    public bool ShowDebugTab { get; set; } = true;
+
     public HostRuntimeSettings Runtime { get; set; } = new();
 }

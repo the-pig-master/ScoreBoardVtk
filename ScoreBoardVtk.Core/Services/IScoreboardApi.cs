@@ -25,4 +25,6 @@ public interface IScoreboardApi : IDisposable
     void Disconnect();
 
     void Publish();
+
+    void SendPayload(string payload);
 }

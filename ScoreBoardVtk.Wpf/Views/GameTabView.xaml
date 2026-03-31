@@ -7,7 +7,7 @@
              d:DesignHeight="756"
              d:DesignWidth="1536">
     <Grid DataContext="{Binding Workspace}">
-        <Viewbox Stretch="Uniform">
+        <Viewbox Stretch="Fill" >
             <Grid Width="1536" Height="756" Margin="16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="380" />
@@ -15,18 +15,18 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Style="{StaticResource ScoreboardShellStyle}">
+                <Border Grid.Row="0" Style="{StaticResource ScoreboardShellStyle}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="302" />
-                            <RowDefinition Height="42" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="auto" />
                         </Grid.RowDefinitions>
 
                         <Grid Grid.Row="0" HorizontalAlignment="Center">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="500" />
-                                <ColumnDefinition Width="420" />
-                                <ColumnDefinition Width="500" />
+                                <ColumnDefinition Width="400" />
+                                <ColumnDefinition Width="540" />
+                                <ColumnDefinition Width="400" />
                             </Grid.ColumnDefinitions>
 
                             <Border Grid.Column="0" Margin="0,0,18,0" Style="{StaticResource ScoreboardPanelStyle}">
@@ -66,8 +66,7 @@
 
                             <Grid Grid.Column="1">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="*" />
-                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="auto" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
 
@@ -90,71 +89,7 @@
                                                    Text="{Binding CurrentSnapshot.PeriodText}"
                                                    Style="{StaticResource SecondaryValueTextStyle}"
                                                    FontSize="42" />
-                                        <TextBlock Grid.Row="0"
-                                                   Grid.Column="1"
-                                                   Text="{DynamicResource GameDisplayShotReady}"
-                                                   Style="{StaticResource DisplayCaptionStyle}"
-                                                   HorizontalAlignment="Center" />
-                                        <Ellipse Grid.Row="1"
-                                                 Grid.Column="1"
-                                                 Style="{StaticResource ShotClockIndicatorStyle}"
-                                                 Margin="0,6,0,0" />
-                                    </Grid>
-                                </Border>
-
-                                <Border Grid.Row="1" Margin="0,0,0,12" Style="{StaticResource ScoreboardPanelStyle}">
-                                    <Grid VerticalAlignment="Center">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock Grid.Row="0"
-                                                   Text="{DynamicResource GameDisplayGameClock}"
-                                                   Style="{StaticResource DisplayCaptionStyle}"
-                                                   HorizontalAlignment="Center" />
-                                        <TextBlock Grid.Row="1"
-                                                   Text="{Binding CurrentSnapshot.MainClockText}"
-                                                   Style="{StaticResource ClockValueTextStyle}"
-                                                   FontSize="42" />
-                                    </Grid>
-                                </Border>
-
-                                <Grid Grid.Row="2">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <Border Grid.Column="0" Margin="0,0,12,0" Style="{StaticResource ScoreboardPanelStyle}">
-                                        <Grid VerticalAlignment="Top">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <TextBlock Grid.Row="0"
-                                                       Text="{DynamicResource GameDisplayShotClock}"
-                                                       Style="{StaticResource DisplayCaptionStyle}"
-                                                       HorizontalAlignment="Center" />
-                                            <Grid Grid.Row="1" Margin="0,6,0,0" HorizontalAlignment="Center">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Column="0"
-                                                           Text="{Binding CurrentSnapshot.ShotClockSecondsText}"
-                                                           Style="{StaticResource ClockValueTextStyle}"
-                                                           FontSize="42" />
-                                                <TextBlock Grid.Column="1"
-                                                           Text="{Binding CurrentSnapshot.ShotClockTenthsText}"
-                                                           Style="{StaticResource ClockValueTextStyle}"
-                                                           FontSize="24"
-                                                           Margin="4,14,0,0" />
-                                            </Grid>
-                                        </Grid>
-                                    </Border>
-
-                                    <Border Grid.Column="1" Style="{StaticResource ScoreboardPanelStyle}">
-                                        <Grid VerticalAlignment="Center">
+                                        <Grid VerticalAlignment="Center" Grid.Column="1" Grid.RowSpan="2">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
@@ -186,7 +121,7 @@
                                                         <RowDefinition Height="Auto" />
                                                     </Grid.RowDefinitions>
                                                     <Ellipse Grid.Row="0" Style="{StaticResource ShotClockIndicatorStyle}" />
-                                                    <TextBlock Grid.Row="1"
+                                                    <TextBlock Grid.Row="1" 
                                                                Text="24"
                                                                Style="{StaticResource DisplayCaptionStyle}"
                                                                HorizontalAlignment="Center"
@@ -194,8 +129,52 @@
                                                 </Grid>
                                             </Grid>
                                         </Grid>
-                                    </Border>
-                                </Grid>
+                                    </Grid>
+                                </Border>
+
+                                <Border Grid.Row="1" Margin="0,0,0,0" Style="{StaticResource ScoreboardPanelStyle}">
+                                    <Grid VerticalAlignment="Center">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Row="0"
+                                                   Text="{DynamicResource GameDisplayGameClock}"
+                                                   Style="{StaticResource DisplayCaptionStyle}"
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Row="1"
+                                                   Text="{Binding CurrentSnapshot.MainClockText}"
+                                                   Style="{StaticResource ClockValueTextStyle}"
+                                                   FontSize="80" />
+
+                                        <TextBlock Grid.Row="0"
+                                                   Grid.Column="1"
+             Text="{DynamicResource GameDisplayShotClock}"
+             Style="{StaticResource DisplayCaptionStyle}"
+             HorizontalAlignment="Center" />
+                                        <Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding CurrentSnapshot.ShotClockSecondsText}"
+                                                       Style="{StaticResource ClockValueTextStyle}"
+                                                       FontSize="80" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding CurrentSnapshot.ShotClockTenthsText, StringFormat={}.{0}}"
+                                                       Style="{StaticResource ClockValueTextStyle}"
+                                                       FontSize="80"
+                                                        />
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+
+                               
                             </Grid>
 
                             <Border Grid.Column="2" Margin="18,0,0,0" Style="{StaticResource ScoreboardPanelStyle}">

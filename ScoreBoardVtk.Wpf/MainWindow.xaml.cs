@@ -18,7 +18,11 @@ public partial class MainWindow : Window
         var services = ScoreboardCompositionRoot.CreateDesktopServices();
         LocalizationManager.Instance.ApplyLanguage(services.ScoreboardApi.Settings.UiLanguage);
         InitializeComponent();
-        ViewModel = new MainWindowViewModel(services.SettingsStore, services.ScoreboardApi, services.Runtime);
+        ViewModel = new MainWindowViewModel(
+            services.SettingsStore,
+            services.ScoreboardApi,
+            services.Runtime,
+            services.HostSettings.ShowDebugTab);
         DataContext = ViewModel;
     }
 

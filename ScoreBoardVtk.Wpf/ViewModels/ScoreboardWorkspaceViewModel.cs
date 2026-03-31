@@ -18,6 +18,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     private readonly DispatcherTimer _displayRefreshTimer;
     private readonly LocalizationManager _localization;
     private readonly KeyboardBindingsSettings _draftKeyboardBindings = new();
+    private readonly RelayCommand _sendManualPayloadCommand;
 
     private bool _suppressControllerSync;
     private ScoreboardState _currentState = null!;
@@ -27,6 +28,8 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     private string _connectedPortName = string.Empty;
     private DateTime _hostClock = DateTime.Now;
     private string _systemMessageText = "Ready.";
+    private bool _isDebugMode;
+    private string _manualPayloadText = string.Empty;
     private string _runningText = string.Empty;
     private bool _runningTextEnabled;
     private bool _countFoulsToFive = true;
@@ -97,6 +100,8 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         RefreshPortsCommand = new RelayCommand(() => RefreshPorts(SelectedPort));
         TogglePortCommand = new RelayCommand(TogglePort);
         ApplySettingsCommand = new RelayCommand(ApplySettings);
+        _sendManualPayloadCommand = new RelayCommand(SendManualPayload, () => CanSendManualPayload);
+        SendManualPayloadCommand = _sendManualPayloadCommand;
 
         _scoreboard.StateChanged += ScoreboardOnStateChanged;
         _runtime.Faulted += RuntimeOnFaulted;
@@ -109,7 +114,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
 
         RefreshLocalizedCollections();
         RefreshLocalizedText();
-        SystemMessageText = L("MessageReady");
+        SystemMessageText = Localize("MessageReady");
 
         ApplySettingsFromController();
         RefreshPorts(_scoreboard.Settings.SelectedPort);
@@ -179,6 +184,8 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
 
     public ICommand ApplySettingsCommand { get; }
 
+    public ICommand SendManualPayloadCommand { get; }
+
     public ScoreboardState CurrentState
     {
         get => _currentState;
@@ -221,6 +228,39 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         private set => SetProperty(ref _systemMessageText, value);
     }
 
+    public bool IsDebugMode
+    {
+        get => _isDebugMode;
+        set
+        {
+            if (!SetProperty(ref _isDebugMode, value))
+            {
+                return;
+            }
+
+            _runtime.SetPublishEnabled(!value);
+            SystemMessageText = value
+                ? Localize("MessageDebugModeEnabled")
+                : Localize("MessageDebugModeDisabled");
+        }
+    }
+
+    public string ManualPayloadText
+    {
+        get => _manualPayloadText;
+        set
+        {
+            var normalized = value ?? string.Empty;
+            if (!SetProperty(ref _manualPayloadText, normalized))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(CanSendManualPayload));
+            _sendManualPayloadCommand.NotifyCanExecuteChanged();
+        }
+    }
+
     public int ConfiguredTimerPresetTenths
     {
         get
@@ -231,34 +271,36 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     }
 
     public string KeyboardShortcutCaptureText => _pendingKeyboardShortcutAction is null
-        ? L("ShortcutCaptureIdle")
+        ? Localize("ShortcutCaptureIdle")
         : string.Format(
-            L("ShortcutCapturePrompt"),
+            Localize("ShortcutCapturePrompt"),
             GetKeyboardShortcutLabel(_pendingKeyboardShortcutAction.Value));
 
     public bool CanResetTimers => _currentState is not null &&
                                   !_currentState.IsGameClockRunning &&
                                   !_currentState.IsShotClockRunning;
 
+    public bool CanSendManualPayload => IsConnected && !string.IsNullOrWhiteSpace(ManualPayloadText);
+
     public string SecondaryCounterLabelText => CurrentState.SecondaryCounterKind == SecondaryCounterKind.Fouls
-        ? L("CommonFouls")
-        : L("CommonSets");
+        ? Localize("CommonFouls")
+        : Localize("CommonSets");
 
     public string GameClockToggleButtonText => BuildButtonText(
-        _currentState is not null && _currentState.IsGameClockRunning ? L("CommonStop") : L("CommonStart"),
+        _currentState is not null && _currentState.IsGameClockRunning ? Localize("CommonStop") : Localize("CommonStart"),
         GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.ToggleGameClock));
 
     public string ShotClockToggleButtonText => BuildButtonText(
-        _currentState is not null && _currentState.IsShotClockRunning ? L("CommonStop") : L("CommonStart"),
+        _currentState is not null && _currentState.IsShotClockRunning ? Localize("CommonStop") : Localize("CommonStart"),
         GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.ToggleShotClock));
 
-    public string SetShotClock24ButtonText => BuildButtonText(L("GameButtonSet24"), GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.SetShotClock24));
+    public string SetShotClock24ButtonText => BuildButtonText(Localize("GameButtonSet24"), GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.SetShotClock24));
 
-    public string SetShotClock14ButtonText => BuildButtonText(L("GameButtonSet14"), GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.SetShotClock14));
+    public string SetShotClock14ButtonText => BuildButtonText(Localize("GameButtonSet14"), GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.SetShotClock14));
 
-    public string RunShotClock24ButtonText => BuildButtonText(L("GameButtonRun24"), GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.RunShotClock24));
+    public string RunShotClock24ButtonText => BuildButtonText(Localize("GameButtonRun24"), GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.RunShotClock24));
 
-    public string RunShotClock14ButtonText => BuildButtonText(L("GameButtonRun14"), GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.RunShotClock14));
+    public string RunShotClock14ButtonText => BuildButtonText(Localize("GameButtonRun14"), GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.RunShotClock14));
 
     public string IncreaseScoreAButtonText => BuildButtonText("+1", GetAppliedKeyboardShortcutDisplay(KeyboardShortcutAction.IncreaseHomeScore));
 
@@ -424,7 +466,25 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
             values.MainClockTenths,
             values.ShotClockTenths));
 
-        SystemMessageText = L("MessageValuesApplied");
+        SystemMessageText = Localize("MessageValuesApplied");
+    }
+
+    public void SendManualPayload()
+    {
+        if (!CanSendManualPayload)
+        {
+            return;
+        }
+
+        try
+        {
+            _scoreboard.SendPayload(ManualPayloadText);
+            SystemMessageText = Localize("MessageManualPayloadSent");
+        }
+        catch (Exception exception)
+        {
+            SystemMessageText = exception.Message;
+        }
     }
 
     public bool TryHandleKeyboardShortcutCapture(Key key)
@@ -438,12 +498,12 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         {
             SetDraftKeyboardShortcut(_pendingKeyboardShortcutAction.Value, string.Empty);
             SystemMessageText = string.Format(
-                L("ShortcutClearedMessage"),
+                Localize("ShortcutClearedMessage"),
                 GetKeyboardShortcutLabel(_pendingKeyboardShortcutAction.Value));
         }
         else if (!IsAssignableKeyboardShortcut(key))
         {
-            SystemMessageText = L("ShortcutInvalidKeyMessage");
+            SystemMessageText = Localize("ShortcutInvalidKeyMessage");
             return true;
         }
         else
@@ -451,7 +511,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
             RemoveDraftKeyboardShortcut(key, _pendingKeyboardShortcutAction.Value);
             SetDraftKeyboardShortcut(_pendingKeyboardShortcutAction.Value, key.ToString());
             SystemMessageText = string.Format(
-                L("ShortcutSetMessage"),
+                Localize("ShortcutSetMessage"),
                 GetKeyboardShortcutLabel(_pendingKeyboardShortcutAction.Value),
                 FormatKeyDisplay(key));
         }
@@ -541,7 +601,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         SystemMessageText = e.Exception.Message;
     }
 
-    private string L(string key)
+    private string Localize(string key)
     {
         return _localization.GetString(key);
     }
@@ -557,29 +617,29 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
 
         UiLanguages =
         [
-            new OptionItem<UiLanguage>(UiLanguage.English, L("OptionEnglish")),
-            new OptionItem<UiLanguage>(UiLanguage.Russian, L("OptionRussian")),
+            new OptionItem<UiLanguage>(UiLanguage.English, Localize("OptionEnglish")),
+            new OptionItem<UiLanguage>(UiLanguage.Russian, Localize("OptionRussian")),
         ];
         OnPropertyChanged(nameof(UiLanguages));
 
         GameModes =
         [
-            new OptionItem<GameMode>(GameMode.Basketball, L("OptionBasketball")),
-            new OptionItem<GameMode>(GameMode.Volleyball, L("OptionVolleyball")),
+            new OptionItem<GameMode>(GameMode.Basketball, Localize("OptionBasketball")),
+            new OptionItem<GameMode>(GameMode.Volleyball, Localize("OptionVolleyball")),
         ];
         OnPropertyChanged(nameof(GameModes));
 
         FontModes =
         [
-            new OptionItem<FontMode>(FontMode.Font6x8, L("OptionFont6x8")),
-            new OptionItem<FontMode>(FontMode.Font8x8, L("OptionFont8x8")),
+            new OptionItem<FontMode>(FontMode.Font6x8, Localize("OptionFont6x8")),
+            new OptionItem<FontMode>(FontMode.Font8x8, Localize("OptionFont8x8")),
         ];
         OnPropertyChanged(nameof(FontModes));
 
         TimerDirections =
         [
-            new OptionItem<TimerDirection>(TimerDirection.Up, L("OptionCountUp")),
-            new OptionItem<TimerDirection>(TimerDirection.Down, L("OptionCountDown")),
+            new OptionItem<TimerDirection>(TimerDirection.Up, Localize("OptionCountUp")),
+            new OptionItem<TimerDirection>(TimerDirection.Down, Localize("OptionCountDown")),
         ];
         OnPropertyChanged(nameof(TimerDirections));
 
@@ -602,6 +662,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         RefreshKeyboardShortcutBindings();
         NotifyKeyboardShortcutButtonTextChanged();
         OnPropertyChanged(nameof(KeyboardShortcutCaptureText));
+        OnPropertyChanged(nameof(CanSendManualPayload));
     }
 
     private void ApplySettingsFromController()
@@ -702,15 +763,15 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
             CurrentSnapshot.TimerPresetText != requestedCurrentPreset;
 
         SystemMessageText = CurrentState.IsGameClockRunning && timerSettingsPending
-            ? L("MessageSettingsAppliedPendingTimer")
-            : L("MessageSettingsApplied");
+            ? Localize("MessageSettingsAppliedPendingTimer")
+            : Localize("MessageSettingsApplied");
     }
 
     private void BeginKeyboardShortcutCapture(KeyboardShortcutAction action)
     {
         _pendingKeyboardShortcutAction = action;
         RefreshKeyboardShortcutBindings();
-        SystemMessageText = string.Format(L("ShortcutCapturePrompt"), GetKeyboardShortcutLabel(action));
+        SystemMessageText = string.Format(Localize("ShortcutCapturePrompt"), GetKeyboardShortcutLabel(action));
     }
 
     private void ClearKeyboardShortcut(KeyboardShortcutAction action)
@@ -723,7 +784,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
         }
 
         RefreshKeyboardShortcutBindings();
-        SystemMessageText = string.Format(L("ShortcutClearedMessage"), GetKeyboardShortcutLabel(action));
+        SystemMessageText = string.Format(Localize("ShortcutClearedMessage"), GetKeyboardShortcutLabel(action));
     }
 
     private void RefreshPorts(string? preferredPort)
@@ -755,13 +816,13 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
             if (_scoreboard.IsConnected)
             {
                 _scoreboard.Disconnect();
-                SystemMessageText = L("MessageComPortClosed");
+                SystemMessageText = Localize("MessageComPortClosed");
             }
             else
             {
                 _scoreboard.Connect(SelectedPort);
                 _scoreboard.Settings.SelectedPort = SelectedPort;
-                SystemMessageText = string.Format(L("MessageComPortOpened"), SelectedPort);
+                SystemMessageText = string.Format(Localize("MessageComPortOpened"), SelectedPort);
             }
 
             UpdatePortState();
@@ -778,6 +839,8 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     {
         IsConnected = _scoreboard.IsConnected;
         ConnectedPortName = _scoreboard.IsConnected ? _scoreboard.ConnectedPortName : string.Empty;
+        OnPropertyChanged(nameof(CanSendManualPayload));
+        _sendManualPayloadCommand.NotifyCanExecuteChanged();
     }
 
     private void ApplyKeyboardShortcutDraft(KeyboardBindingsSettings bindings)
@@ -1032,21 +1095,21 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     {
         return action switch
         {
-            KeyboardShortcutAction.ToggleGameClock => L("ActionToggleGameClock"),
-            KeyboardShortcutAction.ToggleShotClock => L("ActionToggleShotClock"),
-            KeyboardShortcutAction.SetShotClock24 => L("ActionSetShotClock24"),
-            KeyboardShortcutAction.SetShotClock14 => L("ActionSetShotClock14"),
-            KeyboardShortcutAction.RunShotClock24 => L("ActionRunShotClock24"),
-            KeyboardShortcutAction.RunShotClock14 => L("ActionRunShotClock14"),
-            KeyboardShortcutAction.IncreaseHomeScore => L("ActionIncreaseHomeScore"),
-            KeyboardShortcutAction.DecreaseHomeScore => L("ActionDecreaseHomeScore"),
-            KeyboardShortcutAction.IncreaseGuestScore => L("ActionIncreaseGuestScore"),
-            KeyboardShortcutAction.DecreaseGuestScore => L("ActionDecreaseGuestScore"),
-            KeyboardShortcutAction.IncreaseHomeFouls => L("ActionIncreaseHomeFouls"),
-            KeyboardShortcutAction.DecreaseHomeFouls => L("ActionDecreaseHomeFouls"),
-            KeyboardShortcutAction.IncreaseGuestFouls => L("ActionIncreaseGuestFouls"),
-            KeyboardShortcutAction.DecreaseGuestFouls => L("ActionDecreaseGuestFouls"),
-            _ => L("SettingsKeyboardShortcuts"),
+            KeyboardShortcutAction.ToggleGameClock => Localize("ActionToggleGameClock"),
+            KeyboardShortcutAction.ToggleShotClock => Localize("ActionToggleShotClock"),
+            KeyboardShortcutAction.SetShotClock24 => Localize("ActionSetShotClock24"),
+            KeyboardShortcutAction.SetShotClock14 => Localize("ActionSetShotClock14"),
+            KeyboardShortcutAction.RunShotClock24 => Localize("ActionRunShotClock24"),
+            KeyboardShortcutAction.RunShotClock14 => Localize("ActionRunShotClock14"),
+            KeyboardShortcutAction.IncreaseHomeScore => Localize("ActionIncreaseHomeScore"),
+            KeyboardShortcutAction.DecreaseHomeScore => Localize("ActionDecreaseHomeScore"),
+            KeyboardShortcutAction.IncreaseGuestScore => Localize("ActionIncreaseGuestScore"),
+            KeyboardShortcutAction.DecreaseGuestScore => Localize("ActionDecreaseGuestScore"),
+            KeyboardShortcutAction.IncreaseHomeFouls => Localize("ActionIncreaseHomeFouls"),
+            KeyboardShortcutAction.DecreaseHomeFouls => Localize("ActionDecreaseHomeFouls"),
+            KeyboardShortcutAction.IncreaseGuestFouls => Localize("ActionIncreaseGuestFouls"),
+            KeyboardShortcutAction.DecreaseGuestFouls => Localize("ActionDecreaseGuestFouls"),
+            _ => Localize("SettingsKeyboardShortcuts"),
         };
     }
 
@@ -1077,7 +1140,7 @@ public sealed class ScoreboardWorkspaceViewModel : ObservableObject, IDisposable
     {
         return TryGetAssignedKey(keyName, out var key)
             ? FormatKeyDisplay(key)
-            : L("ShortcutNotAssigned");
+            : Localize("ShortcutNotAssigned");
     }
 
     private static string FormatKeyDisplay(Key key)

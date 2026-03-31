@@ -84,6 +84,19 @@ public sealed class ScoreboardApi : IScoreboardApi
         }
     }
 
+    public void SendPayload(string payload)
+    {
+        lock (_sync)
+        {
+            if (!_transport.IsOpen)
+            {
+                return;
+            }
+
+            _transport.Write(_protocol.CreateGamePacket(payload));
+        }
+    }
+
     public void Dispose()
     {
         lock (_sync)

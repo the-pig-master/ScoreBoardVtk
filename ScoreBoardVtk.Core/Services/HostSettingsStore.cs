@@ -67,6 +67,9 @@ public sealed class HostSettingsStore
           // This file is resolved relative to hostsettings.json.
           "gameSettingsFileName": {{ToJson(settings.GameSettingsFileName)}},
 
+          // Controls whether the Debug tab is visible in the WPF application.
+          "showDebugTab": {{ToJson(settings.ShowDebugTab)}},
+
           "runtime": {
             // Shared timing loop interval for game clock, shot clock, and buzzer timing.
             "timingIntervalMilliseconds": {{ToJson(settings.Runtime.TimingIntervalMilliseconds)}},

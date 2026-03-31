@@ -7,4 +7,6 @@ public interface IScoreboardProtocol
     string CreateGamePayload(ScoreboardState state, DateTime currentTime);
 
     byte[] CreateGamePacket(ScoreboardState state, DateTime currentTime);
+
+    byte[] CreateGamePacket(string payload);
 }

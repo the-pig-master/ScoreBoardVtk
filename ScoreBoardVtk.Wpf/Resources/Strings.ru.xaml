@@ -3,6 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="MainTabGame">Игра</sys:String>
     <sys:String x:Key="MainTabSettings">Настройки</sys:String>
+    <sys:String x:Key="MainTabDebug">Отладка</sys:String>
 
     <sys:String x:Key="GameDisplayHome">ХОЗЯЕВА</sys:String>
     <sys:String x:Key="GameDisplayGuest">ГОСТИ</sys:String>
@@ -45,6 +46,10 @@
     <sys:String x:Key="SettingsBasketballFoulsCapAt5">Фолы в баскетболе до 5</sys:String>
     <sys:String x:Key="SettingsApply">Применить</sys:String>
     <sys:String x:Key="SettingsKeyboardShortcuts">Горячие клавиши</sys:String>
+
+    <sys:String x:Key="DebugModeToggle">Режим отладки (остановить периодическую отправку пейлоада)</sys:String>
+    <sys:String x:Key="DebugPayload">Пейлоад</sys:String>
+    <sys:String x:Key="DebugSend">Отправить</sys:String>
 
     <sys:String x:Key="StatusHostPrefix">Хост: </sys:String>
     <sys:String x:Key="StatusPresetPrefix">Пресет: </sys:String>
@@ -111,6 +116,9 @@
     <sys:String x:Key="MessageLanguageApplied">Язык интерфейса применен.</sys:String>
     <sys:String x:Key="MessageComPortClosed">COM-порт закрыт.</sys:String>
     <sys:String x:Key="MessageComPortOpened">COM-порт {0} открыт.</sys:String>
+    <sys:String x:Key="MessageDebugModeEnabled">Режим отладки включен. Периодическая отправка пейлоада остановлена.</sys:String>
+    <sys:String x:Key="MessageDebugModeDisabled">Режим отладки выключен. Периодическая отправка пейлоада возобновлена.</sys:String>
+    <sys:String x:Key="MessageManualPayloadSent">Ручной пейлоад отправлен.</sys:String>
 
     <sys:String x:Key="PromptResetConfirmTitle">Подтверждение сброса</sys:String>
     <sys:String x:Key="PromptResetConfirmBody">Сбросить игровой таймер и таймер 24 секунд?</sys:String>

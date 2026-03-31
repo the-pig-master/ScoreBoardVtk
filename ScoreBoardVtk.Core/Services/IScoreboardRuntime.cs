@@ -6,7 +6,11 @@ public interface IScoreboardRuntime : IDisposable
 
     bool IsRunning { get; }
 
+    bool IsPublishEnabled { get; }
+
     void Start();
 
     void Stop();
+
+    void SetPublishEnabled(bool enabled);
 }

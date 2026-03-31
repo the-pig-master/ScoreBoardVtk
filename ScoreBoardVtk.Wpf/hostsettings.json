@@ -9,6 +9,9 @@
   // This file is resolved relative to hostsettings.json.
   "gameSettingsFileName": "settings.json",
 
+  // Controls whether the Debug tab is visible in the WPF application.
+  "showDebugTab": true,
+
   "runtime": {
     // Shared timing loop interval for game clock, shot clock, and buzzer timing.
     "timingIntervalMilliseconds": 100,

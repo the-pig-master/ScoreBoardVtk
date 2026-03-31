@@ -9,8 +9,7 @@
         Icon="Assets/ScoreBoardVtk.ico"
         Width="1440"
         Height="900"
-        MinWidth="960"
-        MinHeight="600"
+        
         PreviewKeyDown="Window_OnPreviewKeyDown">
     <Grid>
         <Grid.RowDefinitions>
@@ -25,6 +24,11 @@
 
             <TabItem Header="{DynamicResource MainTabSettings}">
                 <views:SettingsTabView DataContext="{Binding SettingsTab}" />
+            </TabItem>
+
+            <TabItem Header="{DynamicResource MainTabDebug}"
+                     Visibility="{Binding DebugTabVisibility}">
+                <views:DebugTabView DataContext="{Binding DebugTab}" />
             </TabItem>
         </TabControl>
 
