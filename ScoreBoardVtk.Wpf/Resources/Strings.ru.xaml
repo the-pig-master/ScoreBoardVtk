@@ -128,7 +128,7 @@
     <sys:String x:Key="ValidationInvalidValueTitle">Некорректное значение</sys:String>
     <sys:String x:Key="ValidationPeriodRange">Период должен быть в диапазоне от 1 до {0}.</sys:String>
     <sys:String x:Key="ValidationGameClockRange">Игровое время должно быть в диапазоне от 00:00.0 до 59:59.9.</sys:String>
-    <sys:String x:Key="ValidationShotClockRange">Таймер 24 секунд должен быть в диапазоне от 00.0 до 24.0.</sys:String>
+    <sys:String x:Key="ValidationShotClockRange">Таймер 24 секунд должен использовать экранный формат от 0.0 до 24.9. Значения от 0.1 до 0.9 недопустимы.</sys:String>
     <sys:String x:Key="ValidationShotClockBasketballOnly">Таймер 24 секунд доступен только в режиме баскетбола.</sys:String>
     <sys:String x:Key="ValidationMustBeInteger">Поле "{0}" должно содержать целое число.</sys:String>
     <sys:String x:Key="ValidationBetweenRange">Поле "{0}" должно быть в диапазоне от {1} до {2}.</sys:String>

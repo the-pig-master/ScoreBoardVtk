@@ -120,7 +120,7 @@ public partial class SetValuesWindow : Window
             return;
         }
 
-        if (ShotSeconds is < 0 or > 24 || ShotTenths is < 0 or > 9 || (ShotSeconds == 24 && ShotTenths > 0))
+        if (ShotSeconds is < 0 or > 24 || ShotTenths is < 0 or > 9 || (ShotSeconds == 0 && ShotTenths > 0))
         {
             ShowValidationMessage(L("ValidationShotClockRange"));
             return;
@@ -132,6 +132,12 @@ public partial class SetValuesWindow : Window
             return;
         }
 
+        if (!TryConvertDisplayedShotClockToTenths(ShotSeconds, ShotTenths, out var shotClockTenths))
+        {
+            ShowValidationMessage(L("ValidationShotClockRange"));
+            return;
+        }
+
         Result = new ManualScoreboardValues(
             homeScore,
             guestScore,
@@ -139,7 +145,7 @@ public partial class SetValuesWindow : Window
             guestSecondary,
             SelectedPeriod,
             (MainMinutes * 60 * 10) + (MainSeconds * 10) + MainTenths,
-            (ShotSeconds * 10) + ShotTenths);
+            shotClockTenths);
 
         DialogResult = true;
     }
@@ -169,8 +175,9 @@ public partial class SetValuesWindow : Window
         MainMinutes = state.MainClockTenths / 600;
         MainSeconds = (state.MainClockTenths / 10) % 60;
         MainTenths = state.MainClockTenths % 10;
-        ShotSeconds = state.ShotClockTenths / 10;
-        ShotTenths = state.ShotClockTenths % 10;
+        ApplyDisplayedShotClock(state.ShotClockTenths, out var shotSeconds, out var shotTenths);
+        ShotSeconds = shotSeconds;
+        ShotTenths = shotTenths;
     }
 
     private void RefreshBindings()
@@ -225,5 +232,39 @@ public partial class SetValuesWindow : Window
     private static string L(string key)
     {
         return LocalizationManager.Instance.GetString(key);
+    }
+
+    private static void ApplyDisplayedShotClock(int shotClockTenths, out int displayedSeconds, out int displayedTenths)
+    {
+        if (shotClockTenths <= 0)
+        {
+            displayedSeconds = 0;
+            displayedTenths = 0;
+            return;
+        }
+
+        displayedSeconds = (shotClockTenths + 9) / 10;
+        displayedTenths = shotClockTenths % 10;
+    }
+
+    private static bool TryConvertDisplayedShotClockToTenths(int displayedSeconds, int displayedTenths, out int shotClockTenths)
+    {
+        if (displayedSeconds is < 0 or > 24 || displayedTenths is < 0 or > 9)
+        {
+            shotClockTenths = 0;
+            return false;
+        }
+
+        if (displayedSeconds == 0)
+        {
+            shotClockTenths = 0;
+            return displayedTenths == 0;
+        }
+
+        shotClockTenths = displayedTenths == 0
+            ? displayedSeconds * 10
+            : ((displayedSeconds - 1) * 10) + displayedTenths;
+
+        return shotClockTenths is >= 0 and <= 24 * 10;
     }
 }

@@ -143,10 +143,12 @@
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Row="0"
+                                                   FontFamily="Cascadia Mono"
                                                    Text="{DynamicResource GameDisplayGameClock}"
                                                    Style="{StaticResource DisplayCaptionStyle}"
                                                    HorizontalAlignment="Center" />
                                         <TextBlock Grid.Row="1"
+                                                   FontFamily="Cascadia Mono"
                                                    Text="{Binding CurrentSnapshot.MainClockText}"
                                                    Style="{StaticResource ClockValueTextStyle}"
                                                    FontSize="80" />
@@ -161,14 +163,17 @@
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0"
+                                            <TextBlock Grid.Column="0" FontFamily="Cascadia Mono"
                                                        Text="{Binding CurrentSnapshot.ShotClockSecondsText}"
                                                        Style="{StaticResource ClockValueTextStyle}"
                                                        FontSize="80" />
                                             <TextBlock Grid.Column="1"
+                                                       FontFamily="Cascadia Mono"
                                                        Text="{Binding CurrentSnapshot.ShotClockTenthsText, StringFormat={}.{0}}"
                                                        Style="{StaticResource ClockValueTextStyle}"
-                                                       FontSize="80"
+                                                       VerticalAlignment="Bottom"
+                                                       FontSize="40"
+                                                       Margin="0 0 0 10"
                                                         />
                                         </Grid>
                                     </Grid>

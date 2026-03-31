@@ -128,7 +128,7 @@
     <sys:String x:Key="ValidationInvalidValueTitle">Invalid Value</sys:String>
     <sys:String x:Key="ValidationPeriodRange">Period must be between 1 and {0}.</sys:String>
     <sys:String x:Key="ValidationGameClockRange">Game clock must be within 00:00.0 and 59:59.9.</sys:String>
-    <sys:String x:Key="ValidationShotClockRange">24-second clock must be within 00.0 and 24.0.</sys:String>
+    <sys:String x:Key="ValidationShotClockRange">24-second clock must use the display format from 0.0 to 24.9. Values 0.1 through 0.9 are not allowed.</sys:String>
     <sys:String x:Key="ValidationShotClockBasketballOnly">24-second clock is available only in basketball mode.</sys:String>
     <sys:String x:Key="ValidationMustBeInteger">{0} must be an integer value.</sys:String>
     <sys:String x:Key="ValidationBetweenRange">{0} must be between {1} and {2}.</sys:String>
