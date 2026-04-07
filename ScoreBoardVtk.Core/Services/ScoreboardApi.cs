@@ -1,3 +1,4 @@
+using System.Text;
 using ScoreBoardVtk.Core.Models;
 
 namespace ScoreBoardVtk.Core.Services;
@@ -94,6 +95,21 @@ public sealed class ScoreboardApi : IScoreboardApi
             }
 
             _transport.Write(_protocol.CreateGamePacket(payload));
+        }
+    }
+
+    public void SendPayload(string payload, Encoding encoding)
+    {
+        ArgumentNullException.ThrowIfNull(encoding);
+
+        lock (_sync)
+        {
+            if (!_transport.IsOpen)
+            {
+                return;
+            }
+
+            _transport.Write(_protocol.CreateGamePacket(payload, encoding));
         }
     }
 

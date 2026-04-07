@@ -81,6 +81,7 @@
 - настройка timing/publish интервалов runtime
 - указание файла игровых настроек
 - управление видимостью вкладки `Debug`
+- задание кодировки payload по умолчанию для `CMD`-утилиты
 
 Профили:
 
@@ -96,6 +97,9 @@
 - `showDebugTab`
   - `true` = показывать вкладку `Debug`
   - `false` = скрывать вкладку `Debug`
+- `payloadEncoding`
+  - кодировка по умолчанию для ручной отправки payload из `CMD`
+  - значение по умолчанию: `windows-1251`
 
 Release-настройки:
 
@@ -244,6 +248,12 @@ Release-настройки:
   - выводит список всех доступных `COM`-портов
 - `buzz <COMx>`
   - отправляет звуковой сигнал длительностью `0.3` секунды на указанный порт
+- `payload <COMx> <payload> [--encoding <name|codepage>]`
+  - отправляет произвольный `AT+GD` payload на указанный порт
+- `encodings`
+  - выводит список поддерживаемых однобайтных кодировок для legacy-payload
+- `encoding <name|codepage>`
+  - устанавливает кодировку payload для текущей интерактивной сессии
 - `scan-all`
   - по очереди отправляет тестовый сигнал на все `COM`-порты с паузой `1` секунда
 - `watch`
@@ -254,6 +264,9 @@ Release-настройки:
 ```powershell
 dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- list
 dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- buzz COM3
+dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- payload COM3 "TEST"
+dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- payload COM3 "Привет" --encoding 866
+dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- encodings
 dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- buzz MOCK
 dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- scan-all
 dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- watch
@@ -263,6 +276,8 @@ dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreB
 
 - запусти CMD-приложение без аргументов
 - используй клавиатурное меню со стрелками и `Enter`
+- выбирай кодировку payload прямо в меню
+- отправляй произвольный payload через меню без параметров командной строки
 
 ## Сборка, тесты и упаковка
 

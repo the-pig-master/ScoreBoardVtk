@@ -81,6 +81,7 @@ Purpose:
 - controls runtime timing and publish intervals
 - points to the game settings file
 - controls whether the `Debug` tab is visible
+- provides the default payload encoding for the `CMD` utility
 
 Profiles:
 
@@ -96,6 +97,9 @@ Useful fields:
 - `showDebugTab`
   - `true` = show the `Debug` tab
   - `false` = hide it
+- `payloadEncoding`
+  - default single-byte encoding for `CMD` custom payload sending
+  - default value: `windows-1251`
 
 Release defaults:
 
@@ -244,6 +248,12 @@ Commands:
   - prints all available COM ports
 - `buzz <COMx>`
   - sends a `0.3` second buzzer signal to the specified port
+- `payload <COMx> <payload> [--encoding <name|codepage>]`
+  - sends a custom `AT+GD` payload to the specified port
+- `encodings`
+  - prints the list of supported single-byte encodings for legacy payloads
+- `encoding <name|codepage>`
+  - sets the payload encoding for the current interactive session
 - `scan-all`
   - sends the test buzzer to each COM port with a `1` second pause
 - `watch`
@@ -254,6 +264,9 @@ Examples:
 ```powershell
 dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- list
 dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- buzz COM3
+dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- payload COM3 "TEST"
+dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- payload COM3 "Привет" --encoding 866
+dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- encodings
 dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- buzz MOCK
 dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- scan-all
 dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj -- watch
@@ -263,6 +276,8 @@ Interactive mode:
 
 - start the CMD app without arguments
 - use the keyboard menu with arrows and `Enter`
+- select the payload encoding in the menu
+- send a custom payload from the menu without command-line arguments
 
 ## Build, test, and package
 

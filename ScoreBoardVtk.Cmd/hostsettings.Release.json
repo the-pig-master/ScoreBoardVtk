@@ -10,6 +10,10 @@
   // Controls whether the Debug tab is visible in the WPF application.
   "showDebugTab": false,
 
+  // Default single-byte encoding used by the CMD utility for custom payload sending.
+  // Examples: "windows-1251", "cp866", "koi8-r", "us-ascii"
+  "payloadEncoding": "windows-1251",
+
   "runtime": {
     // Shared timing loop interval for game clock, shot clock, and buzzer timing.
     "timingIntervalMilliseconds": 100,

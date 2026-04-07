@@ -62,13 +62,20 @@ public sealed class LegacyVtkProtocol : IScoreboardProtocol
 
     public byte[] CreateGamePacket(string payload)
     {
+        return CreateGamePacket(payload, Win1251);
+    }
+
+    public byte[] CreateGamePacket(string payload, Encoding encoding)
+    {
         const int bodyLength = 49;
         const int totalLength = 51;
+
+        ArgumentNullException.ThrowIfNull(encoding);
 
         var normalizedPayload = NormalizePayload(payload);
         var result = Enumerable.Repeat((byte)' ', totalLength).ToArray();
         var command = "AT+GD" + normalizedPayload;
-        var encoded = Win1251.GetBytes(command);
+        var encoded = encoding.GetBytes(command);
         var bytesToCopy = Math.Min(bodyLength, encoded.Length);
 
         Array.Copy(encoded, result, bytesToCopy);

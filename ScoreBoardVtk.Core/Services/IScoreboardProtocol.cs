@@ -1,3 +1,4 @@
+using System.Text;
 using ScoreBoardVtk.Core.Models;
 
 namespace ScoreBoardVtk.Core.Services;
@@ -9,4 +10,6 @@ public interface IScoreboardProtocol
     byte[] CreateGamePacket(ScoreboardState state, DateTime currentTime);
 
     byte[] CreateGamePacket(string payload);
+
+    byte[] CreateGamePacket(string payload, Encoding encoding);
 }

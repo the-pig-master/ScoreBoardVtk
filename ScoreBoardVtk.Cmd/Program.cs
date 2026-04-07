@@ -18,8 +18,11 @@ internal static class Program
 
         try
         {
-            using var scoreboard = ScoreboardCompositionRoot.CreateConsoleApi();
-            return Execute(args, scoreboard);
+            var hostSettingsStore = new HostSettingsStore();
+            var hostSettings = hostSettingsStore.Load();
+            using var scoreboard = ScoreboardCompositionRoot.CreateConsoleApi(hostSettingsStore.FilePath);
+            var session = CreateCommandSession(hostSettings);
+            return Execute(args, scoreboard, session);
         }
         catch (Exception exception)
         {
@@ -28,18 +31,18 @@ internal static class Program
         }
     }
 
-    private static int Execute(string[] args, IScoreboardApi scoreboard, bool interactiveShell = false)
+    private static int Execute(string[] args, IScoreboardApi scoreboard, CommandSession session, bool interactiveShell = false)
     {
         if (args.Length == 0)
         {
             if (!interactiveShell && CanUseInteractiveConsole())
             {
-                return RunInteractive(scoreboard);
+                return RunInteractive(scoreboard, session);
             }
 
             PrintHeader();
             PrintPortList(scoreboard);
-            PrintUsage();
+            PrintUsage(session);
             return 0;
         }
 
@@ -50,13 +53,16 @@ internal static class Program
             "list" => ExecuteList(scoreboard),
             "buzz" => ExecuteBuzz(args.Skip(1).ToArray(), scoreboard),
             "scan-all" or "scan" => ExecuteScanAll(scoreboard),
+            "payload" or "send" => ExecutePayload(args.Skip(1).ToArray(), scoreboard, session, interactiveShell),
+            "encodings" or "list-encodings" => ExecuteListEncodings(session),
+            "encoding" or "set-encoding" => ExecuteSetEncoding(args.Skip(1).ToArray(), session),
             "watch" or "monitor" => interactiveShell ? ExecuteWatchInteractive(scoreboard) : ExecuteWatch(scoreboard),
-            "help" or "--help" or "-h" or "/?" => ExecuteHelp(scoreboard),
-            _ => ExecuteUnknownCommand(args[0], scoreboard),
+            "help" or "--help" or "-h" or "/?" => ExecuteHelp(scoreboard, session),
+            _ => ExecuteUnknownCommand(args[0], scoreboard, session),
         };
     }
 
-    private static int RunInteractive(IScoreboardApi scoreboard)
+    private static int RunInteractive(IScoreboardApi scoreboard, CommandSession session)
     {
         var selectedPort = GetPreferredPort(scoreboard, null);
 
@@ -67,8 +73,11 @@ internal static class Program
             var options = new[]
             {
                 $"Select COM port ({selectedPort ?? "none"})",
+                $"Set payload encoding ({FormatEncodingDisplay(session.PayloadEncoding)})",
                 "List COM ports",
                 $"Send buzzer to selected port ({selectedPort ?? "none"})",
+                $"Send custom payload to selected port ({selectedPort ?? "none"})",
+                "List encodings",
                 "Scan all COM ports",
                 "Watch COM ports",
                 "Enter command",
@@ -81,8 +90,9 @@ internal static class Program
                 options,
                 [
                     $"Selected port: {selectedPort ?? "none"}",
-                    "Use Up/Down arrows and Enter.",
-                ]);
+                "Use Up/Down arrows and Enter.",
+                $"Payload encoding: {FormatEncodingDisplay(session.PayloadEncoding)}",
+            ]);
 
             switch (selection)
             {
@@ -91,10 +101,14 @@ internal static class Program
                     break;
 
                 case 1:
-                    RunInteractiveAction(() => ExecuteList(scoreboard));
+                    RunInteractiveAction(() => ExecuteSetEncoding(Array.Empty<string>(), session, promptWhenMissing: true));
                     break;
 
                 case 2:
+                    RunInteractiveAction(() => ExecuteList(scoreboard));
+                    break;
+
+                case 3:
                     if (string.IsNullOrWhiteSpace(selectedPort))
                     {
                         RunInteractiveMessage("No COM port selected.");
@@ -104,7 +118,21 @@ internal static class Program
                     RunInteractiveAction(() => ExecuteBuzz([selectedPort], scoreboard));
                     break;
 
-                case 3:
+                case 4:
+                    if (string.IsNullOrWhiteSpace(selectedPort))
+                    {
+                        RunInteractiveMessage("No COM port selected.");
+                        break;
+                    }
+
+                    RunInteractiveAction(() => ExecutePayload([selectedPort], scoreboard, session, interactiveShell: true));
+                    break;
+
+                case 5:
+                    RunInteractiveAction(() => ExecuteListEncodings(session));
+                    break;
+
+                case 6:
                     if (Confirm(
                             "Scan all COM ports?",
                             [
@@ -117,20 +145,20 @@ internal static class Program
 
                     break;
 
-                case 4:
+                case 7:
                     RunInteractiveAction(() => ExecuteWatchInteractive(scoreboard), pauseAfter: false);
                     Pause("Press any key to return to the menu...");
                     break;
 
-                case 5:
-                    RunCommandPrompt(scoreboard);
+                case 8:
+                    RunCommandPrompt(scoreboard, session);
                     break;
 
-                case 6:
-                    RunInteractiveAction(() => ExecuteHelp(scoreboard));
+                case 9:
+                    RunInteractiveAction(() => ExecuteHelp(scoreboard, session));
                     break;
 
-                case 7:
+                case 10:
                     Console.Clear();
                     return 0;
             }
@@ -203,6 +231,120 @@ internal static class Program
             }
         }
 
+        return 0;
+    }
+
+    private static int ExecutePayload(string[] args, IScoreboardApi scoreboard, CommandSession session, bool interactiveShell)
+    {
+        var encoding = session.PayloadEncoding;
+        var positionalArguments = new List<string>();
+
+        for (var index = 0; index < args.Length; index++)
+        {
+            var argument = args[index];
+
+            if (argument.Equals("--encoding", StringComparison.OrdinalIgnoreCase) ||
+                argument.Equals("-e", StringComparison.OrdinalIgnoreCase))
+            {
+                if (index == args.Length - 1)
+                {
+                    Console.Error.WriteLine("Encoding value is missing.");
+                    return 1;
+                }
+
+                if (!TryResolveEncoding(args[++index], out encoding, out var errorMessage))
+                {
+                    Console.Error.WriteLine(errorMessage);
+                    return 1;
+                }
+
+                continue;
+            }
+
+            positionalArguments.Add(argument);
+        }
+
+        var portName = positionalArguments.Count > 0
+            ? positionalArguments[0].Trim()
+            : ResolvePortName(Array.Empty<string>(), scoreboard);
+
+        if (string.IsNullOrWhiteSpace(portName))
+        {
+            Console.Error.WriteLine("COM port is not specified.");
+            Console.WriteLine();
+            PrintUsage(session);
+            return 1;
+        }
+
+        var payload = positionalArguments.Count > 1
+            ? string.Join(' ', positionalArguments.Skip(1))
+            : PromptForPayload(interactiveShell);
+
+        if (string.IsNullOrWhiteSpace(payload))
+        {
+            Console.Error.WriteLine("Payload is not specified.");
+            return 1;
+        }
+
+        try
+        {
+            Console.WriteLine($"Sending payload to {portName} using {FormatEncodingDisplay(encoding)}...");
+            SendCustomPayload(portName, payload, encoding);
+            Console.WriteLine("Payload sent.");
+            return 0;
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine($"Failed to send payload to {portName}: {exception.Message}");
+            return 1;
+        }
+    }
+
+    private static int ExecuteListEncodings(CommandSession session)
+    {
+        var encodings = GetSupportedEncodings();
+
+        Console.WriteLine("Available single-byte encodings:");
+        Console.WriteLine($"Current payload encoding: {FormatEncodingDisplay(session.PayloadEncoding)}");
+        Console.WriteLine();
+
+        foreach (var encoding in encodings)
+        {
+            Console.WriteLine($"  {encoding.CodePage,5}  {encoding.WebName,-18}  {encoding.EncodingName}");
+        }
+
+        return 0;
+    }
+
+    private static int ExecuteSetEncoding(string[] args, CommandSession session, bool promptWhenMissing = false)
+    {
+        string? encodingValue = null;
+
+        if (args.Length > 0)
+        {
+            encodingValue = args[0];
+        }
+        else if (promptWhenMissing)
+        {
+            Console.Write($"Encoding ({FormatEncodingDisplay(session.PayloadEncoding)}): ");
+            encodingValue = Console.ReadLine()?.Trim();
+        }
+
+        if (string.IsNullOrWhiteSpace(encodingValue))
+        {
+            Console.WriteLine($"Current payload encoding: {FormatEncodingDisplay(session.PayloadEncoding)}");
+            Console.WriteLine("Use the 'encodings' command to see the available single-byte encodings.");
+            return 0;
+        }
+
+        if (!TryResolveEncoding(encodingValue, out var encoding, out var errorMessage))
+        {
+            Console.Error.WriteLine(errorMessage);
+            return 1;
+        }
+
+        session.PayloadEncoding = encoding;
+        Console.WriteLine($"Payload encoding set to {FormatEncodingDisplay(session.PayloadEncoding)}.");
         return 0;
     }
 
@@ -305,32 +447,32 @@ internal static class Program
         return 0;
     }
 
-    private static int ExecuteHelp(IScoreboardApi scoreboard)
+    private static int ExecuteHelp(IScoreboardApi scoreboard, CommandSession session)
     {
         PrintHeader();
         PrintPortList(scoreboard);
-        PrintUsage();
+        PrintUsage(session);
         return 0;
     }
 
-    private static int ExecuteUnknownCommand(string command, IScoreboardApi scoreboard)
+    private static int ExecuteUnknownCommand(string command, IScoreboardApi scoreboard, CommandSession session)
     {
         Console.Error.WriteLine($"Unknown command: {command}");
         Console.WriteLine();
         PrintHeader();
         PrintPortList(scoreboard);
-        PrintUsage();
+        PrintUsage(session);
         return 1;
     }
 
-    private static void RunCommandPrompt(IScoreboardApi scoreboard)
+    private static void RunCommandPrompt(IScoreboardApi scoreboard, CommandSession session)
     {
         while (true)
         {
             Console.Clear();
             PrintHeader();
             Console.WriteLine("Enter a command exactly as you would type it on the command line.");
-            Console.WriteLine("Examples: list, buzz COM3, scan-all, watch");
+            Console.WriteLine("Examples: list, buzz COM3, payload COM3 \"TEST\", encoding 866, encodings, scan-all, watch");
             Console.WriteLine("Press Enter on an empty line to return to the menu.");
             Console.WriteLine();
             Console.Write("cmd> ");
@@ -355,7 +497,7 @@ internal static class Program
             }
 
             Console.WriteLine();
-            Execute(args, scoreboard, interactiveShell: true);
+            Execute(args, scoreboard, session, interactiveShell: true);
             Console.WriteLine();
             Pause("Press any key to continue...");
         }
@@ -390,6 +532,23 @@ internal static class Program
         }
     }
 
+    private static void SendCustomPayload(string portName, string payload, Encoding encoding)
+    {
+        portName = portName.Trim().ToUpperInvariant();
+        using var scoreboard = ScoreboardCompositionRoot.CreateConsoleApi();
+
+        try
+        {
+            scoreboard.Connect(portName);
+            scoreboard.SendPayload(payload, encoding);
+            Thread.Sleep(SignalPacketIntervalMilliseconds);
+        }
+        finally
+        {
+            scoreboard.Disconnect();
+        }
+    }
+
     private static string? ResolvePortName(string[] args, IScoreboardApi scoreboard)
     {
         if (args.Length > 0 && !string.IsNullOrWhiteSpace(args[0]))
@@ -407,6 +566,12 @@ internal static class Program
         PrintPorts(ports);
         Console.Write("Enter COM port: ");
         return Console.ReadLine()?.Trim();
+    }
+
+    private static string? PromptForPayload(bool interactiveShell)
+    {
+        Console.Write(interactiveShell ? "payload> " : "Enter payload: ");
+        return Console.ReadLine();
     }
 
     private static string? SelectPortInteractive(IScoreboardApi scoreboard, string? currentPort)
@@ -653,11 +818,23 @@ internal static class Program
 
     private static void PrintUsage()
     {
+        PrintUsage(new CommandSession());
+    }
+
+    private static void PrintUsage(CommandSession session)
+    {
         Console.WriteLine("Commands:");
         Console.WriteLine("  list");
         Console.WriteLine("      Print the list of COM ports.");
         Console.WriteLine("  buzz <COMx>");
         Console.WriteLine("      Send a 0.3 second buzzer signal to the specified port.");
+        Console.WriteLine("  payload <COMx> <payload> [--encoding <name|codepage>]");
+        Console.WriteLine("      Send a custom AT+GD payload to the specified port.");
+        Console.WriteLine($"      Default payload encoding: {FormatEncodingDisplay(session.PayloadEncoding)}.");
+        Console.WriteLine("  encodings");
+        Console.WriteLine("      Print the list of supported single-byte encodings.");
+        Console.WriteLine("  encoding <name|codepage>");
+        Console.WriteLine("      Set the payload encoding for the current interactive session.");
         Console.WriteLine("  scan-all");
         Console.WriteLine("      Walk through all COM ports and send a test signal to each.");
         Console.WriteLine("      A 1 second pause is used between ports.");
@@ -671,6 +848,9 @@ internal static class Program
         Console.WriteLine("Examples:");
         Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- list");
         Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- buzz COM3");
+        Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- payload COM3 \"TEST\"");
+        Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- payload COM3 \"Привет\" --encoding 866");
+        Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- encodings");
         Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- buzz MOCK");
         Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- scan-all");
         Console.WriteLine("  dotnet run --project ScoreBoardVtk.Cmd -- watch");
@@ -680,5 +860,69 @@ internal static class Program
         Console.WriteLine("  with the manual-signal flag enabled. During a live game, it is safer to use");
         Console.WriteLine("  watch or disconnect the scoreboard from the main application first.");
         Console.WriteLine("  A built-in MOCK port is available for testing without real hardware.");
+    }
+
+    private static Encoding[] GetSupportedEncodings()
+    {
+        return Encoding.GetEncodings()
+            .Select(static info => info.GetEncoding())
+            .Where(static encoding => encoding.IsSingleByte)
+            .OrderBy(static encoding => encoding.CodePage)
+            .ThenBy(static encoding => encoding.WebName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static CommandSession CreateCommandSession(HostSettings hostSettings)
+    {
+        ArgumentNullException.ThrowIfNull(hostSettings);
+
+        if (TryResolveEncoding(hostSettings.PayloadEncoding, out var encoding, out _))
+        {
+            return new CommandSession { PayloadEncoding = encoding };
+        }
+
+        return new CommandSession();
+    }
+
+    private static bool TryResolveEncoding(string value, out Encoding encoding, out string errorMessage)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            encoding = Encoding.GetEncoding(1251);
+            errorMessage = "Encoding value is empty.";
+            return false;
+        }
+
+        try
+        {
+            encoding = int.TryParse(value, out var codePage)
+                ? Encoding.GetEncoding(codePage)
+                : Encoding.GetEncoding(value);
+
+            if (!encoding.IsSingleByte)
+            {
+                errorMessage = $"Encoding '{value}' is not supported. Only single-byte encodings can be used for legacy AT+GD payloads.";
+                return false;
+            }
+
+            errorMessage = string.Empty;
+            return true;
+        }
+        catch (Exception exception)
+        {
+            encoding = Encoding.GetEncoding(1251);
+            errorMessage = $"Unknown encoding '{value}': {exception.Message}";
+            return false;
+        }
+    }
+
+    private static string FormatEncodingDisplay(Encoding encoding)
+    {
+        return $"{encoding.CodePage} / {encoding.WebName}";
+    }
+
+    private sealed class CommandSession
+    {
+        public Encoding PayloadEncoding { get; set; } = Encoding.GetEncoding(1251);
     }
 }

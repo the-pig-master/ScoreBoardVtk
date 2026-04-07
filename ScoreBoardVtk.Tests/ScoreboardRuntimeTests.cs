@@ -1,3 +1,4 @@
+using System.Text;
 using System.Collections.Concurrent;
 using ScoreBoardVtk.Core.Models;
 using ScoreBoardVtk.Core.Services;
@@ -144,6 +145,10 @@ public sealed class ScoreboardRuntimeTests
         }
 
         public void SendPayload(string payload)
+        {
+        }
+
+        public void SendPayload(string payload, Encoding encoding)
         {
         }
 

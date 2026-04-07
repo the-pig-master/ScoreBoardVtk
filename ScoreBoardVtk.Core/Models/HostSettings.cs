@@ -8,5 +8,7 @@ public sealed class HostSettings
 
     public bool ShowDebugTab { get; set; } = true;
 
+    public string PayloadEncoding { get; set; } = "windows-1251";
+
     public HostRuntimeSettings Runtime { get; set; } = new();
 }

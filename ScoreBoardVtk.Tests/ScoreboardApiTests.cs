@@ -1,3 +1,4 @@
+using System.Text;
 using ScoreBoardVtk.Core.Models;
 using ScoreBoardVtk.Core.Services;
 
@@ -34,6 +35,21 @@ public sealed class ScoreboardApiTests
 
         Assert.Equal("001100210:00001  24S", protocol.LastManualPayload);
         Assert.Equal(new byte[] { 7, 8, 9 }, transport.LastWrite);
+    }
+
+    [Fact]
+    public void SendPayload_WithEncoding_UsesProtocolPacketFromManualPayloadAndEncoding()
+    {
+        var transport = new FakeSerialTransport();
+        var protocol = new FakeProtocol();
+        var api = new ScoreboardApi(new AppSettings(), transport, protocol, new FixedTimeProvider(new DateTimeOffset(2026, 3, 23, 12, 34, 56, TimeSpan.Zero)));
+
+        api.Connect("COM9");
+        api.SendPayload("Привет", Encoding.GetEncoding(866));
+
+        Assert.Equal("Привет", protocol.LastManualPayload);
+        Assert.Equal(866, protocol.LastManualPayloadEncodingCodePage);
+        Assert.Equal(new byte[] { 4, 5, 6 }, transport.LastWrite);
     }
 
     private sealed class FakeSerialTransport : ISerialTransport
@@ -78,6 +94,8 @@ public sealed class ScoreboardApiTests
 
         public string? LastManualPayload { get; private set; }
 
+        public int? LastManualPayloadEncodingCodePage { get; private set; }
+
         public string CreateGamePayload(ScoreboardState state, DateTime currentTime)
         {
             return "PAYLOAD";
@@ -93,6 +111,13 @@ public sealed class ScoreboardApiTests
         {
             LastManualPayload = payload;
             return [7, 8, 9];
+        }
+
+        public byte[] CreateGamePacket(string payload, Encoding encoding)
+        {
+            LastManualPayload = payload;
+            LastManualPayloadEncodingCodePage = encoding.CodePage;
+            return [4, 5, 6];
         }
     }
 

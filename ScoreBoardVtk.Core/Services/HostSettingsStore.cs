@@ -70,6 +70,10 @@ public sealed class HostSettingsStore
           // Controls whether the Debug tab is visible in the WPF application.
           "showDebugTab": {{ToJson(settings.ShowDebugTab)}},
 
+          // Default single-byte encoding used by the CMD utility for custom payload sending.
+          // Examples: "windows-1251", "cp866", "koi8-r", "us-ascii"
+          "payloadEncoding": {{ToJson(settings.PayloadEncoding)}},
+
           "runtime": {
             // Shared timing loop interval for game clock, shot clock, and buzzer timing.
             "timingIntervalMilliseconds": {{ToJson(settings.Runtime.TimingIntervalMilliseconds)}},

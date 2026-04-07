@@ -1,3 +1,4 @@
+using System.Text;
 using ScoreBoardVtk.Core.Models;
 
 namespace ScoreBoardVtk.Core.Services;
@@ -27,4 +28,6 @@ public interface IScoreboardApi : IDisposable
     void Publish();
 
     void SendPayload(string payload);
+
+    void SendPayload(string payload, Encoding encoding);
 }

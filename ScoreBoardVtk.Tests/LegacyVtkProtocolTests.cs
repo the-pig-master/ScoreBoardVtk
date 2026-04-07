@@ -170,4 +170,15 @@ public sealed class LegacyVtkProtocolTests
         Assert.Equal(51, packet.Length);
         Assert.Equal("AT+GD123", Encoding.GetEncoding(1251).GetString(packet[..8]));
     }
+
+    [Fact]
+    public void CreateGamePacket_UsesSpecifiedEncodingForManualPayload()
+    {
+        var protocol = new LegacyVtkProtocol();
+
+        var packet = protocol.CreateGamePacket("А", Encoding.GetEncoding(866));
+
+        Assert.Equal(51, packet.Length);
+        Assert.Equal(0xC0, packet[5]);
+    }
 }
