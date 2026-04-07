@@ -87,6 +87,80 @@ public sealed class LegacyVtkProtocolTests
     }
 
     [Fact]
+    public void CreateGamePayload_ByDefault_RoutesShotClockSignalThroughMainSignalField()
+    {
+        var protocol = new LegacyVtkProtocol(new AppSettings
+        {
+            UseMainSignalFieldForShotClockSignal = true,
+        });
+        var state = new ScoreboardState(
+            GameMode.Basketball,
+            TimerDirection.Down,
+            FontMode.Font6x8,
+            1,
+            2,
+            1,
+            SecondaryCounterKind.Fouls,
+            0,
+            0,
+            6000,
+            6000,
+            0,
+            140,
+            0,
+            string.Empty,
+            false,
+            true,
+            false,
+            false,
+            false,
+            false,
+            true);
+
+        var payload = protocol.CreateGamePayload(state, new DateTime(2026, 3, 23, 12, 34, 56));
+
+        Assert.Equal("S", payload.Substring(14, 1));
+        Assert.Equal(" ", payload.Substring(19, 1));
+    }
+
+    [Fact]
+    public void CreateGamePayload_WhenConfigured_RoutesShotClockSignalThroughDedicatedField()
+    {
+        var protocol = new LegacyVtkProtocol(new AppSettings
+        {
+            UseMainSignalFieldForShotClockSignal = false,
+        });
+        var state = new ScoreboardState(
+            GameMode.Basketball,
+            TimerDirection.Down,
+            FontMode.Font6x8,
+            1,
+            2,
+            1,
+            SecondaryCounterKind.Fouls,
+            0,
+            0,
+            6000,
+            6000,
+            0,
+            140,
+            0,
+            string.Empty,
+            false,
+            true,
+            false,
+            false,
+            false,
+            false,
+            true);
+
+        var payload = protocol.CreateGamePayload(state, new DateTime(2026, 3, 23, 12, 34, 56));
+
+        Assert.Equal(" ", payload.Substring(14, 1));
+        Assert.Equal("S", payload.Substring(19, 1));
+    }
+
+    [Fact]
     public void CreateGamePacket_NormalizesManualPayloadToFixedLength()
     {
         var protocol = new LegacyVtkProtocol();

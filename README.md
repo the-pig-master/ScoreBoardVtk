@@ -1,41 +1,24 @@
 # ScoreBoardVtk
 
-`ScoreBoardVtk` is a modern C# / .NET 8 rewrite of a legacy sports scoreboard controller.
+`ScoreBoardVtk` is a modern `C# / .NET 8` operator application for a legacy sports scoreboard controller.
 
-The project is focused on working with a real physical scoreboard over a serial port and provides:
+The project is intended to work with a real physical scoreboard over a serial port and includes:
 
-- a `WPF` operator application,
-- a `CMD` utility for COM-port discovery and signal testing,
-- a shared `Core` layer with match logic, protocol, settings, and runtime,
-- unit tests for the critical logic.
+- a `WPF` operator UI,
+- a `CMD` utility for COM-port diagnostics and buzzer testing,
+- a shared `Core` layer for match logic, protocol, settings, and runtime,
+- unit tests for critical logic.
 
-## What the project does
-
-The application is designed to control a sports scoreboard and operator workflow.
-
-Supported scenarios:
-
-- basketball mode,
-- volleyball mode,
-- serial communication with the scoreboard controller,
-- score and foul / set management,
-- main game clock,
-- shot clock `24 / 14`,
-- manual buzzer,
-- running text,
-- keyboard shortcuts for core operator actions,
-- persistent configuration in JSON files.
+Russian documentation: [README.ru.md](C:/WORK/Repositories/ScoreBoardVtk/README.ru.md)
 
 ## Solution structure
 
-The solution contains the following projects:
-
 - `ScoreBoardVtk.Core`
-  - domain models, controller logic, protocol, transports, settings, runtime
+  - models, controller logic, protocol, transports, settings, runtime
 - `ScoreBoardVtk.Wpf`
-  - operator desktop UI
+  - desktop operator UI
 - `ScoreBoardVtk.Cmd`
-  - console utility for COM-port diagnostics and buzzer testing
+  - console diagnostics utility
 - `ScoreBoardVtk.Tests`
   - unit tests
 
@@ -50,14 +33,14 @@ Open solution:
 - home / guest score control
 - foul counters
 - quarter / overtime control
-- main countdown clock
+- main game clock
 - configurable regular-time preset
 - configurable overtime preset
-- shot clock start / stop
+- shot clock `24 / 14`
 - `Set 24`, `Set 14`, `Run 24`, `Run 14`
-- period-change warning if the quarter is changed before time expires
-- reset of timers only
+- timer-only reset
 - manual set dialog for score, fouls, period, game clock, and shot clock
+- period-change warning if time has not expired
 
 ### Volleyball
 
@@ -65,133 +48,119 @@ Open solution:
 - set progression
 - set counters
 
-### Operator functions
+### Operator tools
 
-- running text
 - manual buzzer
-- keyboard shortcuts configured from the settings screen
-- keyboard shortcut labels shown directly on the main control buttons
+- running text
+- configurable keyboard shortcuts
+- English and Russian UI localization
+- optional `Debug` tab for manual payload sending
 
 ### Technical features
 
 - legacy `AT+GD` packet generation
 - `CRC16`
-- `CP1251` support for the legacy device protocol
+- `CP1251` support for the legacy protocol
 - `Hardware`, `Mock`, and `Development` startup profiles
-- built-in `MOCK` transport for testing without real hardware
-- elapsed-time based basketball timing logic for better timing accuracy
-
-## Requirements
-
-- Windows
-- .NET 8 SDK
-- Visual Studio 2022 or newer recommended
+- built-in `MOCK` transport
+- elapsed-time based basketball timing logic
 
 ## Configuration files
 
-The project uses 2 JSON files.
+The application uses two JSON files.
 
 ### `hostsettings.json`
 
-Location for WPF:
+WPF location:
 
-- `ScoreBoardVtk.Wpf\hostsettings.json`
+- [hostsettings.json](C:/WORK/Repositories/ScoreBoardVtk/ScoreBoardVtk.Wpf/hostsettings.json)
 
 Purpose:
 
-- selects the startup profile,
-- configures runtime timing and publish intervals,
-- points to the game settings file.
+- selects the startup profile
+- controls runtime timing and publish intervals
+- points to the game settings file
+- controls whether the `Debug` tab is visible
 
-Supported profiles:
+Profiles:
 
 - `Hardware`
   - only real serial ports are available
 - `Mock`
   - only the built-in `MOCK` port is available
 - `Development`
-  - both real serial ports and `MOCK` are available
+  - real serial ports and `MOCK` are available
 
-Default project value:
+Useful fields:
 
-- `Development`
+- `showDebugTab`
+  - `true` = show the `Debug` tab
+  - `false` = hide it
+
+Release defaults:
+
+- [hostsettings.Release.json](C:/WORK/Repositories/ScoreBoardVtk/ScoreBoardVtk.Wpf/hostsettings.Release.json)
+  - `profile = Hardware`
+  - `showDebugTab = false`
 
 ### `settings.json`
 
-Location for WPF:
+WPF location:
 
-- `ScoreBoardVtk.Wpf\settings.json`
+- [settings.json](C:/WORK/Repositories/ScoreBoardVtk/ScoreBoardVtk.Wpf/settings.json)
 
 Purpose:
 
-- selected COM port,
-- game mode,
-- timer presets,
-- buzzer durations,
-- keyboard shortcuts,
-- running text settings,
-- foul display mode.
+- selected COM port
+- UI language
+- game mode
+- timer presets
+- buzzer durations
+- keyboard shortcuts
+- running text settings
+- foul display mode
+- legacy packet behavior settings
 
-Important:
+Important fields:
 
-- settings on the `Settings` tab are staged;
-- changes are applied only after pressing `Apply`.
+- `mainSignalDurationSeconds`
+  - duration of the main period-end buzzer
+- `shotClockSignalDurationTenths`
+  - duration of the `24`-second buzzer
+- `useMainSignalFieldForShotClockSignal`
+  - `true` = route the `24`-second signal through the same payload field as the main signal
+  - `false` = use the dedicated `24`-second signal field in the payload
 
-## Quick start
+Important behavior:
 
-### Run from Visual Studio
+- settings on the `Settings` tab are staged
+- changes are applied only after pressing `Apply`
 
-1. Open `ScoreBoardVtk.sln`.
-2. Set `ScoreBoardVtk.Wpf` as startup project.
-3. Check `ScoreBoardVtk.Wpf\hostsettings.json`.
-4. Run the application.
+## WPF workflow
 
-### Run from command line
-
-Build:
-
-```powershell
-dotnet build C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.sln
-```
-
-Run WPF:
-
-```powershell
-dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Wpf\ScoreBoardVtk.Wpf.csproj
-```
-
-Run CMD utility:
-
-```powershell
-dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreBoardVtk.Cmd.csproj
-```
-
-## How to use the WPF application
-
-### Basic workflow
+### Basic flow
 
 1. Open the `Settings` tab.
 2. Select the required `COM` port.
-3. Set the required game mode and timer presets.
+3. Set game mode and timer presets.
 4. Press `Apply`.
 5. Open the port.
-6. Go to the `Game` tab and control the scoreboard.
+6. Switch to the `Game` tab and control the scoreboard.
 
-### Basketball workflow
+### Basketball controls
 
 Main controls:
 
 - `Start / Stop`
   - starts or stops the main game clock
 - `Signal`
-  - manual buzzer while the button is held
+  - manual buzzer while held
 - `Period / Set`
   - changes the quarter
-  - if basketball time has not expired yet, a warning dialog is shown
 - `Reset`
-  - resets only timers
+  - resets timers only
 - `Set`
-  - opens a dialog to manually set scoreboard values
+  - opens a dialog to set scoreboard values manually
 
 Shot clock controls:
 
@@ -206,34 +175,41 @@ Shot clock controls:
 - `Set 14`
   - sets `14` without starting
 
-Score controls:
-
-- home score `+1 / -1`
-- guest score `+1 / -1`
-- home fouls `+1 / -1`
-- guest fouls `+1 / -1`
-
 ### Manual Set dialog
 
-The `Set` dialog allows manual operator input for:
+The `Set` dialog allows manual input for:
 
-- home score,
-- guest score,
-- home fouls / sets,
-- guest fouls / sets,
-- period,
-- main game time,
-- shot clock time.
+- home score
+- guest score
+- home fouls / sets
+- guest fouls / sets
+- period
+- main game time
+- shot clock time
 
-The dialog also contains `Reset All`, which resets only the dialog values to defaults.
+`Reset All` resets only the values inside the dialog.
 Changes are applied only after pressing `OK`.
 
 ### Running text
 
-At the bottom of the `Game` tab:
+At the bottom of the `Game` tab you can:
 
-- enable or disable running text,
-- edit the text sent to the scoreboard.
+- enable or disable running text
+- edit the message sent to the scoreboard
+
+### Debug tab
+
+The `Debug` tab is optional and is controlled by `hostsettings.json`.
+
+It provides:
+
+- `Debug mode`
+  - pauses periodic automatic payload publishing
+- manual payload text box
+- `Send`
+  - sends the entered payload to the scoreboard
+
+When `Debug mode` is disabled, periodic automatic publishing resumes.
 
 ## Keyboard shortcuts
 
@@ -241,35 +217,35 @@ Keyboard shortcuts are configured on the `Settings` tab.
 
 Supported actions:
 
-- game clock start / stop,
-- shot clock start / stop,
-- `Set 24`,
-- `Set 14`,
-- `Run 24`,
-- `Run 14`,
-- home score `+1 / -1`,
-- guest score `+1 / -1`,
-- home fouls `+1 / -1`,
-- guest fouls `+1 / -1`.
+- game clock start / stop
+- shot clock start / stop
+- `Set 24`
+- `Set 14`
+- `Run 24`
+- `Run 14`
+- home score `+1 / -1`
+- guest score `+1 / -1`
+- home fouls `+1 / -1`
+- guest fouls `+1 / -1`
 
 Notes:
 
-- shortcuts become active on the `Game` tab,
-- shortcuts do not trigger while typing in text fields or combo boxes,
-- assigned keys are shown in brackets directly on the corresponding buttons.
+- shortcuts are active on the `Game` tab
+- shortcuts do not trigger while typing in text fields or combo boxes
+- assigned keys are shown in brackets on the corresponding buttons
 
 ## CMD utility
 
 The console project is intended for diagnostics and quick hardware checks.
 
-Supported commands:
+Commands:
 
 - `list`
   - prints all available COM ports
 - `buzz <COMx>`
   - sends a `0.3` second buzzer signal to the specified port
 - `scan-all`
-  - sends the test buzzer to each COM port with a `1` second pause between ports
+  - sends the test buzzer to each COM port with a `1` second pause
 - `watch`
   - watches port connect/disconnect events
 
@@ -285,17 +261,12 @@ dotnet run --project C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Cmd\ScoreB
 
 Interactive mode:
 
-- start the CMD app without arguments,
-- use keyboard menu with arrows and `Enter`.
+- start the CMD app without arguments
+- use the keyboard menu with arrows and `Enter`
 
-Important safety note:
+## Build, test, and package
 
-- `buzz` and `scan-all` send the same legacy game packet with the manual signal flag enabled,
-- do not use `scan-all` during a live game unless it is safe to touch the scoreboard state.
-
-## Build and test
-
-Build the solution:
+Build:
 
 ```powershell
 dotnet build C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.sln
@@ -307,28 +278,50 @@ Run tests:
 dotnet test C:\WORK\Repositories\ScoreBoardVtk\ScoreBoardVtk.Tests\ScoreBoardVtk.Tests.csproj
 ```
 
-## Notes about hardware and protocol
+Create `Release` archives and installers:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\WORK\Repositories\ScoreBoardVtk\build\package.ps1
+```
+
+Packaging output:
+
+- `.zip` packages for `win-x86` and `win-x64`
+- `setup.exe` installers for `win-x86` and `win-x64`
+
+Requirements for installers:
+
+- `Inno Setup 6` must be installed so that `ISCC.exe` is available
+
+Packaging details:
+
+- publish is `Release`
+- publish is `self-contained`
+- both `WPF` and `CMD` utility are included
+- `CMD` is staged under `tools\cmd`
+
+## Hardware notes
 
 This project preserves the legacy scoreboard communication model and packet format, but final validation must still be done against the real scoreboard controller.
 
 Important points:
 
-- the original legacy system used low-level serial / RS-485 handling,
-- the current project reproduces the scoreboard logic and payload generation,
-- real hardware compatibility must be verified on the target device.
+- the original system used low-level serial / `RS-485` communication
+- the current project reproduces the scoreboard logic and payload generation
+- real hardware compatibility must be verified on the target device
 
 ## Current status
 
 The project currently provides:
 
-- working `WPF` operator UI,
-- working `CMD` diagnostics utility,
-- `MOCK` mode for safe local testing,
-- automated tests for controller logic and runtime behavior.
+- working `WPF` operator UI
+- working `CMD` diagnostics utility
+- `MOCK` mode for safe local testing
+- automated tests for controller logic, runtime behavior, and legacy payload generation
 
-If you plan to use the application on real hardware, the recommended order is:
+Recommended rollout order for real hardware:
 
-1. start in `Mock` or `Development` profile,
-2. verify operator workflow,
-3. find the correct port with `list`, `watch`, or `buzz`,
-4. validate behavior on the real scoreboard.
+1. start in `Mock` or `Development`
+2. verify operator workflow
+3. find the correct port with `list`, `watch`, or `buzz`
+4. validate behavior on the real scoreboard

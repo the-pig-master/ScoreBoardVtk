@@ -126,6 +126,11 @@ public sealed class SettingsStore
           // Unit: whole seconds, allowed range: 0-9
           "mainSignalDurationSeconds": {{ToJson(settings.MainSignalDurationSeconds)}},
 
+          // Route the 24-second signal through the same payload field as the main signal.
+          // true  = use the main signal field
+          // false = use the dedicated 24-second signal field
+          "useMainSignalFieldForShotClockSignal": {{ToJson(settings.UseMainSignalFieldForShotClockSignal)}},
+
           // Font mode used by the legacy display controller.
           // Allowed values: "Font6x8", "Font8x8"
           "fontMode": {{ToJson(settings.FontMode)}},

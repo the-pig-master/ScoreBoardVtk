@@ -8,10 +8,16 @@ public sealed class LegacyVtkProtocol : IScoreboardProtocol
 {
     private const int PayloadLength = 44;
     private const int RunningTextLength = 24;
+    private readonly AppSettings _settings;
 
     static LegacyVtkProtocol()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+    }
+
+    public LegacyVtkProtocol(AppSettings? settings = null)
+    {
+        _settings = settings ?? new AppSettings();
     }
 
     private static Encoding Win1251 => Encoding.GetEncoding(1251);
@@ -26,11 +32,12 @@ public sealed class LegacyVtkProtocol : IScoreboardProtocol
         var mainClockText = BuildLegacyGameTimeText(state, currentTime);
         var penaltyAText = FormatSingleDigit(state.HomeSecondaryCounter);
         var penaltyBText = FormatSingleDigit(state.GuestSecondaryCounter);
-        var signal = state.IsMainSignalActive ? "S" : " ";
+        var useMainSignalFieldForShotClockSignal = _settings.UseMainSignalFieldForShotClockSignal;
+        var signal = state.IsMainSignalActive || (useMainSignalFieldForShotClockSignal && state.IsShotClockSignalActive) ? "S" : " ";
         var font = state.FontMode == FontMode.Font8x8 ? "1" : "0";
         var runningTextState = state.RunningTextEnabled ? "1" : "0";
         var shotClockText = BuildLegacyShotClockText(state);
-        var shotClockSignal = state.IsShotClockSignalActive ? "S" : " ";
+        var shotClockSignal = !useMainSignalFieldForShotClockSignal && state.IsShotClockSignalActive ? "S" : " ";
         var runningText = FormatRunningText(state.RunningText);
 
         return NormalizePayload(scoreAText +

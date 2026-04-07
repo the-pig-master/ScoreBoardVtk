@@ -23,6 +23,7 @@ public sealed class SettingsStoreTests
               "uiLanguage": "Russian",
               "gameTimePreset": "08:00",
               "overtimeTimePreset": "03:00",
+              "useMainSignalFieldForShotClockSignal": false,
               "keyboardBindings": {
                 "toggleGameClockKey": "Space",
                 "setShotClock24Key": "D1",
@@ -40,6 +41,7 @@ public sealed class SettingsStoreTests
             Assert.Equal(UiLanguage.Russian, settings.UiLanguage);
             Assert.Equal("08:00", settings.GameTimePreset);
             Assert.Equal("03:00", settings.OvertimeTimePreset);
+            Assert.False(settings.UseMainSignalFieldForShotClockSignal);
             Assert.Equal("Space", settings.KeyboardBindings.ToggleGameClockKey);
             Assert.Equal("D1", settings.KeyboardBindings.SetShotClock24Key);
             Assert.Equal("D2", settings.KeyboardBindings.RunShotClock14Key);
@@ -75,6 +77,7 @@ public sealed class SettingsStoreTests
             Assert.Contains("\"selectedPort\": \"COM3\"", json);
             Assert.Contains("\"uiLanguage\": \"Russian\"", json);
             Assert.Contains("\"overtimeTimePreset\": \"05:00\"", json);
+            Assert.Contains("\"useMainSignalFieldForShotClockSignal\": true", json);
             Assert.Contains("\"keyboardBindings\": {", json);
             Assert.Contains("\"runShotClock24Key\": \"\"", json);
             Assert.Contains("\"runningText\": \"TEST\"", json);

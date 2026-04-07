@@ -18,6 +18,8 @@ public sealed class AppSettings
 
     public int MainSignalDurationSeconds { get; set; } = 3;
 
+    public bool UseMainSignalFieldForShotClockSignal { get; set; } = true;
+
     public FontMode FontMode { get; set; } = FontMode.Font6x8;
 
     public GameMode GameMode { get; set; } = GameMode.Basketball;
